@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新建饮食计划</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&family=Noto+Serif+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+        }
+        .hero-title {
+            font-family: 'Noto Serif SC', serif;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .template-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .template-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+        .template-card.active {
+            border-left: 4px solid #10b981;
+            background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+        }
+        .drag-handle {
+            cursor: grab;
+        }
+        .drag-handle:active {
+            cursor: grabbing;
+        }
+        .floating-btn {
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+            box-shadow: 0 8px 25px rgba(249, 115, 22, 0.3);
+        }
+        .floating-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 35px rgba(249, 115, 22, 0.4);
+        }
+        .progress-ring {
+            transform: rotate(-90deg);
+        }
+        .progress-ring-circle {
+            transition: stroke-dashoffset 0.35s;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+    </style>
+</head>
+<body class="min-h-screen pb-20">
+    <!-- Header -->
+    <div class="bg-white shadow-sm">
+        <div class="px-4 py-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <button onclick="goBack()" class="p-2 -ml-2 rounded-lg hover:bg-gray-100 transition-colors">
+                        <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                        </svg>
+                    </button>
+                    <h1 class="hero-title text-xl font-bold text-gray-800 ml-2">新建饮食计划</h1>
+                </div>
+                <button onclick="savePlan()" class="bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-emerald-700 transition-colors">
+                    保存
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="px-4 py-6 space-y-6">
+        <!-- 区块一：计划基础信息 -->
+        <div class="glass-card rounded-2xl p-4 shadow-lg">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">基础信息</h3>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">计划名称 *</label>
+                    <input type="text" id="planName" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent" placeholder="例如：三周减脂训练营">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">计划类型</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button type="button" class="plan-type-btn px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors" data-type="fat-loss">
+                            减脂
+                        </button>
+                        <button type="button" class="plan-type-btn px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors" data-type="muscle-gain">
+                            增肌
+                        </button>
+                        <button type="button" class="plan-type-btn px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors" data-type="maintenance">
+                            维持
+                        </button>
+                        <button type="button" class="plan-type-btn px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors" data-type="custom">
+                            自定义
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="flex items-center">
+                    <input type="checkbox" id="setActive" class="w-4 h-4 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500" checked>
+                    <label for="setActive" class="ml-2 text-sm text-gray-700">保存后设为当前激活计划</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- 区块二：周期&总天数设置 -->
+        <div class="glass-card rounded-2xl p-4 shadow-lg">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">周期设置</h3>
+            
+            <div class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">每周期天数</label>
+                        <input type="number" id="cycleDays" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent" placeholder="7" value="7" min="1" max="14">
+                        <p class="text-xs text-gray-500 mt-1">建议 3~7 天为一个周期</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">周期数量</label>
+                        <input type="number" id="cycleCount" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent" placeholder="3" value="3" min="1" max="10">
+                    </div>
+                </div>
+                
+                <div class="bg-emerald-50 rounded-lg p-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm font-medium text-gray-700">总天数</span>
+                        <span class="text-lg font-bold text-emerald-600" id="totalDays">21 天</span>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">执行时会按周期循环使用日模板</p>
+                </div>
+                
+                <div class="flex space-x-2">
+                    <button onclick="fillCycleWithTemplates()" class="flex-1 bg-blue-100 text-blue-700 py-2 px-4 rounded-lg text-sm font-medium hover:bg-blue-200 transition-colors">
+                        复制前3天补满周期
+                    </button>
+                    <button onclick="resetTemplateOrder()" class="bg-gray-100 text-gray-700 py-2 px-4 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors">
+                        重置排序
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 区块三：日模板列表管理 -->
+        <div class="glass-card rounded-2xl p-4 shadow-lg">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-800">日模板</h3>
+                <span class="text-sm text-gray-500" id="templateCount">0 / 7 个模板</span>
+            </div>
+            
+            <div class="mb-4">
+                <p class="text-sm text-gray-600 mb-3">执行时会按顺序循环使用这些模板</p>
+                
+                <div class="space-y-2" id="templateList">
+                    <!-- 日模板列表将在这里动态生成 -->
+                </div>
+                
+                <button onclick="addNewTemplate()" class="w-full mt-3 bg-gray-100 text-gray-700 py-3 px-4 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors border-2 border-dashed border-gray-300">
+                    + 新增日模板
+                </button>
+            </div>
+        </div>
+
+        <!-- 区块四：当前日模板详情编辑 -->
+        <div class="glass-card rounded-2xl p-4 shadow-lg" id="templateDetail" style="display: none;">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-800" id="detailTitle">Day1 详情</h3>
+                <button onclick="deleteCurrentTemplate()" class="text-red-600 hover:text-red-700 text-sm">
+                    删除模板
+                </button>
+            </div>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">模板名称</label>
+                    <input type="text" id="templateName" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent" placeholder="例如：训练日A">
+                </div>
+                
+                <!-- 当日目标 -->
+                <div>
+                    <h4 class="font-medium text-gray-800 mb-3">当日目标</h4>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">总热量 (kcal)</label>
+                            <input type="number" id="targetCalories" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm" placeholder="1800">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">蛋白质 (g)</label>
+                            <input type="number" id="targetProtein" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm" placeholder="120">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">脂肪 (g)</label>
+                            <input type="number" id="targetFat" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm" placeholder="50">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">碳水 (g)</label>
+                            <input type="number" id="targetCarbs" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm" placeholder="180">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 餐单区域 -->
+                <div>
+                    <h4 class="font-medium text-gray-800 mb-3">当日餐单</h4>
+                    <div class="space-y-3" id="mealSections">
+                        <!-- 四个餐次将在这里生成 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 底部操作栏 -->
+    <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-3">
+        <div class="flex space-x-3">
+            <button onclick="cancelPlan()" class="flex-1 bg-gray-100 text-gray-700 py-3 px-4 rounded-lg font-medium hover:bg-gray-200 transition-colors">
+                取消
+            </button>
+            <button onclick="savePlan()" class="flex-1 bg-emerald-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-emerald-700 transition-colors">
+                保存计划
+            </button>
+        </div>
+    </div>
+
+    <!-- 食物选择模态框 -->
+    <div id="foodModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+        <div class="flex items-end justify-center min-h-screen">
+            <div class="bg-white rounded-t-3xl w-full max-w-md p-6 transform transition-transform">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-800">选择食物</h3>
+                    <button onclick="closeFoodModal()" class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div class="mb-4">
+                    <input type="text" placeholder="搜索食物..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent">
+                </div>
+                <div class="space-y-2 max-h-60 overflow-y-auto" id="foodListModal">
+                    <!-- 食物列表 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 数量输入模态框 -->
+    <div id="quantityModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-2xl w-full max-w-sm p-6">
+                <div class="text-center mb-4">
+                    <h3 class="text-lg font-semibold text-gray-800" id="foodName">食物名称</h3>
+                    <p class="text-sm text-gray-500" id="foodUnit">每100g</p>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">数量</label>
+                    <input type="number" id="foodQuantity" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent" placeholder="请输入数量" value="100">
+                </div>
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">单位</label>
+                    <select id="foodUnitSelect" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent">
+                        <option value="g">克 (g)</option>
+                        <option value="ml">毫升 (ml)</option>
+                        <option value="piece">个/片</option>
+                        <option value="cup">杯</option>
+                        <option value="tbsp">勺</option>
+                    </select>
+                </div>
+                <div class="flex space-x-3">
+                    <button onclick="closeQuantityModal()" class="flex-1 bg-gray-100 text-gray-700 py-2 px-4 rounded-lg font-medium hover:bg-gray-200 transition-colors">
+                        取消
+                    </button>
+                    <button onclick="confirmAddFoodToMeal()" class="flex-1 bg-emerald-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-emerald-700 transition-colors">
+                        确认添加
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="new-plan.js"></script>
+</body>
+</html>

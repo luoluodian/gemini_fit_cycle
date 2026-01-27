@@ -1,0 +1,52 @@
+.hero-title {
+  font-family: 'Noto Serif SC', serif;
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.meal-card {
+  transition: all 0.3s ease;
+}
+
+.meal-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.food-item {
+  transition: all 0.2s ease;
+}
+
+.food-item:hover {
+  background-color: rgba(16, 185, 129, 0.05);
+}
+
+.floating-btn {
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+  box-shadow: 0 8px 25px rgba(249, 115, 22, 0.3);
+}
+
+.floating-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 35px rgba(249, 115, 22, 0.4);
+}
+
+.nutrition-bar {
+  height: 4px;
+  border-radius: 2px;
+  transition: width 0.5s ease;
+}
+
+.tab-button {
+  transition: all 0.3s ease;
+}
+
+.tab-button.active {
+  background: #10b981;
+  color: white;
+}
+

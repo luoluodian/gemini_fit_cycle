@@ -1,0 +1,31 @@
+.min-h-screen {
+  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+}
+.glass-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+.login-btn {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+}
+.login-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(16, 185, 129, 0.4);
+}
+.wechat-btn {
+    background: linear-gradient(135deg, #07c160 0%, #06ad56 100%);
+    box-shadow: 0 8px 25px rgba(7, 193, 96, 0.3);
+}
+.wechat-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(7, 193, 96, 0.4);
+}
+.floating-animation {
+    animation: float 3s ease-in-out infinite;
+}
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+}

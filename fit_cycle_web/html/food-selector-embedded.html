@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>食材选择器</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: #f9fafb;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <div class="p-4">
+        <div class="space-y-4">
+            <!-- 搜索栏 -->
+            <div class="relative">
+                <input type="text" id="foodSearch" placeholder="搜索食物名称..." 
+                       class="w-full px-4 py-3 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent">
+                <svg class="w-5 h-5 text-gray-400 absolute left-3 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+            </div>
+            
+            <!-- 分类筛选 -->
+            <div class="flex space-x-2 overflow-x-auto pb-2">
+                <button class="category-btn active px-3 py-2 rounded-full text-sm font-medium whitespace-nowrap bg-emerald-100 text-emerald-700" data-category="all">
+                    全部
+                </button>
+                <button class="category-btn px-3 py-2 rounded-full text-sm font-medium whitespace-nowrap bg-gray-100 text-gray-600" data-category="grains">
+                    主食
+                </button>
+                <button class="category-btn px-3 py-2 rounded-full text-sm font-medium whitespace-nowrap bg-gray-100 text-gray-600" data-category="protein">
+                    蛋白质
+                </button>
+                <button class="category-btn px-3 py-2 rounded-full text-sm font-medium whitespace-nowrap bg-gray-100 text-gray-600" data-category="vegetables">
+                    蔬菜
+                </button>
+                <button class="category-btn px-3 py-2 rounded-full text-sm font-medium whitespace-nowrap bg-gray-100 text-gray-600" data-category="fruits">
+                    水果
+                </button>
+                <button class="category-btn px-3 py-2 rounded-full text-sm font-medium whitespace-nowrap bg-gray-100 text-gray-600" data-category="nuts">
+                    坚果
+                </button>
+                <button class="category-btn px-3 py-2 rounded-full text-sm font-medium whitespace-nowrap bg-gray-100 text-gray-600" data-category="dairy">
+                    乳制品
+                </button>
+            </div>
+            
+            <!-- 食物列表 -->
+            <div id="foodListContainer" class="space-y-2 max-h-96 overflow-y-auto">
+                <!-- 动态生成的食物列表 -->
+            </div>
+        </div>
+    </div>
+
+    <script src="food-selector-embedded.js"></script>
+</body>
+</html>

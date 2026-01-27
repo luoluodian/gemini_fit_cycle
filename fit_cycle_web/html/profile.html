@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&family=Noto+Serif+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+        }
+        .hero-title {
+            font-family: 'Noto Serif SC', serif;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .profile-card {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+        .nav-tab {
+            transition: all 0.3s ease;
+        }
+        .nav-tab.active {
+            background: #10b981;
+            color: white;
+        }
+        .menu-item {
+            transition: all 0.3s ease;
+        }
+        .menu-item:hover {
+            transform: translateX(4px);
+            background: rgba(16, 185, 129, 0.05);
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
+        }
+        .chart-container {
+            height: 200px;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <!-- Header -->
+    <div class="profile-card text-white">
+        <div class="px-4 py-8">
+            <div class="flex items-center mb-6">
+                <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mr-4">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="hero-title text-2xl font-bold">健康达人</h1>
+                    <p class="text-white/80 text-sm">坚持健康饮食 128 天</p>
+                </div>
+            </div>
+            
+            <!-- Current Plan -->
+            <div class="bg-white/20 rounded-2xl p-4 mb-4">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="font-semibold">当前计划</h3>
+                    <span class="text-xs bg-white/30 px-2 py-1 rounded-full">进行中</span>
+                </div>
+                <h4 class="font-medium mb-1">6周减脂计划</h4>
+                <p class="text-white/80 text-sm mb-3">第 3 周 · 剩余 18 天</p>
+                <div class="flex space-x-2">
+                    <button onclick="viewCurrentPlan()" class="flex-1 bg-white/30 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-white/40 transition-colors">
+                        查看计划
+                    </button>
+                    <button onclick="editCurrentPlan()" class="bg-white/20 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-white/30 transition-colors">
+                        编辑
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="px-4 py-6 pb-20">
+        <!-- Quick Stats -->
+        <div class="grid grid-cols-2 gap-4 mb-6">
+            <div class="stat-card rounded-2xl p-4 shadow-lg text-center">
+                <div class="text-2xl font-bold text-emerald-600" id="totalDays">128</div>
+                <div class="text-sm text-gray-600">坚持使用天数</div>
+            </div>
+            <div class="stat-card rounded-2xl p-4 shadow-lg text-center">
+                <div class="text-2xl font-bold text-orange-500" id="completedPlans">5</div>
+                <div class="text-sm text-gray-600">完成计划数</div>
+            </div>
+        </div>
+
+        <!-- Weekly Progress Chart -->
+        <div class="glass-card rounded-2xl p-4 mb-6 shadow-lg">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-800">本周摄入趋势</h3>
+                <button onclick="viewFullStats()" class="text-sm text-emerald-600 hover:text-emerald-700 font-medium">
+                    查看详情
+                </button>
+            </div>
+            <div class="chart-container" id="weeklyChart"></div>
+            <div class="mt-4 grid grid-cols-3 gap-4 text-center text-sm">
+                <div>
+                    <div class="font-semibold text-gray-800">平均摄入</div>
+                    <div class="text-emerald-600 font-bold">1,650 kcal</div>
+                </div>
+                <div>
+                    <div class="font-semibold text-gray-800">达标天数</div>
+                    <div class="text-blue-600 font-bold">5/7 天</div>
+                </div>
+                <div>
+                    <div class="font-semibold text-gray-800">本周变化</div>
+                    <div class="text-orange-600 font-bold">-0.5kg</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Menu Items -->
+        <div class="space-y-4">
+            <!-- Health Tools -->
+            <div class="glass-card rounded-2xl p-4 shadow-lg">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">健康工具</h3>
+                <div class="space-y-2">
+                    <div class="menu-item flex items-center p-3 rounded-lg cursor-pointer" onclick="openBMRCalculator()">
+                        <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                            </svg>
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="font-medium text-gray-800">BMR/TDEE 计算器</h4>
+                            <p class="text-sm text-gray-600">计算基础代谢率和每日消耗</p>
+                        </div>
+                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </div>
+                    
+                    <div class="menu-item flex items-center p-3 rounded-lg cursor-pointer" onclick="openWeightTracker()">
+                        <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                            <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"></path>
+                            </svg>
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="font-medium text-gray-800">体重记录</h4>
+                            <p class="text-sm text-gray-600">追踪体重变化趋势</p>
+                        </div>
+                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </div>
+                    
+                    <div class="menu-item flex items-center p-3 rounded-lg cursor-pointer" onclick="openNutritionGuide()">
+                        <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
+                            <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                            </svg>
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="font-medium text-gray-800">营养指南</h4>
+                            <p class="text-sm text-gray-600">学习健康饮食知识</p>
+                        </div>
+                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings -->
+            <div class="glass-card rounded-2xl p-4 shadow-lg">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">设置</h3>
+                <div class="space-y-2">
+                    <div class="menu-item flex items-center p-3 rounded-lg cursor-pointer" onclick="openSettings()">
+                        <div class="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center mr-3">
+                            <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="font-medium text-gray-800">应用设置</h4>
+                            <p class="text-sm text-gray-600">通知、隐私等设置</p>
+                        </div>
+                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </div>
+                    
+                    <div class="menu-item flex items-center p-3 rounded-lg cursor-pointer" onclick="openHelp()">
+                        <div class="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center mr-3">
+                            <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="font-medium text-gray-800">帮助与反馈</h4>
+                            <p class="text-sm text-gray-600">使用帮助和意见反馈</p>
+                        </div>
+                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </div>
+                    
+                    <div class="menu-item flex items-center p-3 rounded-lg cursor-pointer" onclick="showAbout()">
+                        <div class="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center mr-3">
+                            <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="font-medium text-gray-800">关于应用</h4>
+                            <p class="text-sm text-gray-600">版本信息和更新日志</p>
+                        </div>
+                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Import Plan -->
+            <div class="glass-card rounded-2xl p-4 shadow-lg">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-800">导入计划</h3>
+                    <button onclick="showImportPlan()" class="bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-emerald-700 transition-colors">
+                        导入
+                    </button>
+                </div>
+                <p class="text-sm text-gray-600">通过分享码导入朋友的饮食计划</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-2">
+        <div class="flex justify-around">
+            <a href="index.html" class="nav-tab flex flex-col items-center py-2 px-3 rounded-lg text-gray-600">
+                <svg class="w-5 h-5 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                </svg>
+                <span class="text-xs">记录</span>
+            </a>
+            <a href="plan.html" class="nav-tab flex flex-col items-center py-2 px-3 rounded-lg text-gray-600">
+                <svg class="w-5 h-5 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                </svg>
+                <span class="text-xs">计划</span>
+            </a>
+            <a href="food.html" class="nav-tab flex flex-col items-center py-2 px-3 rounded-lg text-gray-600">
+                <svg class="w-5 h-5 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                </svg>
+                <span class="text-xs">食材</span>
+            </a>
+            <a href="profile.html" class="nav-tab active flex flex-col items-center py-2 px-3 rounded-lg">
+                <svg class="w-5 h-5 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                </svg>
+                <span class="text-xs">我的</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- BMR Calculator Modal -->
+    <div id="bmrModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-2xl w-full max-w-md p-6 max-h-[90vh] overflow-y-auto">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-800">BMR/TDEE 计算器</h3>
+                    <button onclick="closeBMRModal()" class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                
+                <form id="bmrForm" class="space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">性别</label>
+                            <select id="gender" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent">
+                                <option value="male">男性</option>
+                                <option value="female">女性</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">年龄</label>
+                            <input type="number" id="age" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent" placeholder="25">
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">身高 (cm)</label>
+                            <input type="number" id="height" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent" placeholder="170">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">体重 (kg)</label>
+                            <input type="number" id="weight" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent" placeholder="65">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">活动水平</label>
+                        <select id="activityLevel" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent">
+                            <option value="1.2">久坐 (办公室工作)</option>
+                            <option value="1.375">轻度活动 (每周1-3次运动)</option>
+                            <option value="1.55">中度活动 (每周3-5次运动)</option>
+                            <option value="1.725">高度活动 (每周6-7次运动)</option>
+                            <option value="1.9">极高活动 (体力劳动者或专业运动员)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="flex space-x-3 pt-4">
+                        <button type="button" onclick="closeBMRModal()" class="flex-1 bg-gray-100 text-gray-700 py-2 px-4 rounded-lg font-medium hover:bg-gray-200 transition-colors">
+                            取消
+                        </button>
+                        <button type="submit" class="flex-1 bg-emerald-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-emerald-700 transition-colors">
+                            计算
+                        </button>
+                    </div>
+                </form>
+                
+                <div id="bmrResult" class="mt-6 p-4 bg-emerald-50 rounded-lg hidden">
+                    <h4 class="font-semibold text-gray-800 mb-3">计算结果</h4>
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div class="text-center">
+                            <div class="font-bold text-emerald-600" id="bmrValue">0</div>
+                            <div class="text-gray-600">基础代谢 (BMR)</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="font-bold text-blue-600" id="tdeeValue">0</div>
+                            <div class="text-gray-600">每日消耗 (TDEE)</div>
+                        </div>
+                    </div>
+                    <div class="mt-4 p-3 bg-white rounded-lg">
+                        <h5 class="font-medium text-gray-800 mb-2">目标建议</h5>
+                        <div class="text-sm space-y-1">
+                            <div class="flex justify-between">
+                                <span>减脂:</span>
+                                <span class="font-medium" id="fatLossTarget">0 kcal</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>维持:</span>
+                                <span class="font-medium" id="maintenanceTarget">0 kcal</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>增肌:</span>
+                                <span class="font-medium" id="muscleGainTarget">0 kcal</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="profile.js"></script>
+</body>
+</html>

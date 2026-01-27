@@ -1,0 +1,44 @@
+.min-h-screen {
+  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+  font-family: 'Noto Sans SC', sans-serif;
+}
+
+.hero-title {
+  font-family: 'Noto Serif SC', serif;
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.profile-card {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.nav-tab {
+  transition: all 0.3s ease;
+}
+
+.nav-tab.active {
+  background: #10b981;
+  color: white;
+}
+
+.menu-item {
+  transition: all 0.3s ease;
+}
+
+.menu-item:hover {
+  transform: translateX(4px);
+  background: rgba(16, 185, 129, 0.05);
+}
+
+.stat-card {
+  background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
+}
+
+.chart-container {
+  height: 200px;
+}
