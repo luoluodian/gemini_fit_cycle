@@ -8,10 +8,13 @@ import {
   Req,
   Request,
 } from '@nestjs/common';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { WechatAuthDto, RefreshTokenDto } from '@/dtos/user.dto';
+import { AuthResponseDto } from '@/dtos/auth-response.dto';
 import { JwtRefreshGuard } from './jwt-refresh.guard';
 
+@ApiTags('认证')
 @Controller('auth')
 @UsePipes(
   new ValidationPipe({
@@ -28,7 +31,9 @@ export class AuthController {
 
   /** 微信登录（必须） */
   @Post('wechatAuth')
-  login(@Body() dto: WechatAuthDto) {
+  @ApiOperation({ summary: '微信登录' })
+  @ApiResponse({ status: 200, description: '登录成功', type: AuthResponseDto })
+  wechatLogin(@Body() dto: WechatAuthDto): Promise<AuthResponseDto> {
     return this.authService.wechatAuth(dto);
   }
 

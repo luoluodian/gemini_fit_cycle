@@ -16,6 +16,7 @@ import axios from 'axios';
 
 import { UserTransformer } from '@/common/transformers/user.transformer';
 import { UserService } from '../user/user.service'; // ADDED: Import UserService
+import { WechatAuthDto, UserResponseDto } from '@/dtos/user.dto';
 
 @Injectable()
 export class AuthService {
@@ -75,7 +76,7 @@ export class AuthService {
     return {
       accessToken,
       refreshToken,
-      user: UserTransformer.toResponse(user),
+      user: UserTransformer.toResponse(user) as UserResponseDto,
     };
   }
 

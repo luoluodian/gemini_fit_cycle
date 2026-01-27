@@ -1,7 +1,6 @@
 import {
   Entity,
   PrimaryGeneratedColumn,
-  PrimaryColumn,
   Column,
   CreateDateColumn,
   UpdateDateColumn,
@@ -18,21 +17,21 @@ import { TemplateFavorite } from './template-favorite.entity';
 import { TemplateLike } from './template-like.entity';
 import { UserBadge } from './user-badge.entity';
 import { WeightRecord } from './weight-record.entity';
-import { DailyGoal } from './daily-goal.entity'; // Assuming this is also related
+import { DailyGoal } from './daily-goal.entity';
 
 @Entity('users')
 export class User {
-  @PrimaryColumn({ type: 'integer', primary: true })
+  @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ unique: true })
-  openId: string; // WeChat OpenID, standardized to 'openId'
+  @Column({ name: 'open_id', unique: true })
+  openId: string;
 
   @Column({ nullable: true })
   nickname: string;
 
-  @Column({ nullable: true })
-  avatarUrl: string; // Avatar URL, standardized to 'avatarUrl'
+  @Column({ name: 'avatar_url', nullable: true })
+  avatarUrl: string;
 
   @Column({ nullable: true })
   email?: string;
@@ -40,43 +39,31 @@ export class User {
   @Column({ nullable: true })
   phone?: string;
 
-  @Column({ type: 'date', nullable: true })
+  @Column({ name: 'date_of_birth', type: 'date', nullable: true })
   dateOfBirth?: string;
 
-  @Column({ type: 'int', nullable: true })
-  genderId?: number; // From DataDictionary
+  @Column({ name: 'gender_id', type: 'int', nullable: true })
+  genderId?: number;
 
-  @Column({ type: 'int', nullable: true })
-  activityLevelId?: number; // From DataDictionary
+  @Column({ name: 'activity_level_id', type: 'int', nullable: true })
+  activityLevelId?: number;
 
-  @Column({ type: 'int', nullable: true })
-  goalTypeId?: number; // From DataDictionary
+  @Column({ name: 'goal_type_id', type: 'int', nullable: true })
+  goalTypeId?: number;
 
-  @Column({ type: 'int', nullable: true })
+  @Column({ name: 'height_cm', type: 'decimal', precision: 5, scale: 2, nullable: true })
   heightCm?: number;
 
-  @Column({ type: 'int', nullable: true })
+  @Column({ name: 'weight_kg', type: 'decimal', precision: 5, scale: 2, nullable: true })
   weightKg?: number;
 
-  @Column({ nullable: true })
-  refreshToken?: string; // From auth.service.ts
+  @Column({ name: 'refresh_token', type: 'text', nullable: true })
+  refreshToken?: string;
 
-  @Column({ type: 'int', default: 0 })
-  target_calories: number;
-
-  @Column({ type: 'int', default: 0 })
-  target_protein: number;
-
-  @Column({ type: 'int', default: 0 })
-  target_fat: number;
-
-  @Column({ type: 'int', default: 0 })
-  target_carbs: number;
-
-  @CreateDateColumn()
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 
   // --- Inverse Relations ---
@@ -93,7 +80,7 @@ export class User {
   exerciseLogs: ExerciseLog[];
 
   @OneToMany(() => PlanTemplate, (planTemplate) => planTemplate.creatorUser)
-  planTemplates: PlanTemplate[]; // Assuming creatorUser is the inverse side
+  planTemplates: PlanTemplate[];
 
   @OneToMany(() => Reminder, (reminder) => reminder.user)
   reminders: Reminder[];
