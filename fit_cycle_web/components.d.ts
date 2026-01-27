@@ -45,6 +45,7 @@ declare module 'vue' {
     LoginButton: typeof import('./src/components/login/LoginButton.vue')['default']
     LogoHeader: typeof import('./src/components/login/LogoHeader.vue')['default']
     MealCard: typeof import('./src/components/common/MealCard.vue')['default']
+    'MealCard 2': typeof import('./src/components/daily-plan/MealCard 2.vue')['default']
     MealTabs: typeof import('./src/components/daily-plan/MealTabs.vue')['default']
     NewPlanModal: typeof import('./src/components/plan/NewPlanModal.vue')['default']
     NutDatePicker: typeof import('@nutui/nutui-taro')['DatePicker']

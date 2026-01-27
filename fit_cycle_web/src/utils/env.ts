@@ -89,7 +89,7 @@ export function getApiBaseUrl(): string {
 
   // 开发环境
   if (isDevelopment()) {
-    return "https://dev-api.fit-cycle.com";
+    return "http://localhost:3000";
   }
 
   // 生产环境
