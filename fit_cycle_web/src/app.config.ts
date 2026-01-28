@@ -12,8 +12,9 @@ export default {
   window: {
     backgroundTextStyle: "light",
     navigationBarBackgroundColor: "#fff",
-    navigationBarTitleText: "WeChat",
+    navigationBarTitleText: "Gemini Fit",
     navigationBarTextStyle: "black",
+    navigationStyle: "custom",
   },
   tabBar: {
     custom: true,

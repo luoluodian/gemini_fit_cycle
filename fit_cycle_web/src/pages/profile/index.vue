@@ -1,5 +1,6 @@
 <template>
   <view class="min-h-screen">
+    <BaseNavBar title="个人中心" :transparent="true" />
     <!-- Header -->
     <ProfileHeader :user-data="userData">
       <CurrentPlanCard :current-plan="currentPlan" @view-plan="handleViewPlan" @edit-plan="handleEditPlan" />

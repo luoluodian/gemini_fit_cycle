@@ -1,5 +1,6 @@
 <template>
   <view class="min-h-screen">
+    <BaseNavBar title="今日记录" />
     <!-- Main Content -->
     <view class="px-4 py-6 pb-20">
       <!-- Date Navigation -->

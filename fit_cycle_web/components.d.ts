@@ -11,6 +11,7 @@ declare module 'vue' {
     BaseButton: typeof import('./src/components/common/BaseButton.vue')['default']
     BaseCard: typeof import('./src/components/common/BaseCard.vue')['default']
     BaseModal: typeof import('./src/components/common/BaseModal.vue')['default']
+    BaseNavBar: typeof import('./src/components/common/BaseNavBar.vue')['default']
     BaseTabs: typeof import('./src/components/common/BaseTabs.vue')['default']
     BasicInfoStep: typeof import('./src/components/plan-creator/BasicInfoStep.vue')['default']
     BatchModal: typeof import('./src/components/daily-list/BatchModal.vue')['default']
