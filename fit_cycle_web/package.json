@@ -82,8 +82,8 @@
     "terser": "^5.16.8",
     "tsconfig-paths-webpack-plugin": "^4.0.1",
     "typescript": "^5.1.0",
+    "unplugin-vue-components": "^0.26.0",
     "vite": "^4.2.0",
-    "weapp-tailwindcss": "^4.9.2",
-    "unplugin-vue-components": "^0.26.0"
+    "weapp-tailwindcss": "^4.9.2"
   }
 }

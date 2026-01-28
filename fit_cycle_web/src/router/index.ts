@@ -18,7 +18,32 @@ export * from "./hooks";
  */
 
 import Taro from "@tarojs/taro";
-import { RoutePath } from "../constants/routes";
+import { RoutePath, ROUTES, isPublicPage } from "../constants/routes";
+import { useUserStore } from "../stores/user";
+
+/**
+ * 路由守卫：检查权限
+ * 返回 true 表示允许跳转，返回 false 表示拦截并已处理重定向
+ */
+function beforeNavigate(url: string): boolean {
+  const userStore = useUserStore();
+  
+  // 检查是否为公共页面
+  if (isPublicPage(url)) {
+    return true;
+  }
+
+  // 检查登录状态
+  if (!userStore.isLoggedIn) {
+    console.warn("[Router] 未登录拦截，重定向至登录页:", url);
+    Taro.redirectTo({
+      url: `${ROUTES.LOGIN}?redirect=${encodeURIComponent(url)}`,
+    });
+    return false;
+  }
+
+  return true;
+}
 
 /**
  * 构建带参数的 URL
@@ -45,6 +70,10 @@ export function navigateTo(
 ): Promise<any> {
   const fullUrl = buildUrl(url, params);
 
+  if (!beforeNavigate(fullUrl)) {
+    return Promise.resolve();
+  }
+
   return Taro.navigateTo({
     url: fullUrl,
   }).catch((err) => {
@@ -62,6 +91,10 @@ export function redirectTo(
 ): Promise<any> {
   const fullUrl = buildUrl(url, params);
 
+  if (!beforeNavigate(fullUrl)) {
+    return Promise.resolve();
+  }
+
   return Taro.redirectTo({
     url: fullUrl,
   }).catch((err) => {
@@ -74,6 +107,10 @@ export function redirectTo(
  * 切换 Tab 页面
  */
 export function switchTab(url: RoutePath): Promise<any> {
+  if (!beforeNavigate(url)) {
+    return Promise.resolve();
+  }
+
   return Taro.switchTab({
     url,
   }).catch((err) => {
@@ -90,6 +127,10 @@ export function reLaunch(
   params?: Record<string, string | number | boolean>
 ): Promise<any> {
   const fullUrl = buildUrl(url, params);
+
+  if (!beforeNavigate(fullUrl)) {
+    return Promise.resolve();
+  }
 
   return Taro.reLaunch({
     url: fullUrl,
