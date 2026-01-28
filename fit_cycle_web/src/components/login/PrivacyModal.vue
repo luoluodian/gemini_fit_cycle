@@ -5,11 +5,18 @@
     :close-on-click-overlay="true"
     :lock-scroll="true"
     round
+    pop-class="privacy-popup-custom"
   >
-    <view class="p-6 w-[70vw]">
-      <view class="flex items-center justify-between mb-4">
-        <h3 class="text-lg font-semibold text-gray-800">隐私政策</h3>
-        <view @click="handleClose" class="text-gray-400 hover:text-gray-600">
+    <view class="flex flex-col bg-white w-full h-full overflow-hidden">
+      <!-- Header -->
+      <view
+        class="flex items-center justify-between px-6 py-4 border-b border-gray-50 flex-none"
+      >
+        <text class="text-xl font-bold text-gray-800">隐私政策</text>
+        <view
+          @click="handleClose"
+          class="w-10 h-10 flex items-center justify-center -mr-2 text-gray-400 active:opacity-60"
+        >
           <svg
             class="w-6 h-6"
             fill="none"
@@ -26,66 +33,63 @@
         </view>
       </view>
 
-      <scroll-view scroll-y class="max-h-[60vh]">
-        <view class="bg-white rounded-2xl w-full">
-          <view class="">
-            <view class="space-y-4 text-sm text-gray-600">
-              <view>
-                <h4 class="font-medium text-gray-800 mb-2">1. 信息收集</h4>
-                <p>为了提供更好的服务，我们可能会收集以下信息：</p>
-                <ul class="list-disc list-inside mt-2 space-y-1">
-                  <li>微信昵称和头像（用于个人资料展示）</li>
-                  <li>饮食记录和计划数据（保存在本地存储）</li>
-                  <li>使用统计数据（用于改进应用功能）</li>
-                </ul>
-              </view>
-
-              <view>
-                <h4 class="font-medium text-gray-800 mb-2">2. 信息使用</h4>
-                <p>我们收集的信息仅用于：</p>
-                <ul class="list-disc list-inside mt-2 space-y-1">
-                  <li>提供个性化的饮食记录服务</li>
-                  <li>保存和管理用户的饮食计划</li>
-                  <li>改进应用功能和用户体验</li>
-                </ul>
-              </view>
-
-              <view>
-                <h4 class="font-medium text-gray-800 mb-2">3. 信息存储</h4>
-                <p>您的数据安全对我们至关重要：</p>
-                <ul class="list-disc list-inside mt-2 space-y-1">
-                  <li>所有数据存储在您的设备本地</li>
-                  <li>不会上传到我们的服务器</li>
-                  <li>清除浏览器数据会删除所有记录</li>
-                </ul>
-              </view>
-
-              <view>
-                <h4 class="font-medium text-gray-800 mb-2">4. 用户权利</h4>
-                <p>您拥有以下权利：</p>
-                <ul class="list-disc list-inside mt-2 space-y-1">
-                  <li>随时查看、修改或删除您的数据</li>
-                  <li>选择是否使用某些功能</li>
-                  <li>停止使用本应用</li>
-                </ul>
-              </view>
-
-              <view>
-                <h4 class="font-medium text-gray-800 mb-2">5. 联系我们</h4>
-                <p>如有任何疑问，请联系我们：</p>
-                <p class="mt-1">邮箱：support@diet-tracker.com</p>
-              </view>
+      <!-- Content (Scrollable) -->
+      <scroll-view scroll-y class="flex-1" style="height: 0">
+        <view class="p-6 pt-0 space-y-6 text-sm text-gray-600 leading-relaxed">
+          <view>
+            <h4 class="font-bold text-gray-900 mb-2 flex items-center">
+              <view class="w-1 h-4 bg-emerald-500 rounded-full mr-2"></view>
+              1. 信息收集
+            </h4>
+            <p>为了提供更好的服务，我们可能会收集以下信息：</p>
+            <view class="mt-2 space-y-1 pl-3 border-l border-emerald-50">
+              <view>• 微信昵称和头像</view>
+              <view>• 饮食记录和计划数据</view>
+              <view>• 使用统计数据</view>
             </view>
+          </view>
+
+          <view>
+            <h4 class="font-bold text-gray-900 mb-2 flex items-center">
+              <view class="w-1 h-4 bg-emerald-500 rounded-full mr-2"></view>
+              2. 信息使用
+            </h4>
+            <p>我们收集的信息仅用于：</p>
+            <view class="mt-2 space-y-1 pl-3 border-l border-emerald-50">
+              <view>• 提供个性化的饮食记录服务</view>
+              <view>• 保存和管理用户的饮食计划</view>
+              <view>• 改进应用功能和用户体验</view>
+            </view>
+          </view>
+
+          <view>
+            <h4 class="font-bold text-gray-900 mb-2 flex items-center">
+              <view class="w-1 h-4 bg-emerald-500 rounded-full mr-2"></view>
+              3. 数据安全
+            </h4>
+            <p>您的数据安全对我们至关重要：</p>
+            <view class="mt-2 space-y-1 pl-3 border-l border-emerald-50">
+              <view>• 采用加密存储技术</view>
+              <view>• 定期进行安全性检查</view>
+            </view>
+          </view>
+
+          <view>
+            <h4 class="font-bold text-gray-900 mb-2 flex items-center">
+              <view class="w-1 h-4 bg-emerald-500 rounded-full mr-2"></view>
+              4. 联系我们
+            </h4>
+            <p>如有任何疑问，请联系我们：</p>
+            <p class="mt-1 text-emerald-600">support@fit-cycle.com</p>
           </view>
         </view>
       </scroll-view>
-      <view class="mt-6 pt-4 border-t border-gray-200">
-        <button
-          @click="handleClose"
-          class="w-full bg-emerald-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-emerald-700 transition-colors"
-        >
-          我已了解
-        </button>
+
+      <!-- Footer -->
+      <view class="p-6 border-t border-gray-50 bg-gray-50/30 flex-none">
+        <BaseButton type="primary" size="md" @click="handleClose">
+          我已阅读并同意
+        </BaseButton>
       </view>
     </view>
   </nut-popup>
@@ -93,8 +97,8 @@
 
 <script setup lang="ts">
 import { ref, watch } from "vue";
+import BaseButton from "../common/BaseButton.vue";
 
-// PrivacyModal组件 - 隐私政策模态框
 const props = defineProps({
   visible: {
     type: Boolean,
@@ -107,31 +111,34 @@ const emit = defineEmits<{
   close: [];
 }>();
 
-// 内部状态管理
 const popupVisible = ref(props.visible);
 
-// 监听外部visible变化
 watch(
   () => props.visible,
   (newVal) => {
     popupVisible.value = newVal;
-    console.log("PrivacyModal visible状态变化:", newVal);
   },
-  { immediate: true }
 );
 
-// 监听popup内部关闭事件
 watch(popupVisible, (newVal) => {
   if (!newVal) {
-    handleClose();
+    emit("close");
   }
 });
 
-// 关闭处理函数
 const handleClose = () => {
   popupVisible.value = false;
-  emit("close");
 };
 </script>
 
-<style scoped></style>
+<style lang="scss">
+/* 注意：这里不使用 scoped，以确保样式能穿透到 pop-class */
+.privacy-popup-custom {
+  width: 85vw !important;
+  height: 80vh !important;
+  border-radius: 32rpx !important;
+  overflow: hidden !important;
+  background-color: #fff !important;
+  padding: 0 !important;
+}
+</style>

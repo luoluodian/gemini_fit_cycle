@@ -17,9 +17,6 @@
         <LoginButton @login="handleWechatLogin" @guest="handleGuestMode" />
       </view>
 
-      <!-- 错误提示 -->
-      <ErrorMessage :message="errorMessage" />
-
       <!-- 隐私政策 -->
       <view class="mt-8 text-center animate-item">
         <view
@@ -40,18 +37,16 @@ import "./index.scss";
 import { ref } from "vue";
 import Taro from "@tarojs/taro";
 import { setStorage } from "@/utils/storage";
-import { showSuccess, showError } from "@/utils/toast";
+import { showSuccess, showModal } from "@/utils/toast";
 import { navigateTo, useRouterParams, reLaunch } from "@/router";
 import { useUserStore } from "@/stores/user";
 import LogoHeader from "@/components/login/LogoHeader.vue";
 import WelcomeCard from "@/components/login/WelcomeCard.vue";
 import LoginButton from "@/components/login/LoginButton.vue";
-import ErrorMessage from "@/components/common/ErrorMessage.vue";
 import PrivacyModal from "@/components/login/PrivacyModal.vue";
 
 // 响应式状态
 const isLoading = ref<boolean>(false);
-const errorMessage = ref<string>("");
 const privacyModal = ref<boolean>(false);
 const userStore = useUserStore();
 const routerParams = useRouterParams<{ redirect?: string }>();
@@ -64,7 +59,6 @@ const handleWechatLogin = async (): Promise<void> => {
 
   try {
     isLoading.value = true;
-    errorMessage.value = "";
 
     // 1. 获取微信登录 code
     const loginRes = await Taro.login();
@@ -84,8 +78,11 @@ const handleWechatLogin = async (): Promise<void> => {
   } catch (error: any) {
     console.error("微信登录失败:", error);
     const msg = error.message || "登录失败，请重试";
-    errorMessage.value = msg;
-    await showError(msg);
+    await showModal({
+      title: "登录失败",
+      content: msg,
+      showCancel: false
+    });
   } finally {
     isLoading.value = false;
   }
