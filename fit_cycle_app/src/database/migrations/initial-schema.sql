@@ -5,18 +5,21 @@
 -- 用户表
 CREATE TABLE users (
   id INT PRIMARY KEY AUTO_INCREMENT,
-  openid VARCHAR(100) UNIQUE NOT NULL,
+  open_id VARCHAR(100) UNIQUE NOT NULL,
   nickname VARCHAR(100),
   avatar_url VARCHAR(500),
-  gender TINYINT,
-  age INT,
-  height DECIMAL(5,2),
-  weight DECIMAL(5,2),
-  activity_level VARCHAR(20),
-  goal VARCHAR(20),
+  email VARCHAR(100),
+  phone VARCHAR(20),
+  gender_id INT,
+  date_of_birth DATE,
+  height_cm DECIMAL(5,2),
+  weight_kg DECIMAL(5,2),
+  activity_level_id INT,
+  goal_type_id INT,
+  refresh_token TEXT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  INDEX idx_openid (openid)
+  INDEX idx_open_id (open_id)
 ) COMMENT='用户表';
 
 -- 食物表
@@ -104,6 +107,40 @@ CREATE TABLE daily_goals (
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
   FOREIGN KEY (plan_id) REFERENCES plans(id) ON DELETE SET NULL
 ) COMMENT='每日目标表';
+
+-- 体重记录表
+CREATE TABLE weight_records (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  user_id INT NOT NULL,
+  weight_kg DECIMAL(5,2) NOT NULL,
+  record_date DATE NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_user_date (user_id, record_date),
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) COMMENT='体重记录表';
+
+-- 每日打卡表
+CREATE TABLE daily_checkins (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  user_id INT NOT NULL,
+  checkin_date DATE NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uk_user_date (user_id, checkin_date),
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) COMMENT='每日打卡表';
+
+-- 运动记录表
+CREATE TABLE exercise_logs (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  user_id INT NOT NULL,
+  exercise_type VARCHAR(50) NOT NULL,
+  duration_minutes INT NOT NULL,
+  calories_burned DECIMAL(8,2),
+  log_date DATE NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_user_date (user_id, log_date),
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) COMMENT='运动记录表';
 
 -- 数据字典表（保持现有结构）
 CREATE TABLE IF NOT EXISTS data_dictionary (

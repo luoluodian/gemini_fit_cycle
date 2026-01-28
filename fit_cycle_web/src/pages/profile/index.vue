@@ -42,9 +42,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { navigateTo } from '@/router';
 import { showSuccess } from '@/utils/toast';
+import { useUserStore } from '@/stores/user';
 import ProfileHeader from '@/components/profile/ProfileHeader.vue';
 import CurrentPlanCard from '@/components/profile/CurrentPlanCard.vue';
 import QuickStats from '@/components/profile/QuickStats.vue';
@@ -57,12 +58,15 @@ import AboutModal from '@/components/profile/AboutModal.vue';
 import ImportPlanModal from '@/components/profile/ImportPlanModal.vue';
 import './index.scss';
 
-// 写死的数据
-const userData = ref({
-  name: '健康达人',
-  totalDays: 128,
+const userStore = useUserStore();
+
+// 绑定 Store 数据
+const userData = computed(() => ({
+  nickname: userStore.userInfo?.nickname || '微信用户',
+  avatarUrl: userStore.userInfo?.avatarUrl,
+  totalDays: 128, // 暂时写死，后续接口补充
   completedPlans: 5,
-});
+}));
 
 const currentPlan = ref({
   name: '6周减脂计划',

@@ -4,7 +4,7 @@ import { UpdateUserDto } from '@/dtos/user.dto';
 import { UserService } from './user.service';
 import { UserTransformer } from '@/common/transformers/user.transformer';
 
-@Controller('users')
+@Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
@@ -12,14 +12,17 @@ export class UserController {
    * 更新当前用户资料
    */
   @UseGuards(JwtAuthGuard)
-  @Put('me')
+  @Put('info')
   async updateMe(@Body() dto: UpdateUserDto, @Req() req) {
     const uid = req.user.userId; // JwtStrategy 返回 { userId: xxx }
     return this.userService.updateMe(uid, dto);
   }
 
+  /**
+   * 获取当前用户资料
+   */
   @UseGuards(JwtAuthGuard)
-  @Get('me')
+  @Get('info')
   async getMe(@Req() req) {
     const userId = req.user.userId; // JwtStrategy 返回的 { userId }
     const user = await this.userService.findById(userId);
