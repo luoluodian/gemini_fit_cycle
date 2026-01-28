@@ -17,25 +17,12 @@
           @click="handleClose"
           class="w-10 h-10 flex items-center justify-center -mr-2 text-gray-400 active:opacity-60"
         >
-          <svg
-            class="w-6 h-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M6 18L18 6M6 6l12 12"
-            ></path>
-          </svg>
         </view>
       </view>
 
       <!-- Content (Scrollable) -->
       <scroll-view scroll-y class="flex-1" style="height: 0">
-        <view class="p-6 pt-0 space-y-6 text-sm text-gray-600 leading-relaxed">
+        <view class="px-6 pt-0 space-y-6 text-sm text-gray-600 leading-relaxed">
           <view>
             <h4 class="font-bold text-gray-900 mb-2 flex items-center">
               <view class="w-1 h-4 bg-emerald-500 rounded-full mr-2"></view>

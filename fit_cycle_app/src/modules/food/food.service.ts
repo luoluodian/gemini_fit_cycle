@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Food } from '@/database/entity/food.entity';
-import { CreateFoodDto } from '@/dtos/food.dto';
+import { CreateFoodDto, UpdateFoodDto } from '@/dtos/food.dto';
 import { applyPagination } from '@/common/utils/pagination.helper';
 import { applySorting } from '@/common/utils/sort.helper';
 
@@ -14,7 +14,6 @@ export class FoodService {
   ) {}
 
   /** 查询全部食物 */
-
   async findFood(query: any) {
     const qb = this.foodRepo.createQueryBuilder('food');
     /** 条件过滤 */
@@ -22,29 +21,28 @@ export class FoodService {
       qb.andWhere('food.name LIKE :name', { name: `%${query.name}%` });
     }
     if (query.category && query.category !== 'undefined') {
-      console.log(query.category);
       qb.andWhere('food.category = :category', { category: query.category });
     }
     if (query.minCalorie) {
-      qb.andWhere('food.calorie >= :minCalorie', {
+      qb.andWhere('food.calories_per_100g >= :minCalorie', {
         minCalorie: Number(query.minCalorie),
       });
     }
     if (query.maxCalorie) {
-      qb.andWhere('food.calorie <= :maxCalorie', {
+      qb.andWhere('food.calories_per_100g <= :maxCalorie', {
         maxCalorie: Number(query.maxCalorie),
       });
     }
-    /** 排序（抽离） */
+    /** 排序 */
     applySorting(qb, query, [
       'id',
       'name',
-      'calorie',
-      'protein',
-      'fat',
-      'carbohydrate',
+      'calories_per_100g',
+      'protein_per_100g',
+      'fat_per_100g',
+      'carbs_per_100g',
     ]);
-    /** 分页（抽离） */
+    /** 分页 */
     const { page, pageSize } = applyPagination(qb, query);
     /** 执行查询 */
     const [list, total] = await qb.getManyAndCount();
@@ -57,7 +55,6 @@ export class FoodService {
   }
 
   /** 添加食物 */
-  /** 添加食物 */
   async addFood(dto: CreateFoodDto) {
     const exist = await this.foodRepo.findOne({
       where: { name: dto.name },
@@ -67,10 +64,9 @@ export class FoodService {
       return { error: '该食物已存在' };
     }
 
-    // 使用 save 自动返回插入后的实体
-    const food = await this.foodRepo.save(dto);
-
-    return food;
+    // 创建实体并保存
+    const food = this.foodRepo.create(dto);
+    return await this.foodRepo.save(food);
   }
 
   /** 删除食物 */
@@ -85,14 +81,14 @@ export class FoodService {
   }
 
   /** 更新食物 */
-  async updateFood(id: number, dto: Partial<CreateFoodDto>) {
+  async updateFood(id: number, dto: UpdateFoodDto) {
     const food = await this.foodRepo.findOne({ where: { id } });
 
     if (!food) {
       return { error: '更新失败，食物不存在' };
     }
 
-    const res = await this.foodRepo.update(id, dto);
-    return res;
+    await this.foodRepo.update(id, dto);
+    return await this.foodRepo.findOne({ where: { id } });
   }
 }

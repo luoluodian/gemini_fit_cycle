@@ -10,7 +10,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { FoodService } from './food.service';
-import { CreateFoodDto } from '@/dtos/food.dto';
+import { CreateFoodDto, UpdateFoodDto } from '@/dtos/food.dto';
 
 @Controller('food')
 export class FoodController {
@@ -48,7 +48,7 @@ export class FoodController {
   @Put(':id')
   update(
     @Param('id', ParseIntPipe) id: number,
-    @Body() body: Partial<CreateFoodDto>,
+    @Body() body: UpdateFoodDto,
   ) {
     return this.foodService.updateFood(id, body);
   }
