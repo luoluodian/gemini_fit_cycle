@@ -21,8 +21,8 @@
       </view>
 
       <!-- Content (Scrollable) -->
-      <scroll-view scroll-y class="flex-1" style="height: 0">
-        <view class="px-6 pt-0 space-y-6 text-sm text-gray-600 leading-relaxed">
+      <view class="content-area">
+        <view class="px-6 py-6 space-y-6 text-sm text-gray-600 leading-relaxed">
           <view>
             <h4 class="font-bold text-gray-900 mb-2 flex items-center">
               <view class="w-1 h-4 bg-emerald-500 rounded-full mr-2"></view>
@@ -70,7 +70,7 @@
             <p class="mt-1 text-emerald-600">support@fit-cycle.com</p>
           </view>
         </view>
-      </scroll-view>
+      </view>
 
       <!-- Footer -->
       <view class="p-6 border-t border-gray-50 bg-gray-50/30 flex-none">
@@ -127,5 +127,12 @@ const handleClose = () => {
   overflow: hidden !important;
   background-color: #fff !important;
   padding: 0 !important;
+}
+
+/* 使用普通 view + overflow 实现滚动 */
+.privacy-popup-custom .content-area {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 </style>

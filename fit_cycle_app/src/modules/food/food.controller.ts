@@ -23,6 +23,16 @@ export class FoodController {
   findAll(@Query() query: any) {
     return this.foodService.findFood(query);
   }
+
+  /**
+   * 获取食物详情
+   * GET /food/:id
+   */
+  @Get(':id')
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.foodService.findById(id);
+  }
+
   /**
    * 创建食物
    * POST /food

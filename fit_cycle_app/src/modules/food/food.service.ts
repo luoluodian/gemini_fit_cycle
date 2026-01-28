@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Food } from '@/database/entity/food.entity';
@@ -74,7 +74,7 @@ export class FoodService {
     const res = await this.foodRepo.delete(id);
 
     if (!res.affected) {
-      return { error: '删除失败，食物不存在' };
+      throw new NotFoundException(`删除失败：ID为 ${id} 的食物不存在`);
     }
 
     return res;
@@ -85,10 +85,19 @@ export class FoodService {
     const food = await this.foodRepo.findOne({ where: { id } });
 
     if (!food) {
-      return { error: '更新失败，食物不存在' };
+      throw new NotFoundException(`更新失败：ID为 ${id} 的食物不存在`);
     }
 
     await this.foodRepo.update(id, dto);
     return await this.foodRepo.findOne({ where: { id } });
+  }
+
+  /** 获取食物详情 */
+  async findById(id: number) {
+    const food = await this.foodRepo.findOne({ where: { id } });
+    if (!food) {
+      throw new NotFoundException(`ID为 ${id} 的食物不存在`);
+    }
+    return food;
   }
 }
