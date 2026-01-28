@@ -18,36 +18,29 @@ export interface LoginParams {
  * 用户信息
  */
 export interface UserInfo {
-  id: string;
-  name: string;
-  avatar: string;
-  phone: string;
+  id: number;
+  nickname: string;
+  avatarUrl: string;
+  phone?: string;
   email?: string;
   [key: string]: any;
 }
 
 /**
- * 登录响应
+ * 登录/刷新响应
  */
-export interface LoginResponse {
+export interface AuthResponse {
   accessToken: string;
-  userRefToken: string;
-  userInfo: UserInfo;
-}
-
-/**
- * 用户登录
- */
-export async function login(params: LoginParams): Promise<LoginResponse> {
-  return httpRequest.post("/api/user/login", params);
+  refreshToken: string;
+  user: UserInfo;
 }
 
 /**
  * 刷新用户Token
  */
-export async function refreshToken(refreshToken: string): Promise<LoginResponse> {
-  return httpRequest.post("/api/user/refresh-token", {
-    userRefToken: refreshToken,
+export async function refreshToken(token: string): Promise<AuthResponse> {
+  return httpRequest.post("/auth/refreshToken", {
+    refreshToken: token,
   });
 }
 
@@ -55,55 +48,19 @@ export async function refreshToken(refreshToken: string): Promise<LoginResponse>
  * 获取用户信息
  */
 export async function getUserInfo(): Promise<UserInfo> {
-  return httpRequest.get("/api/user/info");
+  return httpRequest.get("/user/info");
 }
 
 /**
  * 更新用户信息
  */
 export async function updateUserInfo(data: Partial<UserInfo>): Promise<UserInfo> {
-  return httpRequest.put("/api/user/info", data);
-}
-
-/**
- * 获取用户配置
- */
-export async function getUserConfig(): Promise<Record<string, any>> {
-  return httpRequest.get("/api/user/config");
-}
-
-/**
- * 更新用户配置
- */
-export async function updateUserConfig(
-  config: Record<string, any>
-): Promise<Record<string, any>> {
-  return httpRequest.put("/api/user/config", config);
-}
-
-/**
- * 检查登录状态
- */
-export async function checkLoginStatus(): Promise<boolean> {
-  try {
-    await httpRequest.get("/api/user/check-login", null, {
-      showErrorToast: false,
-    });
-    return true;
-  } catch (error) {
-    return false;
-  }
+  return httpRequest.put("/user/info", data);
 }
 
 /**
  * 用户退出登录
  */
 export async function logout(): Promise<void> {
-  return httpRequest.post("/api/user/logout");
+  return httpRequest.post("/auth/logout");
 }
-
-/**
- * @deprecated 使用 refreshToken 替代
- * 刷新用户Token（保持向后兼容）
- */
-export const userRefToken = refreshToken;

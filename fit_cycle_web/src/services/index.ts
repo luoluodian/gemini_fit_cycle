@@ -9,5 +9,11 @@ export * from "./http";
 // 用户服务
 export * from "./modules/user";
 
+// 认证服务
+export * from "./modules/auth";
+
 // 记录服务
 export * from "./modules/record";
+
+// 计划服务
+export * from "./modules/plan";

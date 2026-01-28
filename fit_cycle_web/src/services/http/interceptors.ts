@@ -22,6 +22,12 @@ import { refreshToken as refreshUserToken } from "../../services/modules/user";
 import { reLaunch } from "../../router";
 import { ROUTES } from "../../constants/routes";
 
+import {
+  ACCESS_TOKEN_KEY,
+  REFRESH_TOKEN_KEY,
+  USER_INFO_KEY,
+} from "../../constants/storage";
+
 /**
  * 认证拦截器
  * 处理Token添加、刷新等认证相关逻辑
@@ -41,7 +47,7 @@ export class AuthInterceptor implements Interceptor {
 
     // 检查是否需要认证
     if (needAuth(url)) {
-      const token = getStorage<string>("userToken");
+      const token = getStorage<string>(ACCESS_TOKEN_KEY);
       if (token) {
         config.header = {
           ...config.header,
@@ -93,7 +99,7 @@ export class AuthInterceptor implements Interceptor {
    * 刷新Token
    */
   private async refreshToken(): Promise<string> {
-    const oldRefresh = getStorage<string>("userRefToken");
+    const oldRefresh = getStorage<string>(REFRESH_TOKEN_KEY);
     if (!oldRefresh) {
       throw new Error("Refresh token 不存在");
     }
@@ -114,10 +120,10 @@ export class AuthInterceptor implements Interceptor {
         throw new Error("刷新Token失败：未获取到新的accessToken");
       }
 
-      setStorage("userToken", newAccessToken);
-      setStorage("userRefToken", res?.userRefToken);
-      if (res?.userInfo) {
-        setStorage("userInfo", res.userInfo);
+      setStorage(ACCESS_TOKEN_KEY, newAccessToken);
+      setStorage(REFRESH_TOKEN_KEY, res?.refreshToken);
+      if (res?.user) {
+        setStorage(USER_INFO_KEY, res.user);
       }
 
       const pendingQueue = AuthInterceptor.refreshing.queue;
@@ -130,8 +136,9 @@ export class AuthInterceptor implements Interceptor {
     } catch (err) {
       AuthInterceptor.refreshing.isRefreshing = false;
       AuthInterceptor.refreshing.queue = [];
-      removeStorage("userToken");
-      removeStorage("userRefToken");
+      removeStorage(ACCESS_TOKEN_KEY);
+      removeStorage(REFRESH_TOKEN_KEY);
+      removeStorage(USER_INFO_KEY);
       throw err;
     }
   }
@@ -144,9 +151,9 @@ export class AuthInterceptor implements Interceptor {
     AuthInterceptor.isNavigatingToLogin = true;
 
     try {
-      removeStorage("userToken");
-      removeStorage("userInfo");
-      removeStorage("userRefToken");
+      removeStorage(ACCESS_TOKEN_KEY);
+      removeStorage(USER_INFO_KEY);
+      removeStorage(REFRESH_TOKEN_KEY);
 
       // 使用路由封装跳转到登录页
       await reLaunch(ROUTES.LOGIN);

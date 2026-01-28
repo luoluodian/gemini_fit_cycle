@@ -16,8 +16,7 @@ export class UserService {
 
     if (!user) {
       user = this.userRepository.create({ openId });
-      // Don't save here, let the caller decide when to save after potentially adding more user data
-      // await this.userRepository.save(user); // Removed implicit save
+      await this.userRepository.save(user);
     }
     return user;
   }

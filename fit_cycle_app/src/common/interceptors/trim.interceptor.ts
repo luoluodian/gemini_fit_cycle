@@ -13,15 +13,24 @@ export class TrimInterceptor implements NestInterceptor {
     const req = context.switchToHttp().getRequest();
 
     if (req.body) {
-      req.body = this.trimValues(req.body);
+      if (typeof req.body === 'object') {
+        this.trimInPlace(req.body);
+      } else if (typeof req.body === 'string') {
+        // req.body is usually writable, try to trim if string
+        try {
+          req.body = req.body.trim();
+        } catch (e) {
+          // ignore if read-only
+        }
+      }
     }
 
-    if (req.query) {
-      req.query = this.trimValues(req.query);
+    if (req.query && typeof req.query === 'object') {
+      this.trimInPlace(req.query);
     }
 
-    if (req.params) {
-      req.params = this.trimValues(req.params);
+    if (req.params && typeof req.params === 'object') {
+      this.trimInPlace(req.params);
     }
 
     return next.handle().pipe(
@@ -31,24 +40,27 @@ export class TrimInterceptor implements NestInterceptor {
     );
   }
 
-  private trimValues(value: any): any {
-    if (typeof value === 'string') {
-      return value.trim();
-    }
+  private trimInPlace(value: any): void {
+    if (!value || typeof value !== 'object') return;
 
     if (Array.isArray(value)) {
-      return value.map((v) => this.trimValues(v));
-    }
-
-    if (typeof value === 'object' && value !== null) {
-      const obj: Record<string, any> = {};
-      const keys = Object.keys(value);
-      for (const key of keys) {
-        obj[key] = this.trimValues((value as Record<string, any>)[key]);
+      for (let i = 0; i < value.length; i++) {
+        if (typeof value[i] === 'string') {
+          value[i] = value[i].trim();
+        } else if (typeof value[i] === 'object') {
+          this.trimInPlace(value[i]);
+        }
       }
-      return obj;
+      return;
     }
 
-    return value;
+    for (const key of Object.keys(value)) {
+      const prop = value[key];
+      if (typeof prop === 'string') {
+        value[key] = prop.trim();
+      } else if (typeof prop === 'object') {
+        this.trimInPlace(prop);
+      }
+    }
   }
 }

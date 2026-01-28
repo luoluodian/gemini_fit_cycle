@@ -31,23 +31,17 @@ export const API_BASE_CONFIG = {
  * 更灵活，支持复杂的匹配规则
  */
 export const AUTH_ROUTES = [
-  /^\/user\//, // /user/开头的所有路由
-  /^\/order\//, // /order/开头的所有路由
-  /^\/cart\//, // /cart/开头的所有路由
-  /^\/payment\//, // /payment/开头的所有路由
-  /^\/address\//, // /address/开头的所有路由
+  /^\/user\//,
+  /^\/diet-logs\//,
+  /^\/diet-plans\//,
+  /^\/auth\/refreshToken/,
 ];
 
 /**
  * 不需要认证的公共API路由
  */
 export const PUBLIC_ROUTES = [
-  "/api/user/login",
-  "/api/user/register",
-  "/api/user/refresh-token",
-  "/api/product/list",
-  "/api/product/detail",
-  "/api/config",
+  "/auth/wechatAuth",
 ];
 
 /**
@@ -55,9 +49,7 @@ export const PUBLIC_ROUTES = [
  * 用于后台检查类接口，失败时不打扰用户
  */
 export const SILENT_ROUTES = [
-  "/api/user/check-login",
-  "/api/user/refresh-token",
-  "/api/config/update",
+  "/auth/refreshToken",
 ];
 
 /**

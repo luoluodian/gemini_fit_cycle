@@ -86,6 +86,14 @@ export class AuthService {
    * ===============================
    */
   async code2Session(code: string) {
+    // Mock bypass for testing
+    if (code === 'mock_code') {
+      return {
+        openid: 'mock_openid_123456',
+        session_key: 'mock_session_key',
+      };
+    }
+
     const url = `${this.api}/sns/jscode2session?appid=${this.appId}&secret=${this.secret}&js_code=${code}&grant_type=authorization_code`;
 
     try {

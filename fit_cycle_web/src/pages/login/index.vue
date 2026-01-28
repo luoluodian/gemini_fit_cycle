@@ -55,7 +55,7 @@ const handleLogin = async (): Promise<void> => {
   try {
     isLoading.value = true;
     errorMessage.value = "";
-    const mockUserInfo = await login({ code: "mock_code" });
+    const mockUserInfo = await login("mock_code");
     console.log("登录成功，用户信息:", mockUserInfo);
     setStorage("userToken", `mock_token_${Date.now()}`);
     setStorage("userRefToken", `mock_refresh_${Date.now()}`);
