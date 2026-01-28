@@ -1,7 +1,7 @@
 export default {
   pages: [
-    "pages/login/index",
     "pages/index/index",
+    "pages/login/index",
     "pages/plan/index",
     "pages/plan-creator/index",
     "pages/daily-list/index",
@@ -14,5 +14,37 @@ export default {
     navigationBarBackgroundColor: "#fff",
     navigationBarTitleText: "WeChat",
     navigationBarTextStyle: "black",
+  },
+  tabBar: {
+    custom: true,
+    color: "#9ca3af",
+    selectedColor: "#10b981",
+    backgroundColor: "#ffffff",
+    list: [
+      {
+        pagePath: "pages/index/index",
+        text: "记录",
+        iconPath: "static/tabs/home.png",
+        selectedIconPath: "static/tabs/home_active.png",
+      },
+      {
+        pagePath: "pages/plan/index",
+        text: "计划",
+        iconPath: "static/tabs/plan.png",
+        selectedIconPath: "static/tabs/plan_active.png",
+      },
+      {
+        pagePath: "pages/food/index",
+        text: "食材",
+        iconPath: "static/tabs/food.png",
+        selectedIconPath: "static/tabs/food_active.png",
+      },
+      {
+        pagePath: "pages/profile/index",
+        text: "我的",
+        iconPath: "static/tabs/user.png",
+        selectedIconPath: "static/tabs/user_active.png",
+      },
+    ],
   },
 };

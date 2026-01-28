@@ -1,5 +1,5 @@
 <template>
-  <view class="min-h-screen">
+  <view class="min-h-screen no-tabbar">
     <!-- Main Content -->
     <view class="flex flex-col items-center justify-center min-h-screen px-4">
       <!-- Logo/App Info -->

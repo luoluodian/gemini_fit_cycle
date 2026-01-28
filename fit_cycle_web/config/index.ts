@@ -24,7 +24,12 @@ export default defineConfig<"vite">(async (merge, { command, mode }) => {
     plugins: ["@tarojs/plugin-html"],
     defineConstants: {},
     copy: {
-      patterns: [],
+      patterns: [
+        {
+          from: "src/custom-tab-bar",
+          to: "dist/custom-tab-bar",
+        },
+      ],
       options: {},
     },
     framework: "vue3",

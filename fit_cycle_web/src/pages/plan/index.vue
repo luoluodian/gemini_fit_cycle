@@ -88,7 +88,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from "vue";
-import Taro from "@tarojs/taro";
+import Taro, { useDidShow } from "@tarojs/taro";
 import PlanHeader from "@/components/plan/PlanHeader.vue";
 import PlanTabs from "@/components/plan/PlanTabs.vue";
 import PlanCard from "@/components/plan/PlanCard.vue";
@@ -98,8 +98,21 @@ import NewPlanModal from "@/components/plan/NewPlanModal.vue";
 import ImportPlanModal from "@/components/plan/ImportPlanModal.vue";
 import { getStorage, setStorage } from "@/utils/storage";
 import { showSuccess, showError, showModal } from "@/utils/toast";
+import { useNavigationStore } from "@/stores/navigation";
 
 type TabType = "active" | "completed" | "archived";
+
+const navStore = useNavigationStore();
+
+useDidShow(() => {
+  navStore.setActiveTab(1);
+  const page = Taro.getCurrentInstance().page;
+  if (page && typeof page.getTabBar === "function" && page.getTabBar()) {
+    page.getTabBar().setData({
+      selected: 1,
+    });
+  }
+});
 
 interface Plan {
   id: string;

@@ -47,16 +47,29 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from "vue";
+import Taro, { useDidShow } from "@tarojs/taro";
 import DateNavigation from "@/components/home/DateNavigation.vue";
 import DailyGoalsOverview from "@/components/home/DailyGoalsOverview.vue";
 import MealCard from "@/components/home/MealCard.vue";
 import FoodSelectionModal from "@/components/common/FoodSelectionModal.vue";
 import QuantityInputModal from "@/components/common/QuantityInputModal.vue";
 import { type RecordInfoResponse, type MealFoodDetail } from "@/services";
+import { useNavigationStore } from "@/stores/navigation";
 import "./index.scss";
 
 const recordInfo = ref<RecordInfoResponse | null>(null);
 const currentDate = ref<string>(new Date().toISOString().split("T")[0]);
+const navStore = useNavigationStore();
+
+useDidShow(() => {
+  navStore.setActiveTab(0);
+  const page = Taro.getCurrentInstance().page;
+  if (page && typeof page.getTabBar === "function" && page.getTabBar()) {
+    page.getTabBar().setData({
+      selected: 0,
+    });
+  }
+});
 watch(
   currentDate,
   (newDate) => {

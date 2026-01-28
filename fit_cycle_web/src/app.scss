@@ -5,4 +5,11 @@
 
 .min-h-screen {
   background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+  min-height: 100vh;
+  padding-bottom: calc(120rpx + env(safe-area-inset-bottom));
+}
+
+// 针对不需要 TabBar 的页面（如登录页），可以添加覆盖样式
+.no-tabbar {
+  padding-bottom: 0 !important;
 }

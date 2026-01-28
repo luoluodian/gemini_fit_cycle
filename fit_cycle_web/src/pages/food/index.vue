@@ -59,6 +59,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from "vue";
+import Taro, { useDidShow } from "@tarojs/taro";
 import FoodHeader from "@/components/food/FoodHeader.vue";
 import SearchBar from "@/components/food/SearchBar.vue";
 import QuickCategories from "@/components/food/QuickCategories.vue";
@@ -69,6 +70,7 @@ import FoodList from "@/components/food/FoodList.vue";
 import FloatingButton from "@/components/food/FloatingButton.vue";
 import FoodDetailModal from "@/components/food/FoodDetailModal.vue";
 import CustomFoodModal from "@/components/food/CustomFoodModal.vue";
+import { useNavigationStore } from "@/stores/navigation";
 
 interface Food {
   id: string;
@@ -86,6 +88,17 @@ interface Food {
 }
 
 // 状态管理
+const navStore = useNavigationStore();
+
+useDidShow(() => {
+  navStore.setActiveTab(2);
+  const page = Taro.getCurrentInstance().page;
+  if (page && typeof page.getTabBar === "function" && page.getTabBar()) {
+    page.getTabBar().setData({
+      selected: 2,
+    });
+  }
+});
 const showSearchBar = ref(false);
 const searchQuery = ref("");
 const selectedCategory = ref("");

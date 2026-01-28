@@ -43,9 +43,11 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
+import Taro, { useDidShow } from '@tarojs/taro';
 import { navigateTo } from '@/router';
 import { showSuccess } from '@/utils/toast';
 import { useUserStore } from '@/stores/user';
+import { useNavigationStore } from '@/stores/navigation';
 import ProfileHeader from '@/components/profile/ProfileHeader.vue';
 import CurrentPlanCard from '@/components/profile/CurrentPlanCard.vue';
 import QuickStats from '@/components/profile/QuickStats.vue';
@@ -59,6 +61,17 @@ import ImportPlanModal from '@/components/profile/ImportPlanModal.vue';
 import './index.scss';
 
 const userStore = useUserStore();
+const navStore = useNavigationStore();
+
+useDidShow(() => {
+  navStore.setActiveTab(3);
+  const page = Taro.getCurrentInstance().page;
+  if (page && typeof page.getTabBar === "function" && page.getTabBar()) {
+    page.getTabBar().setData({
+      selected: 3,
+    });
+  }
+});
 
 // 绑定 Store 数据
 const userData = computed(() => ({
