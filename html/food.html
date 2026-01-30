@@ -9,527 +9,315 @@
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&family=Noto+Serif+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Noto Sans SC', sans-serif;
-            background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
-        }
-        .hero-title {
-            font-family: 'Noto Serif SC', serif;
-        }
-        .glass-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        .food-card {
-            transition: all 0.3s ease;
-        }
-        .food-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-        }
-        .nav-tab {
-            transition: all 0.3s ease;
-        }
-        .nav-tab.active {
-            background: #10b981;
-            color: white;
-        }
-        .floating-btn {
-            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
-            box-shadow: 0 8px 25px rgba(249, 115, 22, 0.3);
-        }
-        .floating-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 35px rgba(249, 115, 22, 0.4);
-        }
-        .category-tab {
-            transition: all 0.3s ease;
-        }
-        .category-tab.active {
-            background: #10b981;
-            color: white;
-        }
-        .search-input {
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(10px);
-        }
+        body { font-family: 'Noto Sans SC', sans-serif; background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%); }
+        .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); }
+        .food-card { transition: all 0.3s ease; }
+        .food-card:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1); }
+        .nav-tab { transition: all 0.3s ease; }
+        .nav-tab.active { background: #10b981; color: white; }
+        .category-tab { transition: all 0.3s ease; }
+        .category-tab.active { background: #10b981; color: white; }
+        .search-input { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
 <body class="min-h-screen">
     <!-- Header -->
     <div class="bg-white shadow-sm">
-        <div class="px-4 py-6">
+        <div class="px-4 py-4">
             <div class="flex items-center justify-between">
-                <div>
-                    <h1 class="hero-title text-2xl font-bold text-gray-800">食材库</h1>
-                    <p class="text-sm text-gray-600 mt-1">发现和管理你的健康食材</p>
-                </div>
-                <div class="flex space-x-2">
+                <h1 class="text-lg font-semibold text-gray-800">食材库</h1>
+                <div class="flex items-center space-x-2">
                     <button onclick="toggleSearch()" class="p-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
                         <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                         </svg>
                     </button>
+                    <button onclick="createCustomFood()" class="px-3 py-2 bg-emerald-500 text-white rounded-lg text-sm font-medium hover:bg-emerald-600 transition-colors">新建</button>
                 </div>
             </div>
-        </div>
-    </div>
-
-    <!-- Search Bar -->
-    <div id="searchBar" class="px-4 py-3 bg-white border-b border-gray-200 hidden">
-        <div class="relative">
-            <input type="text" id="foodSearch" placeholder="搜索食材..." class="search-input w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent">
-            <svg class="w-5 h-5 text-gray-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-            </svg>
+            <div id="searchBar" class="mt-3 hidden">
+                <div class="relative">
+                    <input type="text" id="foodSearch" placeholder="搜索食材名称..." class="search-input w-full px-4 py-2 pl-10 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm">
+                    <svg class="w-4 h-4 text-gray-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                </div>
+            </div>
         </div>
     </div>
 
     <!-- Main Content -->
-    <div class="px-4 py-6 pb-20">
-        <!-- Quick Categories -->
-        <div class="glass-card rounded-2xl p-4 mb-6 shadow-lg">
-            <h3 class="text-lg font-semibold text-gray-800 mb-3">快速分类</h3>
-            <div class="grid grid-cols-4 gap-3">
-                <button onclick="filterByCategory('protein')" class="category-tab flex flex-col items-center p-3 bg-gray-100 rounded-lg text-gray-600 hover:bg-emerald-100 hover:text-emerald-700">
-                    <span class="text-2xl mb-1">🥩</span>
-                    <span class="text-xs">蛋白质</span>
-                </button>
-                <button onclick="filterByCategory('vegetables')" class="category-tab flex flex-col items-center p-3 bg-gray-100 rounded-lg text-gray-600 hover:bg-emerald-100 hover:text-emerald-700">
-                    <span class="text-2xl mb-1">🥬</span>
-                    <span class="text-xs">蔬菜</span>
-                </button>
-                <button onclick="filterByCategory('fruits')" class="category-tab flex flex-col items-center p-3 bg-gray-100 rounded-lg text-gray-600 hover:bg-emerald-100 hover:text-emerald-700">
-                    <span class="text-2xl mb-1">🍎</span>
-                    <span class="text-xs">水果</span>
-                </button>
-                <button onclick="filterByCategory('grains')" class="category-tab flex flex-col items-center p-3 bg-gray-100 rounded-lg text-gray-600 hover:bg-emerald-100 hover:text-emerald-700">
-                    <span class="text-2xl mb-1">🌾</span>
-                    <span class="text-xs">谷物</span>
-                </button>
-                <button onclick="filterByCategory('dairy')" class="category-tab flex flex-col items-center p-3 bg-gray-100 rounded-lg text-gray-600 hover:bg-emerald-100 hover:text-emerald-700">
-                    <span class="text-2xl mb-1">🥛</span>
-                    <span class="text-xs">乳制品</span>
-                </button>
-                <button onclick="filterByCategory('nuts')" class="category-tab flex flex-col items-center p-3 bg-gray-100 rounded-lg text-gray-600 hover:bg-emerald-100 hover:text-emerald-700">
-                    <span class="text-2xl mb-1">🥜</span>
-                    <span class="text-xs">坚果</span>
-                </button>
-                <button onclick="filterByCategory('oils')" class="category-tab flex flex-col items-center p-3 bg-gray-100 rounded-lg text-gray-600 hover:bg-emerald-100 hover:text-emerald-700">
-                    <span class="text-2xl mb-1">🫒</span>
-                    <span class="text-xs">油脂</span>
-                </button>
-                <button onclick="filterByCategory('snacks')" class="category-tab flex flex-col items-center p-3 bg-gray-100 rounded-lg text-gray-600 hover:bg-emerald-100 hover:text-emerald-700">
-                    <span class="text-2xl mb-1">🍿</span>
-                    <span class="text-xs">零食</span>
-                </button>
-            </div>
+    <div class="px-4 py-4 pb-20">
+        <!-- 分类标签栏 -->
+        <div class="flex space-x-1.5 overflow-x-auto pb-3 mb-4 -mx-4 px-4 scrollbar-hide">
+            <button class="category-tab active flex items-center space-x-1 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap bg-emerald-500 text-white" onclick="filterByCategory('all')">
+                <span>📊</span><span>全部</span>
+            </button>
+            <button class="category-tab flex items-center space-x-1 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap bg-gray-100 text-gray-600 hover:bg-gray-200" onclick="filterByCategory('favorites')">
+                <span>❤️</span><span>我的收藏</span>
+            </button>
+            <button class="category-tab flex items-center space-x-1 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap bg-gray-100 text-gray-600 hover:bg-gray-200" onclick="filterByCategory('my-created')">
+                <span>📝</span><span>我的创建</span>
+            </button>
+            <button class="category-tab flex items-center space-x-1 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap bg-gray-100 text-gray-600 hover:bg-gray-200" onclick="filterByCategory('system')">
+                <span>🏪</span><span>系统食材</span>
+            </button>
+            <button class="category-tab flex items-center space-x-1 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap bg-gray-100 text-gray-600 hover:bg-gray-200" onclick="filterByCategory('protein')">
+                <span>🥩</span><span>蛋白质</span>
+            </button>
+            <button class="category-tab flex items-center space-x-1 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap bg-gray-100 text-gray-600 hover:bg-gray-200" onclick="filterByCategory('vegetables')">
+                <span>🥬</span><span>蔬菜</span>
+            </button>
+            <button class="category-tab flex items-center space-x-1 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap bg-gray-100 text-gray-600 hover:bg-gray-200" onclick="filterByCategory('fruits')">
+                <span>🍎</span><span>水果</span>
+            </button>
+            <button class="category-tab flex items-center space-x-1 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap bg-gray-100 text-gray-600 hover:bg-gray-200" onclick="filterByCategory('grains')">
+                <span>🌾</span><span>谷物</span>
+            </button>
+            <button class="category-tab flex items-center space-x-1 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap bg-gray-100 text-gray-600 hover:bg-gray-200" onclick="filterByCategory('dairy')">
+                <span>🥛</span><span>乳制品</span>
+            </button>
+            <button class="category-tab flex items-center space-x-1 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap bg-gray-100 text-gray-600 hover:bg-gray-200" onclick="filterByCategory('nuts')">
+                <span>🥜</span><span>坚果</span>
+            </button>
         </div>
 
-        <!-- Category Tabs -->
+        <!-- 热门食材 -->
         <div class="glass-card rounded-2xl p-4 mb-6 shadow-lg">
-            <div class="flex space-x-2 mb-4">
-                <button id="allTab" class="category-tab active px-4 py-2 rounded-lg text-sm font-medium" onclick="switchCategory('all')">
-                    全部
-                </button>
-                <button id="systemTab" class="category-tab px-4 py-2 bg-gray-100 text-gray-600 rounded-lg text-sm font-medium" onclick="switchCategory('system')">
-                    系统食材
-                </button>
-                <button id="customTab" class="category-tab px-4 py-2 bg-gray-100 text-gray-600 rounded-lg text-sm font-medium" onclick="switchCategory('custom')">
-                    我的食材
-                </button>
+            <div class="flex items-center justify-between mb-3">
+                <h4 class="text-sm font-medium text-gray-700">热门食材</h4>
+                <span class="text-xs text-gray-400">滑动查看更多</span>
             </div>
-            
-            <!-- Recently Used -->
-            <div class="mb-4">
-                <h4 class="text-sm font-medium text-gray-700 mb-2">最近使用</h4>
-                <div class="flex space-x-2 overflow-x-auto pb-2" id="recentlyUsed">
-                    <div class="food-card flex-shrink-0 bg-white rounded-lg p-3 border border-gray-200 min-w-[120px] text-center">
-                        <div class="text-2xl mb-1">🍌</div>
-                        <div class="text-xs font-medium text-gray-800">香蕉</div>
-                        <div class="text-xs text-gray-500">80 kcal</div>
-                    </div>
-                    <div class="food-card flex-shrink-0 bg-white rounded-lg p-3 border border-gray-200 min-w-[120px] text-center">
-                        <div class="text-2xl mb-1">🥚</div>
-                        <div class="text-xs font-medium text-gray-800">鸡蛋</div>
-                        <div class="text-xs text-gray-500">78 kcal</div>
-                    </div>
-                    <div class="food-card flex-shrink-0 bg-white rounded-lg p-3 border border-gray-200 min-w-[120px] text-center">
-                        <div class="text-2xl mb-1">🥛</div>
-                        <div class="text-xs font-medium text-gray-800">牛奶</div>
-                        <div class="text-xs text-gray-500">120 kcal</div>
-                    </div>
-                    <div class="food-card flex-shrink-0 bg-white rounded-lg p-3 border border-gray-200 min-w-[120px] text-center">
-                        <div class="text-2xl mb-1">🍞</div>
-                        <div class="text-xs font-medium text-gray-800">全麦面包</div>
-                        <div class="text-xs text-gray-500">120 kcal</div>
-                    </div>
+            <div class="flex space-x-2 overflow-x-auto pb-2 scrollbar-hide" id="popularFoods">
+                <div class="food-card flex-shrink-0 bg-white rounded-xl p-3 border border-gray-100 min-w-[100px] text-center shadow-sm cursor-pointer" onclick="viewFoodDetail('banana')">
+                    <div class="text-2xl mb-1">🍌</div>
+                    <div class="text-xs font-medium text-gray-800 truncate">香蕉</div>
+                    <div class="text-xs text-gray-400">80 kcal</div>
                 </div>
-            </div>
-
-            <!-- Frequently Used -->
-            <div class="mb-4">
-                <h4 class="text-sm font-medium text-gray-700 mb-2">常用食材</h4>
-                <div class="flex space-x-2 overflow-x-auto pb-2" id="frequentlyUsed">
-                    <div class="food-card flex-shrink-0 bg-white rounded-lg p-3 border border-gray-200 min-w-[120px] text-center">
-                        <div class="text-2xl mb-1">🍗</div>
-                        <div class="text-xs font-medium text-gray-800">鸡胸肉</div>
-                        <div class="text-xs text-gray-500">165 kcal</div>
-                    </div>
-                    <div class="food-card flex-shrink-0 bg-white rounded-lg p-3 border border-gray-200 min-w-[120px] text-center">
-                        <div class="text-2xl mb-1">🥬</div>
-                        <div class="text-xs font-medium text-gray-800">西兰花</div>
-                        <div class="text-xs text-gray-500">35 kcal</div>
-                    </div>
-                    <div class="food-card flex-shrink-0 bg-white rounded-lg p-3 border border-gray-200 min-w-[120px] text-center">
-                        <div class="text-2xl mb-1">🍚</div>
-                        <div class="text-xs font-medium text-gray-800">糙米饭</div>
-                        <div class="text-xs text-gray-500">180 kcal</div>
-                    </div>
-                    <div class="food-card flex-shrink-0 bg-white rounded-lg p-3 border border-gray-200 min-w-[120px] text-center">
-                        <div class="text-2xl mb-1">🐟</div>
-                        <div class="text-xs font-medium text-gray-800">三文鱼</div>
-                        <div class="text-xs text-gray-500">233 kcal</div>
-                    </div>
+                <div class="food-card flex-shrink-0 bg-white rounded-xl p-3 border border-gray-100 min-w-[100px] text-center shadow-sm cursor-pointer" onclick="viewFoodDetail('egg')">
+                    <div class="text-2xl mb-1">🥚</div>
+                    <div class="text-xs font-medium text-gray-800 truncate">鸡蛋</div>
+                    <div class="text-xs text-gray-400">78 kcal</div>
+                </div>
+                <div class="food-card flex-shrink-0 bg-white rounded-xl p-3 border border-gray-100 min-w-[100px] text-center shadow-sm cursor-pointer" onclick="viewFoodDetail('milk')">
+                    <div class="text-2xl mb-1">🥛</div>
+                    <div class="text-xs font-medium text-gray-800 truncate">牛奶</div>
+                    <div class="text-xs text-gray-400">120 kcal</div>
+                </div>
+                <div class="food-card flex-shrink-0 bg-white rounded-xl p-3 border border-gray-100 min-w-[100px] text-center shadow-sm cursor-pointer" onclick="viewFoodDetail('bread')">
+                    <div class="text-2xl mb-1">🍞</div>
+                    <div class="text-xs font-medium text-gray-800 truncate">全麦面包</div>
+                    <div class="text-xs text-gray-400">120 kcal</div>
+                </div>
+                <div class="food-card flex-shrink-0 bg-white rounded-xl p-3 border border-gray-100 min-w-[100px] text-center shadow-sm cursor-pointer" onclick="viewFoodDetail('chicken-breast')">
+                    <div class="text-2xl mb-1">🍗</div>
+                    <div class="text-xs font-medium text-gray-800 truncate">鸡胸肉</div>
+                    <div class="text-xs text-gray-400">165 kcal</div>
                 </div>
             </div>
         </div>
 
         <!-- Food List -->
-        <div class="glass-card rounded-2xl p-4 mb-6 shadow-lg">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-semibold text-gray-800">食材列表</h3>
-                <div class="text-sm text-gray-500" id="foodCount">显示 20 种食材</div>
+        <div>
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="text-sm font-medium text-gray-700">全部食材</h3>
+                <div class="text-xs text-gray-400" id="foodCount">共 20 种</div>
             </div>
             
-            <div class="space-y-3" id="foodList">
+            <div class="grid grid-cols-1 gap-2" id="foodList">
                 <!-- Protein Foods -->
-                <div class="food-card bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center">
-                            <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mr-3">
-                                <span class="text-xl">🥩</span>
-                            </div>
-                            <div>
-                                <h4 class="font-semibold text-gray-800">鸡胸肉</h4>
-                                <p class="text-sm text-gray-600">高蛋白，低脂肪</p>
-                                <div class="flex items-center text-xs text-gray-500 mt-1">
-                                    <span>蛋白质: 31g</span>
-                                    <span class="mx-1">·</span>
-                                    <span>脂肪: 3.6g</span>
-                                    <span class="mx-1">·</span>
-                                    <span>碳水: 0g</span>
-                                </div>
-                            </div>
+                <div class="food-card bg-white rounded-lg p-3 border border-gray-100 flex items-center justify-between" onclick="viewFoodDetail('chicken-breast')">
+                    <div class="flex items-center flex-1 min-w-0">
+                        <div class="w-10 h-10 bg-red-50 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
+                            <span class="text-lg">🥩</span>
                         </div>
-                        <div class="text-right">
-                            <div class="text-lg font-semibold text-gray-800">165 kcal</div>
-                            <div class="text-xs text-gray-500">每100g</div>
-                            <div class="flex items-center mt-1">
-                                <span class="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">系统</span>
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-center space-x-2">
+                                <h4 class="font-medium text-gray-800 text-sm truncate">鸡胸肉</h4>
+                                <span class="px-1.5 py-0.5 bg-gray-100 text-gray-500 text-[10px] rounded">系统</span>
+                            </div>
+                            <div class="flex items-center text-[10px] text-gray-400 mt-0.5 space-x-2">
+                                <span>🔹 蛋白 31g</span>
+                                <span>🔸 脂肪 3.6g</span>
+                                <span>🔹 碳水 0g</span>
                             </div>
                         </div>
                     </div>
-                    <div class="flex space-x-2 mt-3">
-                        <button onclick="addToMeal('鸡胸肉')" class="flex-1 bg-emerald-100 text-emerald-700 py-2 px-3 rounded-lg text-sm font-medium hover:bg-emerald-200 transition-colors">
-                            添加到餐食
-                        </button>
-                        <button onclick="viewFoodDetail('chicken-breast')" class="bg-gray-100 text-gray-700 py-2 px-3 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors">
-                            详情
-                        </button>
-                        <button onclick="toggleFavorite('chicken-breast')" class="bg-gray-100 text-gray-700 py-2 px-3 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors">
-                            ❤️
-                        </button>
+                    <div class="text-right ml-2">
+                        <div class="text-sm font-semibold text-gray-800">165</div>
+                        <div class="text-[10px] text-gray-400">kcal</div>
                     </div>
                 </div>
 
-                <div class="food-card bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center">
-                            <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mr-3">
-                                <span class="text-xl">🐟</span>
-                            </div>
-                            <div>
-                                <h4 class="font-semibold text-gray-800">三文鱼</h4>
-                                <p class="text-sm text-gray-600">富含Omega-3</p>
-                                <div class="flex items-center text-xs text-gray-500 mt-1">
-                                    <span>蛋白质: 25g</span>
-                                    <span class="mx-1">·</span>
-                                    <span>脂肪: 12g</span>
-                                    <span class="mx-1">·</span>
-                                    <span>碳水: 0g</span>
-                                </div>
-                            </div>
+                <div class="food-card bg-white rounded-lg p-3 border border-gray-100 flex items-center justify-between" onclick="viewFoodDetail('salmon')">
+                    <div class="flex items-center flex-1 min-w-0">
+                        <div class="w-10 h-10 bg-orange-50 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
+                            <span class="text-lg">🐟</span>
                         </div>
-                        <div class="text-right">
-                            <div class="text-lg font-semibold text-gray-800">208 kcal</div>
-                            <div class="text-xs text-gray-500">每100g</div>
-                            <div class="flex items-center mt-1">
-                                <span class="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">系统</span>
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-center space-x-2">
+                                <h4 class="font-medium text-gray-800 text-sm truncate">三文鱼</h4>
+                                <span class="px-1.5 py-0.5 bg-gray-100 text-gray-500 text-[10px] rounded">系统</span>
+                            </div>
+                            <div class="flex items-center text-[10px] text-gray-400 mt-0.5 space-x-2">
+                                <span>🔹 蛋白 25g</span>
+                                <span>🔸 脂肪 12g</span>
+                                <span>🔹 碳水 0g</span>
                             </div>
                         </div>
                     </div>
-                    <div class="flex space-x-2 mt-3">
-                        <button onclick="addToMeal('三文鱼')" class="flex-1 bg-emerald-100 text-emerald-700 py-2 px-3 rounded-lg text-sm font-medium hover:bg-emerald-200 transition-colors">
-                            添加到餐食
-                        </button>
-                        <button onclick="viewFoodDetail('salmon')" class="bg-gray-100 text-gray-700 py-2 px-3 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors">
-                            详情
-                        </button>
-                        <button onclick="toggleFavorite('salmon')" class="bg-gray-100 text-gray-700 py-2 px-3 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors">
-                            🤍
-                        </button>
+                    <div class="text-right ml-2">
+                        <div class="text-sm font-semibold text-gray-800">208</div>
+                        <div class="text-[10px] text-gray-400">kcal</div>
                     </div>
                 </div>
 
                 <!-- Vegetable Foods -->
-                <div class="food-card bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center">
-                            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-3">
-                                <span class="text-xl">🥬</span>
-                            </div>
-                            <div>
-                                <h4 class="font-semibold text-gray-800">西兰花</h4>
-                                <p class="text-sm text-gray-600">维生素C丰富</p>
-                                <div class="flex items-center text-xs text-gray-500 mt-1">
-                                    <span>蛋白质: 2.8g</span>
-                                    <span class="mx-1">·</span>
-                                    <span>脂肪: 0.4g</span>
-                                    <span class="mx-1">·</span>
-                                    <span>碳水: 7g</span>
-                                </div>
-                            </div>
+                <div class="food-card bg-white rounded-lg p-3 border border-gray-100 flex items-center justify-between" onclick="viewFoodDetail('broccoli')">
+                    <div class="flex items-center flex-1 min-w-0">
+                        <div class="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
+                            <span class="text-lg">🥬</span>
                         </div>
-                        <div class="text-right">
-                            <div class="text-lg font-semibold text-gray-800">35 kcal</div>
-                            <div class="text-xs text-gray-500">每100g</div>
-                            <div class="flex items-center mt-1">
-                                <span class="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">系统</span>
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-center space-x-2">
+                                <h4 class="font-medium text-gray-800 text-sm truncate">西兰花</h4>
+                                <span class="px-1.5 py-0.5 bg-gray-100 text-gray-500 text-[10px] rounded">系统</span>
+                            </div>
+                            <div class="flex items-center text-[10px] text-gray-400 mt-0.5 space-x-2">
+                                <span>🔹 蛋白 2.8g</span>
+                                <span>🔸 脂肪 0.4g</span>
+                                <span>🔹 碳水 7g</span>
                             </div>
                         </div>
                     </div>
-                    <div class="flex space-x-2 mt-3">
-                        <button onclick="addToMeal('西兰花')" class="flex-1 bg-emerald-100 text-emerald-700 py-2 px-3 rounded-lg text-sm font-medium hover:bg-emerald-200 transition-colors">
-                            添加到餐食
-                        </button>
-                        <button onclick="viewFoodDetail('broccoli')" class="bg-gray-100 text-gray-700 py-2 px-3 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors">
-                            详情
-                        </button>
-                        <button onclick="toggleFavorite('broccoli')" class="bg-gray-100 text-gray-700 py-2 px-3 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors">
-                            🤍
-                        </button>
+                    <div class="text-right ml-2">
+                        <div class="text-sm font-semibold text-gray-800">35</div>
+                        <div class="text-[10px] text-gray-400">kcal</div>
                     </div>
                 </div>
 
-                <div class="food-card bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center">
-                            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-3">
-                                <span class="text-xl">🥕</span>
-                            </div>
-                            <div>
-                                <h4 class="font-semibold text-gray-800">胡萝卜</h4>
-                                <p class="text-sm text-gray-600">β-胡萝卜素丰富</p>
-                                <div class="flex items-center text-xs text-gray-500 mt-1">
-                                    <span>蛋白质: 0.9g</span>
-                                    <span class="mx-1">·</span>
-                                    <span>脂肪: 0.2g</span>
-                                    <span class="mx-1">·</span>
-                                    <span>碳水: 10g</span>
-                                </div>
-                            </div>
+                <div class="food-card bg-white rounded-lg p-3 border border-gray-100 flex items-center justify-between" onclick="viewFoodDetail('carrot')">
+                    <div class="flex items-center flex-1 min-w-0">
+                        <div class="w-10 h-10 bg-orange-50 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
+                            <span class="text-lg">🥕</span>
                         </div>
-                        <div class="text-right">
-                            <div class="text-lg font-semibold text-gray-800">41 kcal</div>
-                            <div class="text-xs text-gray-500">每100g</div>
-                            <div class="flex items-center mt-1">
-                                <span class="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">系统</span>
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-center space-x-2">
+                                <h4 class="font-medium text-gray-800 text-sm truncate">胡萝卜</h4>
+                                <span class="px-1.5 py-0.5 bg-gray-100 text-gray-500 text-[10px] rounded">系统</span>
+                            </div>
+                            <div class="flex items-center text-[10px] text-gray-400 mt-0.5 space-x-2">
+                                <span>🔹 蛋白 0.9g</span>
+                                <span>🔸 脂肪 0.2g</span>
+                                <span>🔹 碳水 10g</span>
                             </div>
                         </div>
                     </div>
-                    <div class="flex space-x-2 mt-3">
-                        <button onclick="addToMeal('胡萝卜')" class="flex-1 bg-emerald-100 text-emerald-700 py-2 px-3 rounded-lg text-sm font-medium hover:bg-emerald-200 transition-colors">
-                            添加到餐食
-                        </button>
-                        <button onclick="viewFoodDetail('carrot')" class="bg-gray-100 text-gray-700 py-2 px-3 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors">
-                            详情
-                        </button>
-                        <button onclick="toggleFavorite('carrot')" class="bg-gray-100 text-gray-700 py-2 px-3 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors">
-                            🤍
-                        </button>
+                    <div class="text-right ml-2">
+                        <div class="text-sm font-semibold text-gray-800">41</div>
+                        <div class="text-[10px] text-gray-400">kcal</div>
                     </div>
                 </div>
 
                 <!-- Fruit Foods -->
-                <div class="food-card bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center">
-                            <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mr-3">
-                                <span class="text-xl">🍎</span>
-                            </div>
-                            <div>
-                                <h4 class="font-semibold text-gray-800">苹果</h4>
-                                <p class="text-sm text-gray-600">膳食纤维丰富</p>
-                                <div class="flex items-center text-xs text-gray-500 mt-1">
-                                    <span>蛋白质: 0.3g</span>
-                                    <span class="mx-1">·</span>
-                                    <span>脂肪: 0.2g</span>
-                                    <span class="mx-1">·</span>
-                                    <span>碳水: 14g</span>
-                                </div>
-                            </div>
+                <div class="food-card bg-white rounded-lg p-3 border border-gray-100 flex items-center justify-between" onclick="viewFoodDetail('apple')">
+                    <div class="flex items-center flex-1 min-w-0">
+                        <div class="w-10 h-10 bg-red-50 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
+                            <span class="text-lg">🍎</span>
                         </div>
-                        <div class="text-right">
-                            <div class="text-lg font-semibold text-gray-800">52 kcal</div>
-                            <div class="text-xs text-gray-500">每100g</div>
-                            <div class="flex items-center mt-1">
-                                <span class="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">系统</span>
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-center space-x-2">
+                                <h4 class="font-medium text-gray-800 text-sm truncate">苹果</h4>
+                                <span class="px-1.5 py-0.5 bg-gray-100 text-gray-500 text-[10px] rounded">系统</span>
+                            </div>
+                            <div class="flex items-center text-[10px] text-gray-400 mt-0.5 space-x-2">
+                                <span>🔹 蛋白 0.3g</span>
+                                <span>🔸 脂肪 0.2g</span>
+                                <span>🔹 碳水 14g</span>
                             </div>
                         </div>
                     </div>
-                    <div class="flex space-x-2 mt-3">
-                        <button onclick="addToMeal('苹果')" class="flex-1 bg-emerald-100 text-emerald-700 py-2 px-3 rounded-lg text-sm font-medium hover:bg-emerald-200 transition-colors">
-                            添加到餐食
-                        </button>
-                        <button onclick="viewFoodDetail('apple')" class="bg-gray-100 text-gray-700 py-2 px-3 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors">
-                            详情
-                        </button>
-                        <button onclick="toggleFavorite('apple')" class="bg-gray-100 text-gray-700 py-2 px-3 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors">
-                            ❤️
-                        </button>
+                    <div class="text-right ml-2">
+                        <div class="text-sm font-semibold text-gray-800">52</div>
+                        <div class="text-[10px] text-gray-400">kcal</div>
                     </div>
                 </div>
 
-                <div class="food-card bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center">
-                            <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mr-3">
-                                <span class="text-xl">🍌</span>
-                            </div>
-                            <div>
-                                <h4 class="font-semibold text-gray-800">香蕉</h4>
-                                <p class="text-sm text-gray-600">钾元素丰富</p>
-                                <div class="flex items-center text-xs text-gray-500 mt-1">
-                                    <span>蛋白质: 1.1g</span>
-                                    <span class="mx-1">·</span>
-                                    <span>脂肪: 0.3g</span>
-                                    <span class="mx-1">·</span>
-                                    <span>碳水: 23g</span>
-                                </div>
-                            </div>
+                <div class="food-card bg-white rounded-lg p-3 border border-gray-100 flex items-center justify-between" onclick="viewFoodDetail('banana')">
+                    <div class="flex items-center flex-1 min-w-0">
+                        <div class="w-10 h-10 bg-yellow-50 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
+                            <span class="text-lg">🍌</span>
                         </div>
-                        <div class="text-right">
-                            <div class="text-lg font-semibold text-gray-800">89 kcal</div>
-                            <div class="text-xs text-gray-500">每100g</div>
-                            <div class="flex items-center mt-1">
-                                <span class="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">系统</span>
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-center space-x-2">
+                                <h4 class="font-medium text-gray-800 text-sm truncate">香蕉</h4>
+                                <span class="px-1.5 py-0.5 bg-gray-100 text-gray-500 text-[10px] rounded">系统</span>
+                            </div>
+                            <div class="flex items-center text-[10px] text-gray-400 mt-0.5 space-x-2">
+                                <span>🔹 蛋白 1.1g</span>
+                                <span>🔸 脂肪 0.3g</span>
+                                <span>🔹 碳水 23g</span>
                             </div>
                         </div>
                     </div>
-                    <div class="flex space-x-2 mt-3">
-                        <button onclick="addToMeal('香蕉')" class="flex-1 bg-emerald-100 text-emerald-700 py-2 px-3 rounded-lg text-sm font-medium hover:bg-emerald-200 transition-colors">
-                            添加到餐食
-                        </button>
-                        <button onclick="viewFoodDetail('banana')" class="bg-gray-100 text-gray-700 py-2 px-3 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors">
-                            详情
-                        </button>
-                        <button onclick="toggleFavorite('banana')" class="bg-gray-100 text-gray-700 py-2 px-3 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors">
-                            ❤️
-                        </button>
+                    <div class="text-right ml-2">
+                        <div class="text-sm font-semibold text-gray-800">89</div>
+                        <div class="text-[10px] text-gray-400">kcal</div>
                     </div>
                 </div>
 
                 <!-- Grain Foods -->
-                <div class="food-card bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center">
-                            <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mr-3">
-                                <span class="text-xl">🍚</span>
-                            </div>
-                            <div>
-                                <h4 class="font-semibold text-gray-800">糙米饭</h4>
-                                <p class="text-sm text-gray-600">全谷物，富纤维</p>
-                                <div class="flex items-center text-xs text-gray-500 mt-1">
-                                    <span>蛋白质: 2.6g</span>
-                                    <span class="mx-1">·</span>
-                                    <span>脂肪: 0.9g</span>
-                                    <span class="mx-1">·</span>
-                                    <span>碳水: 23g</span>
-                                </div>
-                            </div>
+                <div class="food-card bg-white rounded-lg p-3 border border-gray-100 flex items-center justify-between" onclick="viewFoodDetail('brown-rice')">
+                    <div class="flex items-center flex-1 min-w-0">
+                        <div class="w-10 h-10 bg-yellow-50 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
+                            <span class="text-lg">🍚</span>
                         </div>
-                        <div class="text-right">
-                            <div class="text-lg font-semibold text-gray-800">111 kcal</div>
-                            <div class="text-xs text-gray-500">每100g</div>
-                            <div class="flex items-center mt-1">
-                                <span class="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">系统</span>
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-center space-x-2">
+                                <h4 class="font-medium text-gray-800 text-sm truncate">糙米饭</h4>
+                                <span class="px-1.5 py-0.5 bg-gray-100 text-gray-500 text-[10px] rounded">系统</span>
+                            </div>
+                            <div class="flex items-center text-[10px] text-gray-400 mt-0.5 space-x-2">
+                                <span>🔹 蛋白 2.6g</span>
+                                <span>🔸 脂肪 0.9g</span>
+                                <span>🔹 碳水 23g</span>
                             </div>
                         </div>
                     </div>
-                    <div class="flex space-x-2 mt-3">
-                        <button onclick="addToMeal('糙米饭')" class="flex-1 bg-emerald-100 text-emerald-700 py-2 px-3 rounded-lg text-sm font-medium hover:bg-emerald-200 transition-colors">
-                            添加到餐食
-                        </button>
-                        <button onclick="viewFoodDetail('brown-rice')" class="bg-gray-100 text-gray-700 py-2 px-3 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors">
-                            详情
-                        </button>
-                        <button onclick="toggleFavorite('brown-rice')" class="bg-gray-100 text-gray-700 py-2 px-3 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors">
-                            🤍
-                        </button>
+                    <div class="text-right ml-2">
+                        <div class="text-sm font-semibold text-gray-800">111</div>
+                        <div class="text-[10px] text-gray-400">kcal</div>
                     </div>
                 </div>
 
                 <!-- Custom Food -->
-                <div class="food-card bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center">
-                            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
-                                <span class="text-xl">🥗</span>
-                            </div>
-                            <div>
-                                <h4 class="font-semibold text-gray-800">自制沙拉</h4>
-                                <p class="text-sm text-gray-600">混合蔬菜沙拉</p>
-                                <div class="flex items-center text-xs text-gray-500 mt-1">
-                                    <span>蛋白质: 3g</span>
-                                    <span class="mx-1">·</span>
-                                    <span>脂肪: 2g</span>
-                                    <span class="mx-1">·</span>
-                                    <span>碳水: 8g</span>
-                                </div>
-                            </div>
+                <div class="food-card bg-white rounded-lg p-3 border border-gray-100 flex items-center justify-between" onclick="viewFoodDetail('custom-salad')">
+                    <div class="flex items-center flex-1 min-w-0">
+                        <div class="w-10 h-10 bg-purple-50 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
+                            <span class="text-lg">🥗</span>
                         </div>
-                        <div class="text-right">
-                            <div class="text-lg font-semibold text-gray-800">65 kcal</div>
-                            <div class="text-xs text-gray-500">每100g</div>
-                            <div class="flex items-center mt-1">
-                                <span class="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded-full">我的</span>
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-center space-x-2">
+                                <h4 class="font-medium text-gray-800 text-sm truncate">自制沙拉</h4>
+                                <span class="px-1.5 py-0.5 bg-purple-100 text-purple-500 text-[10px] rounded">我的</span>
+                            </div>
+                            <div class="flex items-center text-[10px] text-gray-400 mt-0.5 space-x-2">
+                                <span>🔹 蛋白 3g</span>
+                                <span>🔸 脂肪 2g</span>
+                                <span>🔹 碳水 8g</span>
                             </div>
                         </div>
                     </div>
-                    <div class="flex space-x-2 mt-3">
-                        <button onclick="addToMeal('自制沙拉')" class="flex-1 bg-emerald-100 text-emerald-700 py-2 px-3 rounded-lg text-sm font-medium hover:bg-emerald-200 transition-colors">
-                            添加到餐食
-                        </button>
-                        <button onclick="editCustomFood('custom-salad')" class="bg-gray-100 text-gray-700 py-2 px-3 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors">
-                            编辑
-                        </button>
-                        <button onclick="deleteCustomFood('custom-salad')" class="bg-red-100 text-red-700 py-2 px-3 rounded-lg text-sm font-medium hover:bg-red-200 transition-colors">
-                            删除
-                        </button>
+                    <div class="text-right ml-2">
+                        <div class="text-sm font-semibold text-gray-800">65</div>
+                        <div class="text-[10px] text-gray-400">kcal</div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- Floating Action Button -->
-    <button class="floating-btn fixed bottom-24 right-4 w-14 h-14 rounded-full flex items-center justify-center text-white shadow-lg transition-transform hover:scale-110" onclick="createCustomFood()">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-        </svg>
-    </button>
 
     <!-- Bottom Navigation -->
     <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-2">
@@ -564,27 +352,58 @@
     <!-- Food Detail Modal -->
     <div id="foodDetailModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
         <div class="flex items-center justify-center min-h-screen p-4">
-            <div class="bg-white rounded-2xl w-full max-w-md p-6">
+            <div class="bg-white rounded-3xl w-full max-w-sm p-5 shadow-2xl">
+                <!-- 顶部工具栏 -->
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-semibold text-gray-800" id="detailFoodName">食材详情</h3>
-                    <button onclick="closeFoodDetailModal()" class="text-gray-400 hover:text-gray-600">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    <button onclick="closeFoodDetailModal()" class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-all">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                        </svg>
+                    </button>
+                    <span id="detailFoodCategory" class="px-3 py-1 bg-emerald-100 text-emerald-600 text-xs font-medium rounded-full">蛋白质</span>
+                    <button onclick="toggleFavoriteFromDetail()" id="favoriteBtn" class="p-2 text-gray-300 hover:text-pink-500 hover:bg-pink-50 rounded-full transition-all">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
                         </svg>
                     </button>
                 </div>
                 
-                <div class="space-y-4" id="foodDetailContent">
-                    <!-- Content will be populated by JavaScript -->
+                <!-- 头部：图标 + 名称 -->
+                <div class="text-center mb-5">
+                    <div class="text-6xl mb-3" id="detailFoodIcon">🍎</div>
+                    <h3 class="text-xl font-bold text-gray-800" id="detailFoodName">食物名称</h3>
                 </div>
                 
-                <div class="flex space-x-3 mt-6">
-                    <button onclick="closeFoodDetailModal()" class="flex-1 bg-gray-100 text-gray-700 py-2 px-4 rounded-lg font-medium hover:bg-gray-200 transition-colors">
-                        关闭
-                    </button>
-                    <button onclick="addToMealFromDetail()" class="flex-1 bg-emerald-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-emerald-700 transition-colors">
-                        添加到餐食
-                    </button>
+                <!-- 描述/备注 -->
+                <div class="mb-5">
+                    <p class="text-sm text-gray-500 text-center leading-relaxed" id="detailFoodDescription">食物描述</p>
+                </div>
+                
+                <!-- 营养成分卡片 -->
+                <div class="bg-gray-50 rounded-2xl p-4">
+                    <div class="flex items-center justify-center gap-2 mb-3">
+                        <span class="text-xs text-gray-400">营养成分</span>
+                        <span class="text-xs text-gray-300">|</span>
+                        <span class="text-xs text-gray-500">每100g</span>
+                    </div>
+                    <div class="grid grid-cols-4 gap-3">
+                        <div class="text-center">
+                            <div class="text-xs text-gray-400 mb-1">碳水</div>
+                            <div class="text-lg font-bold text-yellow-500" id="detailCarbs">0g</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-xs text-gray-400 mb-1">蛋白质</div>
+                            <div class="text-lg font-bold text-red-500" id="detailProtein">0g</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-xs text-gray-400 mb-1">脂肪</div>
+                            <div class="text-lg font-bold text-blue-500" id="detailFat">0g</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-xs text-gray-400 mb-1">热量</div>
+                            <div class="text-lg font-bold text-emerald-500" id="detailCalories">0</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -593,65 +412,88 @@
     <!-- Custom Food Modal -->
     <div id="customFoodModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
         <div class="flex items-center justify-center min-h-screen p-4">
-            <div class="bg-white rounded-2xl w-full max-w-md p-6 max-h-[90vh] overflow-y-auto">
-                <div class="flex items-center justify-between mb-4">
+            <div class="bg-white rounded-2xl w-full max-w-sm p-6 max-h-[90vh] overflow-y-auto">
+                <div class="text-center mb-4">
                     <h3 class="text-lg font-semibold text-gray-800">创建自定义食材</h3>
-                    <button onclick="closeCustomFoodModal()" class="text-gray-400 hover:text-gray-600">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                    </button>
+                    <p class="text-sm text-gray-500">添加你自己的食材</p>
                 </div>
-                
                 <form id="customFoodForm" class="space-y-4">
+                    <!-- 图标选择 -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">选择图标</label>
+                        <input type="hidden" id="selectedFoodIcon" value="🥗">
+                        <div class="grid grid-cols-8 gap-2 p-2 bg-gray-50 rounded-lg">
+                            <button type="button" class="icon-btn p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all text-lg" onclick="selectFoodIcon(this, '🥗')">🥗</button>
+                            <button type="button" class="icon-btn p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all text-lg" onclick="selectFoodIcon(this, '🥩')">🥩</button>
+                            <button type="button" class="icon-btn p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all text-lg" onclick="selectFoodIcon(this, '🍗')">🍗</button>
+                            <button type="button" class="icon-btn p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all text-lg" onclick="selectFoodIcon(this, '🐟')">🐟</button>
+                            <button type="button" class="icon-btn p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all text-lg" onclick="selectFoodIcon(this, '🥚')">🥚</button>
+                            <button type="button" class="icon-btn p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all text-lg" onclick="selectFoodIcon(this, '🥛')">🥛</button>
+                            <button type="button" class="icon-btn p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all text-lg" onclick="selectFoodIcon(this, '🧀')">🧀</button>
+                            <button type="button" class="icon-btn p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all text-lg" onclick="selectFoodIcon(this, '🥬')">🥬</button>
+                            <button type="button" class="icon-btn p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all text-lg" onclick="selectFoodIcon(this, '🥕')">🥕</button>
+                            <button type="button" class="icon-btn p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all text-lg" onclick="selectFoodIcon(this, '🥦')">🥦</button>
+                            <button type="button" class="icon-btn p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all text-lg" onclick="selectFoodIcon(this, '🍅')">🍅</button>
+                            <button type="button" class="icon-btn p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all text-lg" onclick="selectFoodIcon(this, '🥒')">🥒</button>
+                            <button type="button" class="icon-btn p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all text-lg" onclick="selectFoodIcon(this, '🍎')">🍎</button>
+                            <button type="button" class="icon-btn p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all text-lg" onclick="selectFoodIcon(this, '🍌')">🍌</button>
+                            <button type="button" class="icon-btn p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all text-lg" onclick="selectFoodIcon(this, '🍇')">🍇</button>
+                            <button type="button" class="icon-btn p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all text-lg" onclick="selectFoodIcon(this, '🍚')">🍚</button>
+                            <button type="button" class="icon-btn p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all text-lg" onclick="selectFoodIcon(this, '🍞')">🍞</button>
+                            <button type="button" class="icon-btn p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all text-lg" onclick="selectFoodIcon(this, '🍜')">🍜</button>
+                            <button type="button" class="icon-btn p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all text-lg" onclick="selectFoodIcon(this, '🥔')">🥔</button>
+                            <button type="button" class="icon-btn p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all text-lg" onclick="selectFoodIcon(this, '🌽')">🌽</button>
+                            <button type="button" class="icon-btn p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all text-lg" onclick="selectFoodIcon(this, '🥜')">🥜</button>
+                            <button type="button" class="icon-btn p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all text-lg" onclick="selectFoodIcon(this, '🫘')">🫘</button>
+                            <button type="button" class="icon-btn p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all text-lg" onclick="selectFoodIcon(this, '🍯')">🍯</button>
+                            <button type="button" class="icon-btn p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all text-lg" onclick="selectFoodIcon(this, '🍫')">🍫</button>
+                        </div>
+                    </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">食材名称</label>
                         <input type="text" id="customFoodName" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent" placeholder="例如：自制沙拉">
                     </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">单位</label>
-                        <select id="customFoodUnit" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent">
-                            <option value="g">克 (g)</option>
-                            <option value="ml">毫升 (ml)</option>
-                            <option value="piece">个/片</option>
-                            <option value="cup">杯</option>
-                            <option value="tbsp">勺</option>
-                        </select>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">热量 (kcal)</label>
-                        <input type="number" id="customFoodCalories" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent" placeholder="每100g的热量">
-                    </div>
-                    
-                    <div class="grid grid-cols-3 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">蛋白质 (g)</label>
-                            <input type="number" id="customFoodProtein" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent" placeholder="0">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">脂肪 (g)</label>
-                            <input type="number" id="customFoodFat" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent" placeholder="0">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">碳水 (g)</label>
-                            <input type="number" id="customFoodCarbs" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent" placeholder="0">
+                    <div class="mb-4 flex items-center">
+                        <label class="text-sm font-medium text-gray-700 mr-3 whitespace-nowrap">单位</label>
+                        <div class="flex items-center flex-1">
+                            <select id="customFoodUnit" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-white">
+                                <option value="g">克 (g)</option>
+                                <option value="ml">毫升 (ml)</option>
+                                <option value="piece">个/片</option>
+                                <option value="cup">杯</option>
+                                <option value="tbsp">勺</option>
+                            </select>
                         </div>
                     </div>
-                    
+                    <!-- 营养成分输入 -->
+                    <div class="bg-gray-50 rounded-lg p-3 mb-4">
+                        <div class="text-xs text-gray-500 mb-3 text-center">每100g营养成分</div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs text-gray-500 mb-1">热量 (kcal)</label>
+                                <input type="number" id="customFoodCalories" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm" placeholder="0">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-500 mb-1">蛋白质 (g)</label>
+                                <input type="number" id="customFoodProtein" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm" placeholder="0">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-500 mb-1">脂肪 (g)</label>
+                                <input type="number" id="customFoodFat" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm" placeholder="0">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-500 mb-1">碳水 (g)</label>
+                                <input type="number" id="customFoodCarbs" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm" placeholder="0">
+                            </div>
+                        </div>
+                    </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">描述 (可选)</label>
-                        <textarea id="customFoodDescription" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent" placeholder="简单描述这个食材..."></textarea>
+                        <textarea id="customFoodDescription" rows="2" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm" placeholder="简单描述这个食材..."></textarea>
                     </div>
-                    
-                    <div class="flex space-x-3 pt-4">
-                        <button type="button" onclick="closeCustomFoodModal()" class="flex-1 bg-gray-100 text-gray-700 py-2 px-4 rounded-lg font-medium hover:bg-gray-200 transition-colors">
-                            取消
-                        </button>
-                        <button type="submit" class="flex-1 bg-emerald-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-emerald-700 transition-colors">
-                            创建食材
-                        </button>
+                    <div class="flex space-x-3">
+                        <button type="button" onclick="closeCustomFoodModal()" class="flex-1 bg-gray-100 text-gray-700 py-2 px-4 rounded-lg font-medium hover:bg-gray-200 transition-colors">取消</button>
+                        <button type="submit" class="flex-1 bg-emerald-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-emerald-700 transition-colors">创建</button>
                     </div>
                 </form>
             </div>

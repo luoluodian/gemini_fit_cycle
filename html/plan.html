@@ -40,46 +40,22 @@
             background: #10b981;
             color: white;
         }
-        .floating-btn {
-            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
-            box-shadow: 0 8px 25px rgba(249, 115, 22, 0.3);
-        }
-        .floating-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 35px rgba(249, 115, 22, 0.4);
-        }
-        .progress-ring {
-            transform: rotate(-90deg);
-        }
-        .progress-ring-circle {
-            transition: stroke-dashoffset 0.35s;
-            transform: rotate(-90deg);
-            transform-origin: 50% 50%;
-        }
     </style>
 </head>
 <body class="min-h-screen">
     <!-- Header -->
-    <div class="bg-white shadow-sm">
-        <div class="px-4 py-6">
-            <div class="flex items-center justify-between">
-                <div>
-                    <h1 class="hero-title text-2xl font-bold text-gray-800">饮食计划</h1>
-                    <p class="text-sm text-gray-600 mt-1">管理你的健康饮食计划</p>
-                </div>
-                <div class="flex space-x-2">
-                    <button onclick="showImportPlan()" class="p-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
-                        <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                        </svg>
-                    </button>
-                    <button onclick="showPlanTypes()" class="p-2 bg-emerald-100 text-emerald-700 rounded-lg hover:bg-emerald-200 transition-colors">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                        </svg>
-                    </button>
-                </div>
+    <div class="px-4 pt-6 pb-2">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-xl font-bold text-gray-800">饮食计划</h1>
+                <p class="text-sm text-gray-500 mt-0.5">管理你的健康目标</p>
             </div>
+            <button onclick="showCreateOptions()" class="flex items-center space-x-1 bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-emerald-700 transition-colors shadow-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+                <span>新建</span>
+            </button>
         </div>
     </div>
 
@@ -94,153 +70,70 @@
                 <button id="completedTab" class="px-4 py-2 bg-gray-100 text-gray-600 rounded-lg text-sm font-medium" onclick="switchTab('completed')">
                     已完成
                 </button>
-                <button id="archivedTab" class="px-4 py-2 bg-gray-100 text-gray-600 rounded-lg text-sm font-medium" onclick="switchTab('archived')">
-                    已归档
-                </button>
             </div>
             
             <!-- Active Plans -->
             <div id="activePlans" class="space-y-3">
-                <div class="plan-card active bg-white rounded-xl p-4 shadow-sm">
-                    <div class="flex items-start justify-between mb-3">
-                        <div class="flex-1">
-                            <div class="flex items-center mb-2">
-                                <h3 class="font-semibold text-gray-800 text-lg">6周减脂计划</h3>
-                                <span class="ml-2 px-2 py-1 bg-emerald-100 text-emerald-700 text-xs rounded-full">进行中</span>
-                                <span class="ml-2 px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">当前使用</span>
-                            </div>
-                            <p class="text-sm text-gray-600 mb-2">类型：减脂 | 剩余：18天</p>
-                            <p class="text-sm text-gray-500">每日目标：1800 kcal | 蛋白质120g | 脂肪50g | 碳水180g</p>
-                        </div>
-                        <div class="relative w-16 h-16">
-                            <svg class="progress-ring w-16 h-16" viewBox="0 0 120 120">
-                                <circle class="progress-ring-circle" stroke="#e5e7eb" stroke-width="8" fill="transparent" r="52" cx="60" cy="60"/>
-                                <circle class="progress-ring-circle" stroke="#10b981" stroke-width="8" fill="transparent" r="52" cx="60" cy="60" stroke-dasharray="327" stroke-dashoffset="196"/>
-                            </svg>
-                            <div class="absolute inset-0 flex items-center justify-center">
-                                <span class="text-sm font-semibold text-gray-800">40%</span>
-                            </div>
-                        </div>
+                <div class="plan-card active bg-white rounded-xl p-4 shadow-sm" onclick="viewPlanDetail('plan1')">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="font-semibold text-gray-800">6周减脂计划</h3>
+                        <span class="px-2 py-0.5 bg-emerald-100 text-emerald-700 text-xs rounded-full">进行中</span>
                     </div>
-                    <div class="flex space-x-2">
-                        <button onclick="viewPlanDetail('plan1')" class="flex-1 bg-emerald-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-emerald-700 transition-colors">
-                            查看详情
-                        </button>
-                        <button onclick="editPlan('plan1')" class="bg-gray-100 text-gray-700 py-2 px-4 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors">
-                            编辑
-                        </button>
-                        <button onclick="showPlanMenu('plan1')" class="bg-gray-100 text-gray-700 py-2 px-4 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path>
-                            </svg>
-                        </button>
+                    <div class="flex items-center text-sm text-gray-500 mb-3">
+                        <span>减脂</span>
+                        <span class="mx-2">·</span>
+                        <span>剩余18天</span>
+                        <span class="mx-2">·</span>
+                        <span>1800 kcal/天</span>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="flex-1 bg-gray-100 rounded-full h-2 mr-3">
+                            <div class="bg-emerald-500 h-2 rounded-full" style="width: 40%"></div>
+                        </div>
+                        <span class="text-sm font-medium text-gray-600">40%</span>
                     </div>
                 </div>
 
-                <div class="plan-card bg-white rounded-xl p-4 shadow-sm">
-                    <div class="flex items-start justify-between mb-3">
-                        <div class="flex-1">
-                            <div class="flex items-center mb-2">
-                                <h3 class="font-semibold text-gray-800 text-lg">增肌训练计划</h3>
-                                <span class="ml-2 px-2 py-1 bg-yellow-100 text-yellow-700 text-xs rounded-full">暂停中</span>
-                            </div>
-                            <p class="text-sm text-gray-600 mb-2">类型：增肌 | 剩余：25天</p>
-                            <p class="text-sm text-gray-500">每日目标：2200 kcal | 蛋白质150g | 脂肪60g | 碳水250g</p>
-                        </div>
-                        <div class="relative w-16 h-16">
-                            <svg class="progress-ring w-16 h-16" viewBox="0 0 120 120">
-                                <circle class="progress-ring-circle" stroke="#e5e7eb" stroke-width="8" fill="transparent" r="52" cx="60" cy="60"/>
-                                <circle class="progress-ring-circle" stroke="#f59e0b" stroke-width="8" fill="transparent" r="52" cx="60" cy="60" stroke-dasharray="327" stroke-dashoffset="229"/>
-                            </svg>
-                            <div class="absolute inset-0 flex items-center justify-center">
-                                <span class="text-sm font-semibold text-gray-800">30%</span>
-                            </div>
-                        </div>
+                <div class="plan-card bg-white rounded-xl p-4 shadow-sm" onclick="viewPlanDetail('plan2')">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="font-semibold text-gray-800">增肌训练计划</h3>
+                        <span class="px-2 py-0.5 bg-yellow-100 text-yellow-700 text-xs rounded-full">暂停中</span>
                     </div>
-                    <div class="flex space-x-2">
-                        <button onclick="viewPlanDetail('plan2')" class="flex-1 bg-emerald-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-emerald-700 transition-colors">
-                            查看详情
-                        </button>
-                        <button onclick="activatePlan('plan2')" class="bg-blue-100 text-blue-700 py-2 px-4 rounded-lg text-sm font-medium hover:bg-blue-200 transition-colors">
-                            激活
-                        </button>
-                        <button onclick="showPlanMenu('plan2')" class="bg-gray-100 text-gray-700 py-2 px-4 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path>
-                            </svg>
-                        </button>
+                    <div class="flex items-center text-sm text-gray-500 mb-3">
+                        <span>增肌</span>
+                        <span class="mx-2">·</span>
+                        <span>剩余25天</span>
+                        <span class="mx-2">·</span>
+                        <span>2200 kcal/天</span>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="flex-1 bg-gray-100 rounded-full h-2 mr-3">
+                            <div class="bg-yellow-500 h-2 rounded-full" style="width: 30%"></div>
+                        </div>
+                        <span class="text-sm font-medium text-gray-600">30%</span>
                     </div>
                 </div>
             </div>
 
             <!-- Completed Plans -->
             <div id="completedPlans" class="space-y-3 hidden">
-                <div class="plan-card bg-white rounded-xl p-4 shadow-sm opacity-75">
-                    <div class="flex items-start justify-between mb-3">
-                        <div class="flex-1">
-                            <div class="flex items-center mb-2">
-                                <h3 class="font-semibold text-gray-800 text-lg">21天轻断食</h3>
-                                <span class="ml-2 px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">已完成</span>
-                            </div>
-                            <p class="text-sm text-gray-600 mb-2">类型：减脂 | 已完成：21天</p>
-                            <p class="text-sm text-gray-500">完成时间：2024年11月15日</p>
-                        </div>
-                        <div class="text-center">
-                            <div class="text-2xl font-bold text-green-600">✓</div>
-                            <div class="text-xs text-gray-500">100%</div>
-                        </div>
+                <div class="plan-card bg-white rounded-xl p-4 shadow-sm opacity-75" onclick="viewPlanDetail('plan3')">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="font-semibold text-gray-800">21天轻断食</h3>
+                        <span class="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full">已完成</span>
                     </div>
-                    <div class="flex space-x-2">
-                        <button onclick="viewPlanDetail('plan3')" class="flex-1 bg-gray-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-gray-700 transition-colors">
-                            查看详情
-                        </button>
-                        <button onclick="reusePlan('plan3')" class="bg-emerald-100 text-emerald-700 py-2 px-4 rounded-lg text-sm font-medium hover:bg-emerald-200 transition-colors">
-                            再次使用
-                        </button>
+                    <div class="flex items-center text-sm text-gray-500">
+                        <span>减脂</span>
+                        <span class="mx-2">·</span>
+                        <span>已完成21天</span>
+                        <span class="mx-2">·</span>
+                        <span>2024.11.15完成</span>
                     </div>
                 </div>
             </div>
 
-            <!-- Archived Plans -->
-            <div id="archivedPlans" class="space-y-3 hidden">
-                <div class="plan-card bg-white rounded-xl p-4 shadow-sm opacity-60">
-                    <div class="flex items-start justify-between mb-3">
-                        <div class="flex-1">
-                            <div class="flex items-center mb-2">
-                                <h3 class="font-semibold text-gray-800 text-lg">低碳水饮食</h3>
-                                <span class="ml-2 px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">已归档</span>
-                            </div>
-                            <p class="text-sm text-gray-600 mb-2">类型：减脂 | 进行中：3天</p>
-                            <p class="text-sm text-gray-500">归档时间：2024年10月20日</p>
-                        </div>
-                        <div class="text-center">
-                            <div class="text-lg font-bold text-gray-400">⏸</div>
-                            <div class="text-xs text-gray-500">15%</div>
-                        </div>
-                    </div>
-                    <div class="flex space-x-2">
-                        <button onclick="viewPlanDetail('plan4')" class="flex-1 bg-gray-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-gray-700 transition-colors">
-                            查看详情
-                        </button>
-                        <button onclick="restorePlan('plan4')" class="bg-blue-100 text-blue-700 py-2 px-4 rounded-lg text-sm font-medium hover:bg-blue-200 transition-colors">
-                            恢复
-                        </button>
-                    </div>
-                </div>
-            </div>
         </div>
 
-        <!-- Quick Stats -->
-        <div class="grid grid-cols-2 gap-4 mb-6">
-            <div class="glass-card rounded-2xl p-4 shadow-lg text-center">
-                <div class="text-2xl font-bold text-emerald-600" id="activePlansCount">2</div>
-                <div class="text-sm text-gray-600">进行中计划</div>
-            </div>
-            <div class="glass-card rounded-2xl p-4 shadow-lg text-center">
-                <div class="text-2xl font-bold text-orange-500" id="completedPlansCount">5</div>
-                <div class="text-sm text-gray-600">已完成计划</div>
-            </div>
-        </div>
 
         <!-- Recommended Plans -->
         <div class="glass-card rounded-2xl p-4 mb-6 shadow-lg">
@@ -288,13 +181,6 @@
         </div>
     </div>
 
-    <!-- Floating Action Button -->
-    <button class="floating-btn fixed bottom-24 right-4 w-14 h-14 rounded-full flex items-center justify-center text-white shadow-lg transition-transform hover:scale-110" onclick="createNewPlan()">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-        </svg>
-    </button>
-
     <!-- Bottom Navigation -->
     <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-2">
         <div class="flex justify-around">
@@ -325,80 +211,50 @@
         </div>
     </div>
 
-    <!-- New Plan Modal -->
-    <div id="newPlanModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+    <!-- Create Options Modal -->
+    <div id="createOptionsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
         <div class="flex items-center justify-center min-h-screen p-4">
-            <div class="bg-white rounded-2xl w-full max-w-md p-6 max-h-[90vh] overflow-y-auto">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-semibold text-gray-800">创建新计划</h3>
-                    <button onclick="closeNewPlanModal()" class="text-gray-400 hover:text-gray-600">
+            <div class="bg-white rounded-2xl w-full max-w-sm p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-lg font-semibold text-gray-800">添加计划</h3>
+                    <button onclick="closeCreateOptionsModal()" class="text-gray-400 hover:text-gray-600">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
                     </button>
                 </div>
                 
-                <form id="newPlanForm" class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">计划名称</label>
-                        <input type="text" id="planName" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent" placeholder="例如：我的减脂计划">
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">计划类型</label>
-                        <select id="planType" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent">
-                            <option value="fat-loss">减脂</option>
-                            <option value="muscle-gain">增肌</option>
-                            <option value="maintenance">维持</option>
-                            <option value="custom">自定义</option>
-                        </select>
-                    </div>
-                    
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">开始日期</label>
-                            <input type="date" id="startDate" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent">
+                <div class="space-y-3">
+                    <button onclick="goToCreatePlan()" class="w-full flex items-center p-4 bg-emerald-50 rounded-xl hover:bg-emerald-100 transition-colors">
+                        <div class="w-12 h-12 bg-emerald-500 rounded-xl flex items-center justify-center mr-4">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                            </svg>
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">结束日期</label>
-                            <input type="date" id="endDate" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent">
+                        <div class="text-left">
+                            <h4 class="font-semibold text-gray-800">创建新计划</h4>
+                            <p class="text-sm text-gray-500">从零开始制定饮食计划</p>
                         </div>
-                    </div>
+                        <svg class="w-5 h-5 text-gray-400 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </button>
                     
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">每日热量目标 (kcal)</label>
-                        <input type="number" id="dailyCalories" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent" placeholder="1800">
-                    </div>
-                    
-                    <div class="grid grid-cols-3 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">蛋白质 (g)</label>
-                            <input type="number" id="proteinTarget" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent" placeholder="120">
+                    <button onclick="showImportPlan()" class="w-full flex items-center p-4 bg-blue-50 rounded-xl hover:bg-blue-100 transition-colors">
+                        <div class="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center mr-4">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">脂肪 (g)</label>
-                            <input type="number" id="fatTarget" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent" placeholder="50">
+                        <div class="text-left">
+                            <h4 class="font-semibold text-gray-800">导入计划</h4>
+                            <p class="text-sm text-gray-500">使用分享码导入他人计划</p>
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">碳水 (g)</label>
-                            <input type="number" id="carbTarget" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent" placeholder="180">
-                        </div>
-                    </div>
-                    
-                    <div class="flex items-center">
-                        <input type="checkbox" id="setActive" class="w-4 h-4 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500">
-                        <label for="setActive" class="ml-2 text-sm text-gray-700">创建后立即激活此计划</label>
-                    </div>
-                    
-                    <div class="flex space-x-3 pt-4">
-                        <button type="button" onclick="closeNewPlanModal()" class="flex-1 bg-gray-100 text-gray-700 py-2 px-4 rounded-lg font-medium hover:bg-gray-200 transition-colors">
-                            取消
-                        </button>
-                        <button type="submit" class="flex-1 bg-emerald-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-emerald-700 transition-colors">
-                            创建计划
-                        </button>
-                    </div>
-                </form>
+                        <svg class="w-5 h-5 text-gray-400 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -433,6 +289,78 @@
         </div>
     </div>
 
-    <script src="plan.js"></script>
+    <script>
+        // 显示创建选项弹框
+        function showCreateOptions() {
+            document.getElementById('createOptionsModal').classList.remove('hidden');
+        }
+        
+        // 关闭创建选项弹框
+        function closeCreateOptionsModal() {
+            document.getElementById('createOptionsModal').classList.add('hidden');
+        }
+        
+        // 跳转到创建计划页面
+        function goToCreatePlan() {
+            window.location.href = 'new-plan.html';
+        }
+        
+        // 显示导入计划弹框
+        function showImportPlan() {
+            closeCreateOptionsModal();
+            document.getElementById('importPlanModal').classList.remove('hidden');
+        }
+        
+        // 关闭导入计划弹框
+        function closeImportPlanModal() {
+            document.getElementById('importPlanModal').classList.add('hidden');
+        }
+        
+        // 导入计划
+        function importPlan() {
+            const shareCode = document.getElementById('shareCode').value;
+            if (!shareCode) {
+                alert('请输入分享码');
+                return;
+            }
+            // TODO: 实现导入逻辑
+            alert('正在导入计划: ' + shareCode);
+            closeImportPlanModal();
+        }
+        
+        // Tab切换功能
+        function switchTab(tab) {
+            // 更新按钮状态
+            document.getElementById('activeTab').className = tab === 'active'
+                ? 'px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium'
+                : 'px-4 py-2 bg-gray-100 text-gray-600 rounded-lg text-sm font-medium';
+            document.getElementById('completedTab').className = tab === 'completed'
+                ? 'px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium'
+                : 'px-4 py-2 bg-gray-100 text-gray-600 rounded-lg text-sm font-medium';
+            
+            // 显示对应内容
+            document.getElementById('activePlans').classList.toggle('hidden', tab !== 'active');
+            document.getElementById('completedPlans').classList.toggle('hidden', tab !== 'completed');
+        }
+        
+        // 查看计划详情
+        function viewPlanDetail(planId) {
+            // TODO: 跳转到计划详情页
+            console.log('查看计划详情:', planId);
+        }
+        
+        // 创建推荐计划
+        function createRecommendedPlan(type) {
+            window.location.href = 'new-plan.html?type=' + type;
+        }
+        
+        // 点击背景关闭弹框
+        document.getElementById('createOptionsModal').addEventListener('click', function(e) {
+            if (e.target === this) closeCreateOptionsModal();
+        });
+        document.getElementById('importPlanModal').addEventListener('click', function(e) {
+            if (e.target === this) closeImportPlanModal();
+        });
+    </script>
 </body>
 </html>

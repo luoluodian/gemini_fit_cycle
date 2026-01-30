@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>餐次配置 - 饮食计划</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&family=Noto+Serif+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+        }
+        .hero-title {
+            font-family: 'Noto Serif SC', serif;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .food-item {
+            transition: all 0.2s ease;
+        }
+        .food-item:hover {
+            transform: translateX(4px);
+        }
+    </style>
+</head>
+<body class="min-h-screen pb-24">
+    <!-- Header -->
+    <div class="bg-white shadow-sm">
+        <div class="px-4 py-6">
+            <div class="flex items-center">
+                <button onclick="goBack()" class="p-2 -ml-2 rounded-lg hover:bg-gray-100 transition-colors">
+                    <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                </button>
+                <h1 class="hero-title text-xl font-bold text-gray-800 ml-2" id="pageTitle">早餐</h1>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="px-4 py-6 space-y-6">
+        <!-- 餐次营养汇总 -->
+        <div class="glass-card rounded-2xl p-5 shadow-lg">
+            <h3 class="text-base font-semibold text-gray-800 mb-4">本餐营养</h3>
+            <div class="grid grid-cols-4 gap-3 text-center">
+                <div class="bg-emerald-50 rounded-xl p-3">
+                    <div class="text-xs text-gray-500 mb-1">热量</div>
+                    <div class="text-lg font-bold text-emerald-600" id="mealCalories">0</div>
+                    <div class="text-xs text-gray-400">kcal</div>
+                </div>
+                <div class="bg-blue-50 rounded-xl p-3">
+                    <div class="text-xs text-gray-500 mb-1">碳水</div>
+                    <div class="text-lg font-bold text-blue-600" id="mealCarbs">0</div>
+                    <div class="text-xs text-gray-400">g</div>
+                </div>
+                <div class="bg-red-50 rounded-xl p-3">
+                    <div class="text-xs text-gray-500 mb-1">蛋白质</div>
+                    <div class="text-lg font-bold text-red-600" id="mealProtein">0</div>
+                    <div class="text-xs text-gray-400">g</div>
+                </div>
+                <div class="bg-yellow-50 rounded-xl p-3">
+                    <div class="text-xs text-gray-500 mb-1">脂肪</div>
+                    <div class="text-lg font-bold text-yellow-600" id="mealFat">0</div>
+                    <div class="text-xs text-gray-400">g</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 食物列表 -->
+        <div class="glass-card rounded-2xl p-5 shadow-lg">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-base font-semibold text-gray-800">食物列表</h3>
+                <span class="text-sm text-gray-500" id="foodCount">0 个食物</span>
+            </div>
+            <div id="foodList" class="space-y-3">
+                <!-- 食物项将在这里动态渲染 -->
+            </div>
+        </div>
+
+        <!-- 添加食物按钮 -->
+        <button onclick="openFoodSelector()" class="w-full py-4 bg-emerald-500 rounded-2xl text-white font-medium shadow-lg shadow-emerald-200 active:scale-95 transition-transform flex items-center justify-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+            <span>添加食物</span>
+        </button>
+    </div>
+
+    <!-- 底部保存栏 -->
+    <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-3">
+        <button onclick="saveAndGoBack()" class="w-full bg-emerald-600 text-white py-3 rounded-lg font-medium hover:bg-emerald-700 transition-colors">
+            保存
+        </button>
+    </div>
+
+    <!-- 食物选择模态框 -->
+    <div id="foodModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+        <div class="flex items-end justify-center min-h-screen">
+            <div class="bg-white rounded-t-3xl w-full max-w-md p-6 h-[70vh] flex flex-col">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-800">选择食物</h3>
+                    <button onclick="closeFoodModal()" class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div class="mb-4">
+                    <input type="text" id="foodSearchInput" placeholder="搜索食物..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent" oninput="filterFoodList()">
+                </div>
+                <!-- 分类筛选 -->
+                <div class="flex space-x-2 overflow-x-auto pb-2 mb-4" id="categoryFilters">
+                    <button class="category-btn active px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap bg-emerald-100 text-emerald-700" data-category="all">全部</button>
+                    <button class="category-btn px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap bg-gray-100 text-gray-600" data-category="grains">主食</button>
+                    <button class="category-btn px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap bg-gray-100 text-gray-600" data-category="protein">蛋白质</button>
+                    <button class="category-btn px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap bg-gray-100 text-gray-600" data-category="vegetables">蔬菜</button>
+                    <button class="category-btn px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap bg-gray-100 text-gray-600" data-category="fruits">水果</button>
+                    <button class="category-btn px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap bg-gray-100 text-gray-600" data-category="nuts">坚果</button>
+                    <button class="category-btn px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap bg-gray-100 text-gray-600" data-category="dairy">乳制品</button>
+                </div>
+                <div class="space-y-2 flex-1 overflow-y-auto" id="foodListModal">
+                    <!-- Food items will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 数量输入模态框 -->
+    <div id="quantityModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-2xl w-full max-w-sm p-6">
+                <div class="text-center mb-4">
+                    <h3 class="text-lg font-semibold text-gray-800">添加食物</h3>
+                    <p class="text-sm text-gray-500" id="foodName">食物名称</p>
+                </div>
+                <div class="mb-4 flex items-center">
+                    <label class="text-sm font-medium text-gray-700 mr-3 whitespace-nowrap">数量</label>
+                    <div class="flex items-center flex-1">
+                        <input type="number" id="foodQuantity" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent" placeholder="请输入数量" value="100">
+                        <span class="ml-3 text-sm text-gray-600">g</span>
+                    </div>
+                </div>
+                <!-- 营养成分预览 -->
+                <div class="bg-gray-50 rounded-lg p-3 mb-4">
+                    <div class="text-xs text-gray-500 mb-2">营养成分预览</div>
+                    <div class="grid grid-cols-4 gap-2 text-center">
+                        <div>
+                            <div class="text-xs text-gray-500">碳水</div>
+                            <div class="text-sm font-medium text-yellow-600" id="previewCarbs">0g</div>
+                        </div>
+                        <div>
+                            <div class="text-xs text-gray-500">蛋白质</div>
+                            <div class="text-sm font-medium text-red-600" id="previewProtein">0g</div>
+                        </div>
+                        <div>
+                            <div class="text-xs text-gray-500">脂肪</div>
+                            <div class="text-sm font-medium text-blue-600" id="previewFat">0g</div>
+                        </div>
+                        <div>
+                            <div class="text-xs text-gray-500">能量</div>
+                            <div class="text-sm font-medium text-emerald-600" id="previewCalories">0 kcal</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex space-x-3">
+                    <button onclick="closeQuantityModal()" class="flex-1 bg-gray-100 text-gray-700 py-2 px-4 rounded-lg font-medium hover:bg-gray-200 transition-colors">
+                        取消
+                    </button>
+                    <button onclick="confirmAddFood()" class="flex-1 bg-emerald-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-emerald-700 transition-colors">
+                        确认添加
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 食物营养数据库 (每100g)
+        const foodNutritionDB = {
+            '燕麦粥': { carbs: 60, protein: 12, fat: 6, calories: 360 },
+            '牛奶': { carbs: 4.8, protein: 3.2, fat: 3.2, calories: 54 },
+            '香蕉': { carbs: 23, protein: 1.1, fat: 0.3, calories: 89 },
+            '鸡胸肉': { carbs: 0, protein: 31, fat: 3.6, calories: 165 },
+            '糙米饭': { carbs: 23, protein: 2.6, fat: 0.9, calories: 111 },
+            '西兰花': { carbs: 7, protein: 2.8, fat: 0.4, calories: 34 },
+            '胡萝卜': { carbs: 9.6, protein: 0.9, fat: 0.2, calories: 41 },
+            '橄榄油': { carbs: 0, protein: 0, fat: 100, calories: 884 },
+            '三文鱼': { carbs: 0, protein: 20, fat: 13, calories: 208 },
+            '蒸蛋': { carbs: 0.6, protein: 13, fat: 10, calories: 143 },
+            '菠菜': { carbs: 3.6, protein: 2.9, fat: 0.4, calories: 23 },
+            '紫薯': { carbs: 20, protein: 1.6, fat: 0.2, calories: 86 },
+            '酸奶': { carbs: 4.7, protein: 10, fat: 0.5, calories: 59 },
+            '杏仁': { carbs: 21.6, protein: 21.2, fat: 49.4, calories: 579 },
+            '苹果': { carbs: 13.8, protein: 0.3, fat: 0.2, calories: 52 },
+            '鸡蛋': { carbs: 1, protein: 13, fat: 11, calories: 155 },
+            '全麦面包': { carbs: 41, protein: 13, fat: 4, calories: 247 },
+            '牛油果': { carbs: 8.5, protein: 2, fat: 14.7, calories: 160 },
+            '蓝莓': { carbs: 14.5, protein: 0.7, fat: 0.3, calories: 57 },
+            '核桃': { carbs: 4, protein: 4, fat: 18, calories: 185 }
+        };
+
+        // 食物选择数据库
+        const foodDatabase = [
+            { name: '燕麦粥', calories: 180, protein: 6, fat: 3, carbs: 30, unit: '50g', category: 'grains' },
+            { name: '牛奶', calories: 120, protein: 6, fat: 6, carbs: 9, unit: '200ml', category: 'dairy' },
+            { name: '香蕉', calories: 80, protein: 1, fat: 0, carbs: 20, unit: '1根', category: 'fruits' },
+            { name: '鸡胸肉', calories: 250, protein: 46, fat: 5, carbs: 0, unit: '150g', category: 'protein' },
+            { name: '糙米饭', calories: 180, protein: 4, fat: 2, carbs: 36, unit: '100g', category: 'grains' },
+            { name: '西兰花', calories: 35, protein: 3, fat: 0, carbs: 7, unit: '100g', category: 'vegetables' },
+            { name: '胡萝卜', calories: 30, protein: 1, fat: 0, carbs: 7, unit: '80g', category: 'vegetables' },
+            { name: '橄榄油', calories: 85, protein: 0, fat: 9, carbs: 0, unit: '1勺', category: 'protein' },
+            { name: '三文鱼', calories: 280, protein: 25, fat: 18, carbs: 0, unit: '120g', category: 'protein' },
+            { name: '蒸蛋', calories: 140, protein: 12, fat: 10, carbs: 1, unit: '2个', category: 'protein' },
+            { name: '菠菜', calories: 25, protein: 3, fat: 0, carbs: 4, unit: '100g', category: 'vegetables' },
+            { name: '紫薯', calories: 85, protein: 2, fat: 0, carbs: 20, unit: '100g', category: 'grains' },
+            { name: '酸奶', calories: 80, protein: 4, fat: 0, carbs: 12, unit: '150g', category: 'dairy' },
+            { name: '杏仁', calories: 20, protein: 1, fat: 2, carbs: 1, unit: '10颗', category: 'nuts' },
+            { name: '苹果', calories: 52, protein: 0, fat: 0, carbs: 14, unit: '1个', category: 'fruits' },
+            { name: '鸡蛋', calories: 155, protein: 13, fat: 11, carbs: 1, unit: '2个', category: 'protein' },
+            { name: '全麦面包', calories: 120, protein: 4, fat: 2, carbs: 20, unit: '1片', category: 'grains' },
+            { name: '牛油果', calories: 160, protein: 2, fat: 15, carbs: 9, unit: '半个', category: 'fruits' },
+            { name: '蓝莓', calories: 42, protein: 1, fat: 0, carbs: 11, unit: '100g', category: 'fruits' },
+            { name: '核桃', calories: 185, protein: 4, fat: 18, carbs: 4, unit: '30g', category: 'nuts' }
+        ];
+
+        let currentCategory = 'all';
+        let templateIndex = 0;
+        let currentMeal = '';
+        let currentFood = null;
+        let editingIndex = -1;
+        let mealFoods = [];
+        let templateData = null;
+
+        const mealNames = {
+            breakfast: '早餐',
+            lunch: '午餐',
+            dinner: '晚餐',
+            snacks: '加餐'
+        };
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const params = new URLSearchParams(window.location.search);
+            templateIndex = params.get('index') || 0;
+            currentMeal = params.get('meal') || 'breakfast';
+            
+            document.getElementById('pageTitle').textContent = mealNames[currentMeal] || '餐次配置';
+            loadMealData();
+        });
+
+        function loadMealData() {
+            const saved = localStorage.getItem(`template_${templateIndex}`);
+            if (saved) {
+                templateData = JSON.parse(saved);
+                // 转换旧数据格式
+                mealFoods = (templateData.meals[currentMeal] || []).map(food => ({
+                    name: food.name,
+                    quantity: food.quantity || 100,
+                    unit: food.unit || 'g',
+                    calories: food.calories || 0,
+                    protein: food.protein || 0,
+                    fat: food.fat || 0,
+                    carbs: food.carbs || 0
+                }));
+            } else {
+                templateData = {
+                    name: '',
+                    targetCalories: 0,
+                    targetProtein: 0,
+                    targetFat: 0,
+                    targetCarbs: 0,
+                    meals: { breakfast: [], lunch: [], dinner: [], snacks: [] }
+                };
+                mealFoods = [];
+            }
+            renderFoodList();
+            calculateNutrition();
+        }
+
+        function renderFoodList() {
+            const container = document.getElementById('foodList');
+            document.getElementById('foodCount').textContent = `${mealFoods.length} 个食物`;
+            
+            if (mealFoods.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12 text-gray-400">
+                        <div class="text-4xl mb-3">🍽️</div>
+                        <p>还没有添加食物</p>
+                        <p class="text-sm mt-1">点击下方按钮添加</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = mealFoods.map((food, index) => {
+                return `
+                    <div class="food-item flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div>
+                            <div class="font-medium text-gray-800">${food.name}</div>
+                            <div class="text-xs text-gray-500">${food.quantity}${food.unit}</div>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-sm text-gray-600">${food.calories} kcal</span>
+                            <button class="text-gray-400 hover:text-gray-600" onclick="editFoodItem(${index})">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                </svg>
+                            </button>
+                            <button class="text-red-400 hover:text-red-600" onclick="deleteFoodItem(${index})">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function calculateNutrition() {
+            let totalCalories = 0, totalCarbs = 0, totalProtein = 0, totalFat = 0;
+            
+            mealFoods.forEach(food => {
+                totalCalories += food.calories || 0;
+                totalProtein += food.protein || 0;
+                totalFat += food.fat || 0;
+                totalCarbs += food.carbs || 0;
+            });
+            
+            document.getElementById('mealCalories').textContent = Math.round(totalCalories);
+            document.getElementById('mealCarbs').textContent = Math.round(totalCarbs);
+            document.getElementById('mealProtein').textContent = Math.round(totalProtein);
+            document.getElementById('mealFat').textContent = Math.round(totalFat);
+        }
+
+        // 添加食物
+        function openFoodSelector() {
+            editingIndex = -1;
+            renderFoodListModal();
+            document.getElementById('foodModal').classList.remove('hidden');
+        }
+
+        function renderFoodListModal(filterText = '') {
+            const foodList = document.getElementById('foodListModal');
+            foodList.innerHTML = '';
+            
+            let filteredFoods = foodDatabase;
+            
+            // 按分类筛选
+            if (currentCategory !== 'all') {
+                filteredFoods = filteredFoods.filter(food => food.category === currentCategory);
+            }
+            
+            // 按搜索文本筛选
+            if (filterText) {
+                filteredFoods = filteredFoods.filter(food => food.name.includes(filterText));
+            }
+            
+            filteredFoods.forEach(food => {
+                const foodItem = document.createElement('div');
+                foodItem.className = 'p-4 bg-gray-50 rounded-xl cursor-pointer hover:bg-emerald-50 transition-colors';
+                foodItem.innerHTML = `
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="font-semibold text-gray-800 text-base">${food.name}</div>
+                        <div class="text-lg font-bold text-emerald-600">${food.calories} <span class="text-xs font-normal text-gray-400">kcal</span></div>
+                    </div>
+                    <div class="flex items-center justify-between text-xs">
+                        <span class="text-gray-400">每${food.unit}</span>
+                        <div class="flex items-center gap-3 text-gray-500">
+                            <span>🍞 ${food.carbs}g</span>
+                            <span>🥩 ${food.protein}g</span>
+                            <span>🥑 ${food.fat}g</span>
+                        </div>
+                    </div>
+                `;
+                foodItem.onclick = () => selectFood(food);
+                foodList.appendChild(foodItem);
+            });
+        }
+
+        function filterFoodList() {
+            const searchText = document.getElementById('foodSearchInput').value;
+            renderFoodListModal(searchText);
+        }
+
+        // 分类筛选事件监听
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('category-btn')) {
+                // 更新按钮样式
+                document.querySelectorAll('.category-btn').forEach(btn => {
+                    btn.classList.remove('active', 'bg-emerald-100', 'text-emerald-700');
+                    btn.classList.add('bg-gray-100', 'text-gray-600');
+                });
+                e.target.classList.remove('bg-gray-100', 'text-gray-600');
+                e.target.classList.add('active', 'bg-emerald-100', 'text-emerald-700');
+                
+                // 更新当前分类并重新渲染
+                currentCategory = e.target.dataset.category;
+                const searchText = document.getElementById('foodSearchInput').value;
+                renderFoodListModal(searchText);
+            }
+        });
+
+        function closeFoodModal() {
+            document.getElementById('foodModal').classList.add('hidden');
+        }
+
+        function selectFood(food) {
+            currentFood = food;
+            closeFoodModal();
+            showQuantityModal(food);
+        }
+
+        function showQuantityModal(food) {
+            const modal = document.getElementById('quantityModal');
+            document.getElementById('foodName').textContent = food.name;
+            document.getElementById('foodQuantity').value = editingIndex >= 0 ? mealFoods[editingIndex].quantity : 100;
+            
+            // 显示营养成分预览
+            updatePreview(food.name, editingIndex >= 0 ? mealFoods[editingIndex].quantity : 100);
+            
+            modal.classList.remove('hidden');
+        }
+
+        function updatePreview(foodName, quantity) {
+            const nutrition = foodNutritionDB[foodName];
+            if (!nutrition) return;
+            
+            const ratio = quantity / 100;
+            const carbs = (nutrition.carbs * ratio).toFixed(1);
+            const protein = (nutrition.protein * ratio).toFixed(1);
+            const fat = (nutrition.fat * ratio).toFixed(1);
+            const calories = Math.round(nutrition.calories * ratio);
+            
+            document.getElementById('previewCarbs').textContent = carbs + 'g';
+            document.getElementById('previewProtein').textContent = protein + 'g';
+            document.getElementById('previewFat').textContent = fat + 'g';
+            document.getElementById('previewCalories').textContent = calories + ' kcal';
+        }
+
+        // 监听数量变化
+        document.getElementById('foodQuantity').addEventListener('input', function() {
+            const foodName = document.getElementById('foodName').textContent;
+            const quantity = parseFloat(this.value) || 0;
+            updatePreview(foodName, quantity);
+        });
+
+        function closeQuantityModal() {
+            document.getElementById('quantityModal').classList.add('hidden');
+            editingIndex = -1;
+        }
+
+        function confirmAddFood() {
+            const quantity = parseFloat(document.getElementById('foodQuantity').value);
+            
+            if (!quantity || quantity <= 0) {
+                alert('请输入有效的数量');
+                return;
+            }
+            
+            // 计算实际营养值
+            const ratio = quantity / 100;
+            const actualCalories = Math.round(currentFood.calories * ratio);
+            const actualProtein = Math.round(currentFood.protein * ratio * 10) / 10;
+            const actualFat = Math.round(currentFood.fat * ratio * 10) / 10;
+            const actualCarbs = Math.round(currentFood.carbs * ratio * 10) / 10;
+            
+            const foodItem = {
+                name: currentFood.name,
+                quantity: quantity,
+                unit: 'g',
+                calories: actualCalories,
+                protein: actualProtein,
+                fat: actualFat,
+                carbs: actualCarbs
+            };
+            
+            if (editingIndex >= 0) {
+                mealFoods[editingIndex] = foodItem;
+            } else {
+                mealFoods.push(foodItem);
+            }
+            
+            closeQuantityModal();
+            renderFoodList();
+            calculateNutrition();
+        }
+
+        function editFoodItem(index) {
+            editingIndex = index;
+            const food = mealFoods[index];
+            // 从 foodDatabase 查找对应的食物
+            const dbFood = foodDatabase.find(f => f.name === food.name);
+            if (dbFood) {
+                currentFood = dbFood;
+                showQuantityModal(dbFood);
+            }
+        }
+
+        function deleteFoodItem(index) {
+            if (confirm('确定要删除这个食物吗？')) {
+                mealFoods.splice(index, 1);
+                renderFoodList();
+                calculateNutrition();
+            }
+        }
+
+        function saveAndGoBack() {
+            if (!templateData) {
+                templateData = {
+                    name: '',
+                    targetCalories: 0,
+                    targetProtein: 0,
+                    targetFat: 0,
+                    targetCarbs: 0,
+                    meals: { breakfast: [], lunch: [], dinner: [], snacks: [] }
+                };
+            }
+            templateData.meals[currentMeal] = mealFoods;
+            localStorage.setItem(`template_${templateIndex}`, JSON.stringify(templateData));
+            goBack();
+        }
+
+        function goBack() {
+            window.history.back();
+        }
+
+        // 点击背景关闭弹框
+        document.getElementById('foodModal').addEventListener('click', function(e) {
+            if (e.target === this) closeFoodModal();
+        });
+        document.getElementById('quantityModal').addEventListener('click', function(e) {
+            if (e.target === this) closeQuantityModal();
+        });
+    </script>
+</body>
+</html>

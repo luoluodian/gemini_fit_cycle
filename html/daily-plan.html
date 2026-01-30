@@ -206,24 +206,82 @@
         </div>
     </div>
 
-    <!-- 添加食物模态框 -->
+    <!-- 食物选择模态框 -->
     <div id="foodModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
         <div class="flex items-end justify-center min-h-screen">
-            <div class="bg-white rounded-t-2xl w-full max-h-[80vh] overflow-hidden">
-                <div class="sticky top-0 bg-white border-b border-gray-200 px-4 py-3">
-                    <div class="flex items-center justify-between">
-                        <h3 class="font-semibold text-gray-800">选择食物</h3>
-                        <button onclick="closeFoodModal()" class="p-2 rounded-lg hover:bg-gray-100 transition-colors">
-                            <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                        </button>
+            <div class="bg-white rounded-t-3xl w-full max-w-md p-6 h-[70vh] flex flex-col">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-800">选择食物</h3>
+                    <button onclick="closeFoodModal()" class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div class="mb-4">
+                    <input type="text" id="foodSearchInput" placeholder="搜索食物..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent" oninput="filterFoodList()">
+                </div>
+                <!-- 分类筛选 -->
+                <div class="flex space-x-2 overflow-x-auto pb-2 mb-4" id="categoryFilters">
+                    <button class="category-btn active px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap bg-emerald-100 text-emerald-700" data-category="all">全部</button>
+                    <button class="category-btn px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap bg-gray-100 text-gray-600" data-category="grains">主食</button>
+                    <button class="category-btn px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap bg-gray-100 text-gray-600" data-category="protein">蛋白质</button>
+                    <button class="category-btn px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap bg-gray-100 text-gray-600" data-category="vegetables">蔬菜</button>
+                    <button class="category-btn px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap bg-gray-100 text-gray-600" data-category="fruits">水果</button>
+                    <button class="category-btn px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap bg-gray-100 text-gray-600" data-category="nuts">坚果</button>
+                    <button class="category-btn px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap bg-gray-100 text-gray-600" data-category="dairy">乳制品</button>
+                </div>
+                <div class="space-y-2 flex-1 overflow-y-auto" id="foodListModal">
+                    <!-- 食物列表 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 数量输入模态框 -->
+    <div id="quantityModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-2xl w-full max-w-sm p-6">
+                <div class="text-center mb-4">
+                    <h3 class="text-lg font-semibold text-gray-800">添加食物</h3>
+                    <p class="text-sm text-gray-500" id="foodName">食物名称</p>
+                </div>
+                <div class="mb-4 flex items-center">
+                    <label class="text-sm font-medium text-gray-700 mr-3 whitespace-nowrap">数量</label>
+                    <div class="flex items-center flex-1">
+                        <input type="number" id="foodQuantity" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent" placeholder="请输入数量" value="100">
+                        <span class="ml-3 text-sm text-gray-600">g</span>
                     </div>
                 </div>
-                <div class="p-4 overflow-y-auto">
-                    <div id="foodSelectorContent">
-                        <!-- 这里将嵌入增强版食材选择器 -->
+                <!-- 营养成分预览 -->
+                <div class="bg-gray-50 rounded-lg p-3 mb-4">
+                    <div class="text-xs text-gray-500 mb-2">营养成分预览</div>
+                    <div class="grid grid-cols-4 gap-2 text-center">
+                        <div>
+                            <div class="text-xs text-gray-500">碳水</div>
+                            <div class="text-sm font-medium text-yellow-600" id="previewCarbs">0g</div>
+                        </div>
+                        <div>
+                            <div class="text-xs text-gray-500">蛋白质</div>
+                            <div class="text-sm font-medium text-red-600" id="previewProtein">0g</div>
+                        </div>
+                        <div>
+                            <div class="text-xs text-gray-500">脂肪</div>
+                            <div class="text-sm font-medium text-blue-600" id="previewFat">0g</div>
+                        </div>
+                        <div>
+                            <div class="text-xs text-gray-500">能量</div>
+                            <div class="text-sm font-medium text-emerald-600" id="previewCalories">0 kcal</div>
+                        </div>
                     </div>
+                </div>
+                <div class="flex space-x-3">
+                    <button onclick="closeQuantityModal()" class="flex-1 bg-gray-100 text-gray-700 py-2 px-4 rounded-lg font-medium hover:bg-gray-200 transition-colors">
+                        取消
+                    </button>
+                    <button onclick="confirmAddFood()" class="flex-1 bg-emerald-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-emerald-700 transition-colors">
+                        确认添加
+                    </button>
                 </div>
             </div>
         </div>
@@ -264,7 +322,6 @@
         </div>
     </div>
 
-    <script src="food-selector-embedded.js"></script>
     <script src="daily-plan.js"></script>
 </body>
 </html>

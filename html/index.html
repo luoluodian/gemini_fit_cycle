@@ -56,16 +56,6 @@
     </style>
 </head>
 <body class="min-h-screen">
-    <!-- Hero Section -->
-    <div class="relative h-48 overflow-hidden">
-        <img src="hero-image.png" alt="健康饮食" class="w-full h-full object-cover">
-        <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
-        <div class="absolute bottom-4 left-4 right-4 text-white">
-            <h1 class="hero-title text-2xl font-bold mb-1">今日饮食记录</h1>
-            <p class="text-sm opacity-90">记录每一餐，健康生活每一天</p>
-        </div>
-    </div>
-
     <!-- Main Content -->
     <div class="px-4 py-6 pb-20">
         <!-- Date Navigation -->
@@ -84,14 +74,6 @@
                     <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                     </svg>
-                </button>
-            </div>
-            <div class="flex justify-center">
-                <button id="calendarBtn" class="text-sm text-emerald-600 hover:text-emerald-700 font-medium">
-                    📅 选择日期
-                </button>
-                <button onclick="window.location.href='test.html'" class="text-sm text-blue-600 hover:text-blue-700 font-medium ml-4">
-                    🔧 测试功能
                 </button>
             </div>
         </div>
@@ -144,7 +126,12 @@
             <div class="meal-card rounded-2xl p-4 shadow-sm">
                 <div class="flex items-center justify-between mb-3">
                     <h4 class="font-semibold text-gray-800">🌅 早餐</h4>
-                    <div class="text-sm text-gray-500" id="breakfastCalories">320 kcal</div>
+                    <div class="flex items-center space-x-3">
+                        <div class="text-sm text-gray-600">🍞 62g</div>
+                        <div class="text-sm text-gray-600">🥩 15g</div>
+                        <div class="text-sm text-gray-600">🥑 11g</div>
+                        <div class="text-sm text-gray-500">320 kcal</div>
+                    </div>
                 </div>
                 <div class="space-y-2" id="breakfastItems">
                     <div class="food-item flex items-center justify-between p-2 bg-gray-50 rounded-lg">
@@ -157,6 +144,11 @@
                             <button class="text-gray-400 hover:text-gray-600" onclick="editFoodItem(this)">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                </svg>
+                            </button>
+                            <button class="text-red-400 hover:text-red-600" onclick="deleteFoodItem(this)">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                                 </svg>
                             </button>
                         </div>
@@ -173,6 +165,11 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                 </svg>
                             </button>
+                            <button class="text-red-400 hover:text-red-600" onclick="deleteFoodItem(this)">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                </svg>
+                            </button>
                         </div>
                     </div>
                     <div class="food-item flex items-center justify-between p-2 bg-gray-50 rounded-lg">
@@ -187,11 +184,16 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                 </svg>
                             </button>
+                            <button class="text-red-400 hover:text-red-600" onclick="deleteFoodItem(this)">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                </svg>
+                            </button>
                         </div>
                     </div>
                 </div>
                 <div class="mt-3 flex space-x-2">
-                    <button class="flex-1 bg-emerald-100 text-emerald-700 px-3 py-2 rounded-lg text-sm font-medium hover:bg-emerald-200 transition-colors" onclick="addPlannedMeal('breakfast')">
+                    <button class="flex-1 bg-emerald-100 text-emerald-700 px-3 py-2 rounded-lg text-sm font-medium hover:bg-emerald-200 transition-colors" onclick="recordMeal('breakfast')">
                         按计划记录本餐
                     </button>
                     <button class="flex-1 bg-gray-100 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors" onclick="addFoodItem('breakfast')">
@@ -204,7 +206,12 @@
             <div class="meal-card rounded-2xl p-4 shadow-sm">
                 <div class="flex items-center justify-between mb-3">
                     <h4 class="font-semibold text-gray-800">☀️ 午餐</h4>
-                    <div class="text-sm text-gray-500" id="lunchCalories">580 kcal</div>
+                    <div class="flex items-center space-x-3">
+                        <div class="text-sm text-gray-600">🍞 37g</div>
+                        <div class="text-sm text-gray-600">🥩 52g</div>
+                        <div class="text-sm text-gray-600">🥑 20g</div>
+                        <div class="text-sm text-gray-500">580 kcal</div>
+                    </div>
                 </div>
                 <div class="space-y-2" id="lunchItems">
                     <div class="food-item flex items-center justify-between p-2 bg-gray-50 rounded-lg">
@@ -217,6 +224,11 @@
                             <button class="text-gray-400 hover:text-gray-600" onclick="editFoodItem(this)">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                </svg>
+                            </button>
+                            <button class="text-red-400 hover:text-red-600" onclick="deleteFoodItem(this)">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                                 </svg>
                             </button>
                         </div>
@@ -233,6 +245,11 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                 </svg>
                             </button>
+                            <button class="text-red-400 hover:text-red-600" onclick="deleteFoodItem(this)">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                </svg>
+                            </button>
                         </div>
                     </div>
                     <div class="food-item flex items-center justify-between p-2 bg-gray-50 rounded-lg">
@@ -245,6 +262,11 @@
                             <button class="text-gray-400 hover:text-gray-600" onclick="editFoodItem(this)">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                </svg>
+                            </button>
+                            <button class="text-red-400 hover:text-red-600" onclick="deleteFoodItem(this)">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                                 </svg>
                             </button>
                         </div>
@@ -261,6 +283,11 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                 </svg>
                             </button>
+                            <button class="text-red-400 hover:text-red-600" onclick="deleteFoodItem(this)">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                </svg>
+                            </button>
                         </div>
                     </div>
                     <div class="food-item flex items-center justify-between p-2 bg-gray-50 rounded-lg">
@@ -275,11 +302,16 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                 </svg>
                             </button>
+                            <button class="text-red-400 hover:text-red-600" onclick="deleteFoodItem(this)">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                </svg>
+                            </button>
                         </div>
                     </div>
                 </div>
                 <div class="mt-3 flex space-x-2">
-                    <button class="flex-1 bg-emerald-100 text-emerald-700 px-3 py-2 rounded-lg text-sm font-medium hover:bg-emerald-200 transition-colors" onclick="addPlannedMeal('lunch')">
+                    <button class="flex-1 bg-emerald-100 text-emerald-700 px-3 py-2 rounded-lg text-sm font-medium hover:bg-emerald-200 transition-colors" onclick="recordMeal('lunch')">
                         按计划记录本餐
                     </button>
                     <button class="flex-1 bg-gray-100 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors" onclick="addFoodItem('lunch')">
@@ -292,7 +324,12 @@
             <div class="meal-card rounded-2xl p-4 shadow-sm">
                 <div class="flex items-center justify-between mb-3">
                     <h4 class="font-semibold text-gray-800">🌙 晚餐</h4>
-                    <div class="text-sm text-gray-500" id="dinnerCalories">450 kcal</div>
+                    <div class="flex items-center space-x-3">
+                        <div class="text-sm text-gray-600">🍞 25g</div>
+                        <div class="text-sm text-gray-600">🥩 37g</div>
+                        <div class="text-sm text-gray-600">🥑 24g</div>
+                        <div class="text-sm text-gray-500">450 kcal</div>
+                    </div>
                 </div>
                 <div class="space-y-2" id="dinnerItems">
                     <div class="food-item flex items-center justify-between p-2 bg-gray-50 rounded-lg">
@@ -305,6 +342,11 @@
                             <button class="text-gray-400 hover:text-gray-600" onclick="editFoodItem(this)">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                </svg>
+                            </button>
+                            <button class="text-red-400 hover:text-red-600" onclick="deleteFoodItem(this)">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                                 </svg>
                             </button>
                         </div>
@@ -321,6 +363,11 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                 </svg>
                             </button>
+                            <button class="text-red-400 hover:text-red-600" onclick="deleteFoodItem(this)">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                </svg>
+                            </button>
                         </div>
                     </div>
                     <div class="food-item flex items-center justify-between p-2 bg-gray-50 rounded-lg">
@@ -333,6 +380,11 @@
                             <button class="text-gray-400 hover:text-gray-600" onclick="editFoodItem(this)">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                </svg>
+                            </button>
+                            <button class="text-red-400 hover:text-red-600" onclick="deleteFoodItem(this)">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                                 </svg>
                             </button>
                         </div>
@@ -349,11 +401,16 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                 </svg>
                             </button>
+                            <button class="text-red-400 hover:text-red-600" onclick="deleteFoodItem(this)">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                </svg>
+                            </button>
                         </div>
                     </div>
                 </div>
                 <div class="mt-3 flex space-x-2">
-                    <button class="flex-1 bg-emerald-100 text-emerald-700 px-3 py-2 rounded-lg text-sm font-medium hover:bg-emerald-200 transition-colors" onclick="addPlannedMeal('dinner')">
+                    <button class="flex-1 bg-emerald-100 text-emerald-700 px-3 py-2 rounded-lg text-sm font-medium hover:bg-emerald-200 transition-colors" onclick="recordMeal('dinner')">
                         按计划记录本餐
                     </button>
                     <button class="flex-1 bg-gray-100 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors" onclick="addFoodItem('dinner')">
@@ -366,7 +423,12 @@
             <div class="meal-card rounded-2xl p-4 shadow-sm">
                 <div class="flex items-center justify-between mb-3">
                     <h4 class="font-semibold text-gray-800">🍎 加餐</h4>
-                    <div class="text-sm text-gray-500" id="snacksCalories">100 kcal</div>
+                    <div class="flex items-center space-x-3">
+                        <div class="text-sm text-gray-600">🍞 10g</div>
+                        <div class="text-sm text-gray-600">🥩 6g</div>
+                        <div class="text-sm text-gray-600">🥑 6g</div>
+                        <div class="text-sm text-gray-500">100 kcal</div>
+                    </div>
                 </div>
                 <div class="space-y-2" id="snacksItems">
                     <div class="food-item flex items-center justify-between p-2 bg-gray-50 rounded-lg">
@@ -379,6 +441,11 @@
                             <button class="text-gray-400 hover:text-gray-600" onclick="editFoodItem(this)">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                </svg>
+                            </button>
+                            <button class="text-red-400 hover:text-red-600" onclick="deleteFoodItem(this)">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                                 </svg>
                             </button>
                         </div>
@@ -395,11 +462,16 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                 </svg>
                             </button>
+                            <button class="text-red-400 hover:text-red-600" onclick="deleteFoodItem(this)">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                </svg>
+                            </button>
                         </div>
                     </div>
                 </div>
                 <div class="mt-3 flex space-x-2">
-                    <button class="flex-1 bg-emerald-100 text-emerald-700 px-3 py-2 rounded-lg text-sm font-medium hover:bg-emerald-200 transition-colors" onclick="addPlannedMeal('snacks')">
+                    <button class="flex-1 bg-emerald-100 text-emerald-700 px-3 py-2 rounded-lg text-sm font-medium hover:bg-emerald-200 transition-colors" onclick="recordMeal('snacks')">
                         按计划记录本餐
                     </button>
                     <button class="flex-1 bg-gray-100 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors" onclick="addFoodItem('snacks')">
@@ -409,34 +481,7 @@
             </div>
         </div>
 
-        <!-- Daily Summary -->
-        <div class="stats-card rounded-2xl p-4 mb-6 shadow-lg text-white">
-            <h3 class="text-lg font-semibold mb-3">今日汇总</h3>
-            <div class="grid grid-cols-2 gap-4 mb-4">
-                <div class="text-center">
-                    <div class="text-2xl font-bold">1450</div>
-                    <div class="text-xs opacity-90">已摄入 (kcal)</div>
-                </div>
-                <div class="text-center">
-                    <div class="text-2xl font-bold">350</div>
-                    <div class="text-xs opacity-90">剩余 (kcal)</div>
-                </div>
-            </div>
-            <div class="bg-white/20 rounded-lg p-3">
-                <div class="text-sm font-medium mb-1">营养建议</div>
-                <div class="text-xs opacity-90" id="nutritionAdvice">
-                    热量摄入适中，蛋白质略低，建议晚餐增加优质蛋白。整体饮食结构良好，继续保持！
-                </div>
-            </div>
-        </div>
     </div>
-
-    <!-- Floating Action Button -->
-    <button class="floating-btn fixed bottom-24 right-4 w-14 h-14 rounded-full flex items-center justify-center text-white shadow-lg transition-transform hover:scale-110" onclick="quickAddFood()">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-        </svg>
-    </button>
 
     <!-- Bottom Navigation -->
     <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-2">
@@ -447,7 +492,7 @@
                 </svg>
                 <span class="text-xs">记录</span>
             </a>
-            <a href="plan-creator.html" class="nav-tab flex flex-col items-center py-2 px-3 rounded-lg text-gray-600">
+            <a href="plan.html" class="nav-tab flex flex-col items-center py-2 px-3 rounded-lg text-gray-600">
                 <svg class="w-5 h-5 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
                 </svg>
@@ -471,7 +516,7 @@
     <!-- Food Selection Modal -->
     <div id="foodModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
         <div class="flex items-end justify-center min-h-screen">
-            <div class="bg-white rounded-t-3xl w-full max-w-md p-6 transform transition-transform">
+            <div class="bg-white rounded-t-3xl w-full max-w-md p-6 h-[70vh] flex flex-col">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-lg font-semibold text-gray-800">选择食物</h3>
                     <button onclick="closeFoodModal()" class="text-gray-400 hover:text-gray-600">
@@ -481,9 +526,19 @@
                     </button>
                 </div>
                 <div class="mb-4">
-                    <input type="text" placeholder="搜索食物..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent">
+                    <input type="text" id="foodSearchInput" placeholder="搜索食物..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent" oninput="filterFoodList()">
                 </div>
-                <div class="space-y-2 max-h-60 overflow-y-auto" id="foodList">
+                <!-- 分类筛选 -->
+                <div class="flex space-x-2 overflow-x-auto pb-2 mb-4" id="categoryFilters">
+                    <button class="category-btn active px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap bg-emerald-100 text-emerald-700" data-category="all">全部</button>
+                    <button class="category-btn px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap bg-gray-100 text-gray-600" data-category="grains">主食</button>
+                    <button class="category-btn px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap bg-gray-100 text-gray-600" data-category="protein">蛋白质</button>
+                    <button class="category-btn px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap bg-gray-100 text-gray-600" data-category="vegetables">蔬菜</button>
+                    <button class="category-btn px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap bg-gray-100 text-gray-600" data-category="fruits">水果</button>
+                    <button class="category-btn px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap bg-gray-100 text-gray-600" data-category="nuts">坚果</button>
+                    <button class="category-btn px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap bg-gray-100 text-gray-600" data-category="dairy">乳制品</button>
+                </div>
+                <div class="space-y-2 flex-1 overflow-y-auto" id="foodList">
                     <!-- Food items will be populated here -->
                 </div>
             </div>
@@ -495,22 +550,37 @@
         <div class="flex items-center justify-center min-h-screen p-4">
             <div class="bg-white rounded-2xl w-full max-w-sm p-6">
                 <div class="text-center mb-4">
-                    <h3 class="text-lg font-semibold text-gray-800" id="foodName">食物名称</h3>
-                    <p class="text-sm text-gray-500" id="foodUnit">每100g</p>
+                    <h3 class="text-lg font-semibold text-gray-800">添加食物</h3>
+                    <p class="text-sm text-gray-500" id="foodName">食物名称</p>
                 </div>
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">数量</label>
-                    <input type="number" id="foodQuantity" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent" placeholder="请输入数量" value="100">
+                <div class="mb-4 flex items-center">
+                    <label class="text-sm font-medium text-gray-700 mr-3 whitespace-nowrap">数量</label>
+                    <div class="flex items-center flex-1">
+                        <input type="number" id="foodQuantity" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent" placeholder="请输入数量" value="100">
+                        <span class="ml-3 text-sm text-gray-600" id="foodUnitDisplay">g</span>
+                    </div>
                 </div>
-                <div class="mb-6">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">单位</label>
-                    <select id="foodUnitSelect" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent">
-                        <option value="g">克 (g)</option>
-                        <option value="ml">毫升 (ml)</option>
-                        <option value="piece">个/片</option>
-                        <option value="cup">杯</option>
-                        <option value="tbsp">勺</option>
-                    </select>
+                <!-- 营养成分预览 -->
+                <div class="bg-gray-50 rounded-lg p-3 mb-4">
+                    <div class="text-xs text-gray-500 mb-2">营养成分预览</div>
+                    <div class="grid grid-cols-4 gap-2 text-center">
+                        <div>
+                            <div class="text-xs text-gray-500">碳水</div>
+                            <div class="text-sm font-medium text-yellow-600" id="addPreviewCarbs">0g</div>
+                        </div>
+                        <div>
+                            <div class="text-xs text-gray-500">蛋白质</div>
+                            <div class="text-sm font-medium text-red-600" id="addPreviewProtein">0g</div>
+                        </div>
+                        <div>
+                            <div class="text-xs text-gray-500">脂肪</div>
+                            <div class="text-sm font-medium text-blue-600" id="addPreviewFat">0g</div>
+                        </div>
+                        <div>
+                            <div class="text-xs text-gray-500">能量</div>
+                            <div class="text-sm font-medium text-emerald-600" id="addPreviewCalories">0 kcal</div>
+                        </div>
+                    </div>
                 </div>
                 <div class="flex space-x-3">
                     <button onclick="closeQuantityModal()" class="flex-1 bg-gray-100 text-gray-700 py-2 px-4 rounded-lg font-medium hover:bg-gray-200 transition-colors">
@@ -524,6 +594,632 @@
         </div>
     </div>
 
-    <script src="main.js"></script>
+    <!-- Edit Food Modal -->
+    <div id="editFoodModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-2xl w-full max-w-sm p-6">
+                <div class="text-center mb-4">
+                    <h3 class="text-lg font-semibold text-gray-800">编辑食物</h3>
+                    <p class="text-sm text-gray-500" id="editFoodName">食物名称</p>
+                </div>
+                <div class="mb-4 flex items-center">
+                    <label class="text-sm font-medium text-gray-700 mr-3 whitespace-nowrap">数量</label>
+                    <div class="flex items-center flex-1">
+                        <input type="number" id="editFoodQuantity" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent" placeholder="请输入数量" value="100">
+                        <span class="ml-3 text-sm text-gray-600" id="editFoodUnitDisplay">g</span>
+                    </div>
+                </div>
+                <!-- 营养成分预览 -->
+                <div class="bg-gray-50 rounded-lg p-3 mb-4">
+                    <div class="text-xs text-gray-500 mb-2">营养成分预览</div>
+                    <div class="grid grid-cols-4 gap-2 text-center">
+                        <div>
+                            <div class="text-xs text-gray-500">碳水</div>
+                            <div class="text-sm font-medium text-yellow-600" id="previewCarbs">0g</div>
+                        </div>
+                        <div>
+                            <div class="text-xs text-gray-500">蛋白质</div>
+                            <div class="text-sm font-medium text-red-600" id="previewProtein">0g</div>
+                        </div>
+                        <div>
+                            <div class="text-xs text-gray-500">脂肪</div>
+                            <div class="text-sm font-medium text-blue-600" id="previewFat">0g</div>
+                        </div>
+                        <div>
+                            <div class="text-xs text-gray-500">能量</div>
+                            <div class="text-sm font-medium text-emerald-600" id="previewCalories">0 kcal</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex space-x-3">
+                    <button onclick="closeEditFoodModal()" class="flex-1 bg-gray-100 text-gray-700 py-2 px-4 rounded-lg font-medium hover:bg-gray-200 transition-colors">
+                        取消
+                    </button>
+                    <button onclick="confirmEditFood()" class="flex-1 bg-emerald-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-emerald-700 transition-colors">
+                        确认修改
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirm Modal -->
+    <div id="deleteConfirmModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-2xl w-full max-w-sm p-6">
+                <div class="text-center mb-6">
+                    <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+                        <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-800">确认删除</h3>
+                    <p class="text-sm text-gray-500 mt-2">确定要删除 <span id="deleteFoodName" class="font-medium text-gray-800"></span> 吗？<br>此操作不可恢复。</p>
+                </div>
+                <div class="flex space-x-3">
+                    <button onclick="closeDeleteConfirmModal()" class="flex-1 bg-gray-100 text-gray-700 py-2 px-4 rounded-lg font-medium hover:bg-gray-200 transition-colors">
+                        取消
+                    </button>
+                    <button onclick="confirmDeleteFood()" class="flex-1 bg-red-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-red-700 transition-colors">
+                        确认删除
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Record Meal Confirm Modal -->
+    <div id="recordMealConfirmModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-2xl w-full max-w-sm p-6">
+                <div class="text-center mb-6">
+                    <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-emerald-100 mb-4">
+                        <svg class="h-6 w-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-800">记录本餐</h3>
+                    <p class="text-sm text-gray-500 mt-2">确定要记录本餐吗？<br>共 <span id="recordMealCount" class="font-medium text-gray-800"></span> 个食物将被标记为已记录。</p>
+                </div>
+                <div class="flex space-x-3">
+                    <button onclick="closeRecordMealConfirmModal()" class="flex-1 bg-gray-100 text-gray-700 py-2 px-4 rounded-lg font-medium hover:bg-gray-200 transition-colors">
+                        取消
+                    </button>
+                    <button onclick="confirmRecordMeal()" class="flex-1 bg-emerald-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-emerald-700 transition-colors">
+                        确认记录
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recorded Food Edit Confirm Modal -->
+    <div id="recordedEditConfirmModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-2xl w-full max-w-sm p-6">
+                <div class="text-center mb-6">
+                    <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-yellow-100 mb-4">
+                        <svg class="h-6 w-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-800">提示</h3>
+                    <p class="text-sm text-gray-500 mt-2">该食物已记录，更改后将会改为未记录状态。</p>
+                </div>
+                <div class="flex space-x-3">
+                    <button onclick="closeRecordedEditConfirmModal()" class="flex-1 bg-gray-100 text-gray-700 py-2 px-4 rounded-lg font-medium hover:bg-gray-200 transition-colors">
+                        取消
+                    </button>
+                    <button onclick="confirmRecordedEdit()" class="flex-1 bg-yellow-500 text-white py-2 px-4 rounded-lg font-medium hover:bg-yellow-600 transition-colors">
+                        继续编辑
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 食物营养数据库 (每100g)
+        const foodNutritionDB = {
+            '燕麦粥': { carbs: 60, protein: 12, fat: 6, calories: 360 },
+            '牛奶': { carbs: 4.8, protein: 3.2, fat: 3.2, calories: 54 },
+            '香蕉': { carbs: 23, protein: 1.1, fat: 0.3, calories: 89 },
+            '鸡胸肉': { carbs: 0, protein: 31, fat: 3.6, calories: 165 },
+            '糙米饭': { carbs: 23, protein: 2.6, fat: 0.9, calories: 111 },
+            '西兰花': { carbs: 7, protein: 2.8, fat: 0.4, calories: 34 },
+            '胡萝卜': { carbs: 9.6, protein: 0.9, fat: 0.2, calories: 41 },
+            '橄榄油': { carbs: 0, protein: 0, fat: 100, calories: 884 },
+            '三文鱼': { carbs: 0, protein: 20, fat: 13, calories: 208 },
+            '蒸蛋': { carbs: 0.6, protein: 13, fat: 10, calories: 143 },
+            '菠菜': { carbs: 3.6, protein: 2.9, fat: 0.4, calories: 23 },
+            '紫薯': { carbs: 20, protein: 1.6, fat: 0.2, calories: 86 },
+            '酸奶': { carbs: 4.7, protein: 10, fat: 0.5, calories: 59 },
+            '杏仁': { carbs: 21.6, protein: 21.2, fat: 49.4, calories: 579 },
+            '苹果': { carbs: 13.8, protein: 0.3, fat: 0.2, calories: 52 },
+            '鸡蛋': { carbs: 1, protein: 13, fat: 11, calories: 155 },
+            '全麦面包': { carbs: 41, protein: 13, fat: 4, calories: 247 },
+            '牛油果': { carbs: 8.5, protein: 2, fat: 14.7, calories: 160 },
+            '蓝莓': { carbs: 14.5, protein: 0.7, fat: 0.3, calories: 57 },
+            '核桃': { carbs: 4, protein: 4, fat: 18, calories: 185 }
+        };
+
+        // 食物选择数据库
+        const foodDatabase = [
+            { name: '燕麦粥', calories: 180, protein: 6, fat: 3, carbs: 30, unit: '50g', category: 'grains' },
+            { name: '牛奶', calories: 120, protein: 6, fat: 6, carbs: 9, unit: '200ml', category: 'dairy' },
+            { name: '香蕉', calories: 80, protein: 1, fat: 0, carbs: 20, unit: '1根', category: 'fruits' },
+            { name: '鸡胸肉', calories: 250, protein: 46, fat: 5, carbs: 0, unit: '150g', category: 'protein' },
+            { name: '糙米饭', calories: 180, protein: 4, fat: 2, carbs: 36, unit: '100g', category: 'grains' },
+            { name: '西兰花', calories: 35, protein: 3, fat: 0, carbs: 7, unit: '100g', category: 'vegetables' },
+            { name: '胡萝卜', calories: 30, protein: 1, fat: 0, carbs: 7, unit: '80g', category: 'vegetables' },
+            { name: '橄榄油', calories: 85, protein: 0, fat: 9, carbs: 0, unit: '1勺', category: 'protein' },
+            { name: '三文鱼', calories: 280, protein: 25, fat: 18, carbs: 0, unit: '120g', category: 'protein' },
+            { name: '蒸蛋', calories: 140, protein: 12, fat: 10, carbs: 1, unit: '2个', category: 'protein' },
+            { name: '菠菜', calories: 25, protein: 3, fat: 0, carbs: 4, unit: '100g', category: 'vegetables' },
+            { name: '紫薯', calories: 85, protein: 2, fat: 0, carbs: 20, unit: '100g', category: 'grains' },
+            { name: '酸奶', calories: 80, protein: 4, fat: 0, carbs: 12, unit: '150g', category: 'dairy' },
+            { name: '杏仁', calories: 20, protein: 1, fat: 2, carbs: 1, unit: '10颗', category: 'nuts' },
+            { name: '苹果', calories: 52, protein: 0, fat: 0, carbs: 14, unit: '1个', category: 'fruits' },
+            { name: '鸡蛋', calories: 155, protein: 13, fat: 11, carbs: 1, unit: '2个', category: 'protein' },
+            { name: '全麦面包', calories: 120, protein: 4, fat: 2, carbs: 20, unit: '1片', category: 'grains' },
+            { name: '牛油果', calories: 160, protein: 2, fat: 15, carbs: 9, unit: '半个', category: 'fruits' },
+            { name: '蓝莓', calories: 42, protein: 1, fat: 0, carbs: 11, unit: '100g', category: 'fruits' },
+            { name: '核桃', calories: 185, protein: 4, fat: 18, carbs: 4, unit: '30g', category: 'nuts' }
+        ];
+
+        let currentCategory = 'all';
+
+        // 全局变量
+        let currentMealType = '';
+        let currentFoodItem = null;
+
+        // 编辑食物相关
+        let currentEditItem = null;
+        let currentDeleteItem = null;
+        let currentRecordMeal = null;
+        let pendingEditBtn = null;
+
+        function editFoodItem(btn) {
+            const foodItem = btn.closest('.food-item');
+            
+            // 检查是否已记录
+            if (foodItem.classList.contains('recorded')) {
+                pendingEditBtn = btn;
+                document.getElementById('recordedEditConfirmModal').classList.remove('hidden');
+                return;
+            }
+            
+            openEditModal(foodItem);
+        }
+
+        function openEditModal(foodItem) {
+            currentEditItem = foodItem;
+            const foodName = foodItem.querySelector('.font-medium').textContent;
+            const quantityText = foodItem.querySelector('.text-xs.text-gray-500').textContent;
+            const quantity = parseFloat(quantityText) || 100;
+            const unit = quantityText.replace(/[\d.]+/, '');
+            
+            document.getElementById('editFoodName').textContent = foodName;
+            document.getElementById('editFoodQuantity').value = quantity;
+            document.getElementById('editFoodUnitDisplay').textContent = unit;
+            
+            // 显示营养成分预览
+            updateNutritionPreview(foodName, quantity);
+            
+            document.getElementById('editFoodModal').classList.remove('hidden');
+        }
+
+        function updateNutritionPreview(foodName, quantity) {
+            const nutrition = foodNutritionDB[foodName];
+            if (!nutrition) return;
+            
+            const ratio = quantity / 100;
+            const carbs = (nutrition.carbs * ratio).toFixed(1);
+            const protein = (nutrition.protein * ratio).toFixed(1);
+            const fat = (nutrition.fat * ratio).toFixed(1);
+            const calories = Math.round(nutrition.calories * ratio);
+            
+            document.getElementById('previewCarbs').textContent = carbs + 'g';
+            document.getElementById('previewProtein').textContent = protein + 'g';
+            document.getElementById('previewFat').textContent = fat + 'g';
+            document.getElementById('previewCalories').textContent = calories + ' kcal';
+        }
+
+        // 监听数量变化
+        document.getElementById('editFoodQuantity').addEventListener('input', function() {
+            const foodName = document.getElementById('editFoodName').textContent;
+            const quantity = parseFloat(this.value) || 0;
+            updateNutritionPreview(foodName, quantity);
+        });
+
+        function closeEditFoodModal() {
+            document.getElementById('editFoodModal').classList.add('hidden');
+            currentEditItem = null;
+        }
+
+        function confirmEditFood() {
+            if (!currentEditItem) return;
+            
+            const foodName = document.getElementById('editFoodName').textContent;
+            const quantity = parseFloat(document.getElementById('editFoodQuantity').value) || 0;
+            const unitText = document.getElementById('editFoodUnitDisplay').textContent;
+            
+            // 更新食物项显示
+            currentEditItem.querySelector('.text-xs.text-gray-500').textContent = quantity + unitText;
+            
+            // 更新营养成分
+            const nutrition = foodNutritionDB[foodName];
+            if (nutrition) {
+                const ratio = quantity / 100;
+                const calories = Math.round(nutrition.calories * ratio);
+                currentEditItem.querySelector('.text-sm.text-gray-600').textContent = calories + ' kcal';
+            }
+            
+            // 更新餐卡总计
+            const mealCard = currentEditItem.closest('.meal-card');
+            updateMealTotal(mealCard);
+            
+            // 更新今日目标
+            updateDailyGoals();
+            
+            closeEditFoodModal();
+        }
+
+        function getUnitText(unit) {
+            const unitMap = { 'g': 'g', 'ml': 'ml', 'piece': '个', 'cup': '杯', 'tbsp': '勺' };
+            return unitMap[unit] || unit;
+        }
+
+        // 更新今日目标
+        function updateDailyGoals() {
+            let totalCarbs = 0, totalProtein = 0, totalFat = 0, totalCalories = 0;
+            
+            document.querySelectorAll('.food-item').forEach(item => {
+                const foodName = item.querySelector('.font-medium').textContent;
+                const quantityText = item.querySelector('.text-xs.text-gray-500').textContent;
+                const quantity = parseFloat(quantityText) || 0;
+                
+                const nutrition = foodNutritionDB[foodName];
+                if (nutrition) {
+                    const ratio = quantity / 100;
+                    totalCarbs += nutrition.carbs * ratio;
+                    totalProtein += nutrition.protein * ratio;
+                    totalFat += nutrition.fat * ratio;
+                    totalCalories += nutrition.calories * ratio;
+                }
+            });
+            
+            // 更新已摄入热量
+            document.getElementById('calorieConsumed').textContent = Math.round(totalCalories);
+            
+            // 更新进度条
+            const carbGoal = 180, proteinGoal = 120, fatGoal = 50;
+            const carbPercent = Math.min((totalCarbs / carbGoal) * 100, 100);
+            const proteinPercent = Math.min((totalProtein / proteinGoal) * 100, 100);
+            const fatPercent = Math.min((totalFat / fatGoal) * 100, 100);
+            
+            document.getElementById('carbText').textContent = `${Math.round(totalCarbs)} / ${carbGoal}g`;
+            document.getElementById('carbBar').style.width = carbPercent + '%';
+            
+            document.getElementById('proteinText').textContent = `${Math.round(totalProtein)} / ${proteinGoal}g`;
+            document.getElementById('proteinBar').style.width = proteinPercent + '%';
+            
+            document.getElementById('fatText').textContent = `${Math.round(totalFat)} / ${fatGoal}g`;
+            document.getElementById('fatBar').style.width = fatPercent + '%';
+        }
+
+        // 删除食物相关
+        function deleteFoodItem(btn) {
+            currentDeleteItem = btn.closest('.food-item');
+            const foodName = currentDeleteItem.querySelector('.font-medium').textContent;
+            document.getElementById('deleteFoodName').textContent = foodName;
+            document.getElementById('deleteConfirmModal').classList.remove('hidden');
+        }
+
+        function closeDeleteConfirmModal() {
+            document.getElementById('deleteConfirmModal').classList.add('hidden');
+            currentDeleteItem = null;
+        }
+
+        function confirmDeleteFood() {
+            if (currentDeleteItem) {
+                const mealCard = currentDeleteItem.closest('.meal-card');
+                currentDeleteItem.remove();
+                updateMealTotal(mealCard);
+                updateDailyGoals();
+            }
+            closeDeleteConfirmModal();
+        }
+
+        // 更新餐卡总计
+        function updateMealTotal(mealCard) {
+            let totalCarbs = 0, totalProtein = 0, totalFat = 0, totalCalories = 0;
+            
+            mealCard.querySelectorAll('.food-item').forEach(item => {
+                const foodName = item.querySelector('.font-medium').textContent;
+                const quantityText = item.querySelector('.text-xs.text-gray-500').textContent;
+                const quantity = parseFloat(quantityText) || 0;
+                
+                const nutrition = foodNutritionDB[foodName];
+                if (nutrition) {
+                    const ratio = quantity / 100;
+                    totalCarbs += nutrition.carbs * ratio;
+                    totalProtein += nutrition.protein * ratio;
+                    totalFat += nutrition.fat * ratio;
+                    totalCalories += nutrition.calories * ratio;
+                }
+            });
+            
+            // 更新餐卡标题栏
+            const headerDiv = mealCard.querySelector('.flex.items-center.justify-between.mb-3 > div:last-child');
+            if (headerDiv) {
+                headerDiv.innerHTML = `
+                    <div class="text-sm text-gray-600">🍞 ${Math.round(totalCarbs)}g</div>
+                    <div class="text-sm text-gray-600">🥩 ${Math.round(totalProtein)}g</div>
+                    <div class="text-sm text-gray-600">🥑 ${Math.round(totalFat)}g</div>
+                    <div class="text-sm text-gray-500">${Math.round(totalCalories)} kcal</div>
+                `;
+            }
+        }
+
+        // 按计划记录本餐
+        function recordMeal(mealType) {
+            const mealCard = document.getElementById(mealType + 'Items').closest('.meal-card');
+            const foodItems = mealCard.querySelectorAll('.food-item');
+            
+            if (foodItems.length === 0) return;
+            
+            currentRecordMeal = mealType;
+            const count = foodItems.length;
+            document.getElementById('recordMealCount').textContent = count;
+            document.getElementById('recordMealConfirmModal').classList.remove('hidden');
+        }
+
+        function closeRecordMealConfirmModal() {
+            document.getElementById('recordMealConfirmModal').classList.add('hidden');
+            currentRecordMeal = null;
+        }
+
+        function confirmRecordMeal() {
+            if (!currentRecordMeal) return;
+            
+            const mealCard = document.getElementById(currentRecordMeal + 'Items').closest('.meal-card');
+            mealCard.querySelectorAll('.food-item').forEach(item => {
+                item.classList.add('recorded', 'bg-emerald-50');
+                item.classList.remove('bg-gray-50');
+            });
+            
+            closeRecordMealConfirmModal();
+        }
+
+        // 已记录食物编辑提示
+        function closeRecordedEditConfirmModal() {
+            document.getElementById('recordedEditConfirmModal').classList.add('hidden');
+        }
+
+        function confirmRecordedEdit() {
+            closeRecordedEditConfirmModal();
+            const foodItem = pendingEditBtn.closest('.food-item');
+            foodItem.classList.remove('recorded', 'bg-emerald-50');
+            foodItem.classList.add('bg-gray-50');
+            openEditModal(foodItem);
+            pendingEditBtn = null;
+        }
+
+        // 关闭弹框时点击背景
+        document.getElementById('editFoodModal').addEventListener('click', function(e) {
+            if (e.target === this) closeEditFoodModal();
+        });
+        document.getElementById('deleteConfirmModal').addEventListener('click', function(e) {
+            if (e.target === this) closeDeleteConfirmModal();
+        });
+        document.getElementById('recordMealConfirmModal').addEventListener('click', function(e) {
+            if (e.target === this) closeRecordMealConfirmModal();
+        });
+        document.getElementById('recordedEditConfirmModal').addEventListener('click', function(e) {
+            if (e.target === this) closeRecordedEditConfirmModal();
+        });
+        document.getElementById('quantityModal').addEventListener('click', function(e) {
+            if (e.target === this) closeQuantityModal();
+        });
+
+        // 添加食物
+        function addFoodItem(mealType) {
+            currentMealType = mealType;
+            showFoodModal();
+        }
+
+        // 显示食物选择模态框
+        function showFoodModal() {
+            const modal = document.getElementById('foodModal');
+            renderFoodList();
+            modal.classList.remove('hidden');
+        }
+
+        // 渲染食物列表
+        function renderFoodList(filterText = '') {
+            const foodList = document.getElementById('foodList');
+            foodList.innerHTML = '';
+            
+            let filteredFoods = foodDatabase;
+            
+            // 按分类筛选
+            if (currentCategory !== 'all') {
+                filteredFoods = filteredFoods.filter(food => food.category === currentCategory);
+            }
+            
+            // 按搜索文本筛选
+            if (filterText) {
+                filteredFoods = filteredFoods.filter(food => food.name.includes(filterText));
+            }
+            
+            filteredFoods.forEach(food => {
+                const foodItem = document.createElement('div');
+                foodItem.className = 'p-4 bg-gray-50 rounded-xl cursor-pointer hover:bg-emerald-50 transition-colors';
+                foodItem.innerHTML = `
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="font-semibold text-gray-800 text-base">${food.name}</div>
+                        <div class="text-lg font-bold text-emerald-600">${food.calories} <span class="text-xs font-normal text-gray-400">kcal</span></div>
+                    </div>
+                    <div class="flex items-center justify-between text-xs">
+                        <span class="text-gray-400">每${food.unit}</span>
+                        <div class="flex items-center gap-3 text-gray-500">
+                            <span>🍞 ${food.carbs}g</span>
+                            <span>🥩 ${food.protein}g</span>
+                            <span>🥑 ${food.fat}g</span>
+                        </div>
+                    </div>
+                `;
+                foodItem.onclick = () => selectFood(food);
+                foodList.appendChild(foodItem);
+            });
+        }
+
+        // 搜索过滤
+        function filterFoodList() {
+            const searchText = document.getElementById('foodSearchInput').value;
+            renderFoodList(searchText);
+        }
+
+        // 分类筛选事件监听
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('category-btn')) {
+                // 更新按钮样式
+                document.querySelectorAll('.category-btn').forEach(btn => {
+                    btn.classList.remove('active', 'bg-emerald-100', 'text-emerald-700');
+                    btn.classList.add('bg-gray-100', 'text-gray-600');
+                });
+                e.target.classList.remove('bg-gray-100', 'text-gray-600');
+                e.target.classList.add('active', 'bg-emerald-100', 'text-emerald-700');
+                
+                // 更新当前分类并重新渲染
+                currentCategory = e.target.dataset.category;
+                const searchText = document.getElementById('foodSearchInput').value;
+                renderFoodList(searchText);
+            }
+        });
+
+        // 关闭食物选择模态框
+        function closeFoodModal() {
+            const modal = document.getElementById('foodModal');
+            modal.classList.add('hidden');
+        }
+
+        // 选择食物
+        function selectFood(food) {
+            currentFoodItem = food;
+            closeFoodModal();
+            showQuantityModal(food);
+        }
+
+        // 显示数量输入模态框
+        function showQuantityModal(food) {
+            const modal = document.getElementById('quantityModal');
+            document.getElementById('foodName').textContent = food.name;
+            document.getElementById('foodQuantity').value = 100;
+            
+            // 显示营养成分预览
+            updateAddPreview(food.name, 100);
+            
+            modal.classList.remove('hidden');
+        }
+
+        // 更新添加食物时的营养成分预览
+        function updateAddPreview(foodName, quantity) {
+            const nutrition = foodNutritionDB[foodName];
+            if (!nutrition) return;
+            
+            const ratio = quantity / 100;
+            const carbs = (nutrition.carbs * ratio).toFixed(1);
+            const protein = (nutrition.protein * ratio).toFixed(1);
+            const fat = (nutrition.fat * ratio).toFixed(1);
+            const calories = Math.round(nutrition.calories * ratio);
+            
+            document.getElementById('addPreviewCarbs').textContent = carbs + 'g';
+            document.getElementById('addPreviewProtein').textContent = protein + 'g';
+            document.getElementById('addPreviewFat').textContent = fat + 'g';
+            document.getElementById('addPreviewCalories').textContent = calories + ' kcal';
+        }
+
+        // 监听添加食物时的数量变化
+        document.getElementById('foodQuantity').addEventListener('input', function() {
+            const foodName = document.getElementById('foodName').textContent;
+            const quantity = parseFloat(this.value) || 0;
+            updateAddPreview(foodName, quantity);
+        });
+
+        // 监听单位变化
+        document.getElementById('foodUnitSelect').addEventListener('change', function() {
+            const unitMap = { 'g': 'g', 'ml': 'ml', 'piece': '个', 'cup': '杯', 'tbsp': '勺' };
+            document.getElementById('foodUnitDisplay').textContent = unitMap[this.value] || 'g';
+        });
+
+        // 关闭数量输入模态框
+        function closeQuantityModal() {
+            const modal = document.getElementById('quantityModal');
+            modal.classList.add('hidden');
+        }
+
+        // 确认添加食物
+        function confirmAddFood() {
+            const quantity = parseFloat(document.getElementById('foodQuantity').value);
+            const unitSelect = document.getElementById('foodUnitSelect');
+            const unitValue = unitSelect.value;
+            const unitText = { 'g': 'g', 'ml': 'ml', 'piece': '个', 'cup': '杯', 'tbsp': '勺' }[unitValue];
+            
+            if (!quantity || quantity <= 0) {
+                alert('请输入有效的数量');
+                return;
+            }
+            
+            if (!currentFoodItem || !currentMealType) {
+                alert('数据错误，请重试');
+                return;
+            }
+            
+            // 计算实际营养值
+            const ratio = quantity / 100;
+            const actualCalories = Math.round(currentFoodItem.calories * ratio);
+            
+            // 创建新的食物项
+            const foodElement = document.createElement('div');
+            foodElement.className = 'food-item flex items-center justify-between p-2 bg-gray-50 rounded-lg';
+            foodElement.innerHTML = `
+                <div>
+                    <div class="font-medium text-gray-800">${currentFoodItem.name}</div>
+                    <div class="text-xs text-gray-500">${quantity}${unitText}</div>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <span class="text-sm text-gray-600">${actualCalories} kcal</span>
+                    <button class="text-gray-400 hover:text-gray-600" onclick="editFoodItem(this)">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                        </svg>
+                    </button>
+                    <button class="text-red-400 hover:text-red-600" onclick="deleteFoodItem(this)">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                        </svg>
+                    </button>
+                </div>
+            `;
+            
+            // 添加到对应的餐食区域
+            const container = document.getElementById(currentMealType + 'Items');
+            container.appendChild(foodElement);
+            
+            // 更新统计
+            const mealCard = container.closest('.meal-card');
+            updateMealTotal(mealCard);
+            updateDailyGoals();
+            
+            closeQuantityModal();
+        }
+
+        // 关闭弹框时点击背景
+        document.getElementById('foodModal').addEventListener('click', function(e) {
+            if (e.target === this) closeFoodModal();
+        });
+    </script>
 </body>
 </html>

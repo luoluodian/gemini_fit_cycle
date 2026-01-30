@@ -1,10 +1,6 @@
-// 全局变量
-let isWechatReady = false;
-
 // 页面加载完成后初始化
 document.addEventListener("DOMContentLoaded", function () {
   initializePage();
-  checkWechatEnvironment();
 });
 
 // 初始化页面
@@ -23,21 +19,6 @@ function initializePage() {
   checkLoginStatus();
 }
 
-// 检查微信环境
-function checkWechatEnvironment() {
-  // 检查是否是微信浏览器
-  const isWechat = /micromessenger/i.test(navigator.userAgent);
-
-  if (isWechat) {
-    // 在微信环境中
-    isWechatReady = true;
-    console.log("微信环境检测成功");
-  } else {
-    // 非微信环境，显示提示
-    console.log("非微信环境，使用模拟登录");
-  }
-}
-
 // 检查登录状态
 function checkLoginStatus() {
   const userToken = localStorage.getItem("userToken");
@@ -54,12 +35,6 @@ function checkLoginStatus() {
 
 // 微信登录
 function wechatLogin() {
-  if (!isWechatReady) {
-    // 非微信环境，使用模拟登录
-    simulateWechatLogin();
-    return;
-  }
-
   // 微信环境，调用微信登录
   if (typeof wx === "undefined") {
     showError("微信JS-SDK未加载，请检查网络连接");
@@ -80,36 +55,6 @@ function wechatLogin() {
       showError("微信登录失败：" + res.errMsg);
     },
   });
-}
-
-// 模拟微信登录（用于非微信环境测试）
-function simulateWechatLogin() {
-  showSuccess("正在模拟微信登录...");
-
-  setTimeout(() => {
-    // 模拟登录成功
-    const mockUserInfo = {
-      openId: "mock_openid_" + Date.now(),
-      nickName: "健康达人",
-      avatarUrl: "https://via.placeholder.com/100",
-      gender: 0,
-      city: "北京",
-      province: "北京",
-      country: "中国",
-    };
-
-    const mockToken = "mock_token_" + Date.now();
-
-    // 保存用户信息
-    localStorage.setItem("userToken", mockToken);
-    localStorage.setItem("userInfo", JSON.stringify(mockUserInfo));
-
-    // 跳转到主页面
-    showSuccess("登录成功！");
-    setTimeout(() => {
-      //   window.location.href = "index.html";
-    }, 1500);
-  }, 2000);
 }
 
 // 与后端认证
@@ -272,7 +217,6 @@ function checkWechatSDK() {
 
     wx.ready(function () {
       console.log("微信JS-SDK配置成功");
-      isWechatReady = true;
     });
 
     wx.error(function (res) {
