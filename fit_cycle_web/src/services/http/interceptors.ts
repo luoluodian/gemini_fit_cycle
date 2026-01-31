@@ -121,9 +121,8 @@ export class AuthInterceptor implements Interceptor {
       }
 
       setStorage(ACCESS_TOKEN_KEY, newAccessToken);
-      setStorage(REFRESH_TOKEN_KEY, res?.refreshToken);
-      if (res?.user) {
-        setStorage(USER_INFO_KEY, res.user);
+      if (res?.refreshToken) {
+        setStorage(REFRESH_TOKEN_KEY, res.refreshToken);
       }
 
       const pendingQueue = AuthInterceptor.refreshing.queue;

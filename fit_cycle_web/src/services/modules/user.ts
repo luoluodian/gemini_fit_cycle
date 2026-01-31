@@ -4,6 +4,12 @@
  */
 
 import { httpRequest } from "../http";
+import type { UserInfo, AuthResponse } from "./auth";
+
+/**
+ * 重新导出类型，方便其他模块使用
+ */
+export type { UserInfo, AuthResponse };
 
 /**
  * 用户登录参数
@@ -15,30 +21,10 @@ export interface LoginParams {
 }
 
 /**
- * 用户信息
- */
-export interface UserInfo {
-  id: number;
-  nickname: string;
-  avatarUrl: string;
-  phone?: string;
-  email?: string;
-  [key: string]: any;
-}
-
-/**
- * 登录/刷新响应
- */
-export interface AuthResponse {
-  accessToken: string;
-  refreshToken: string;
-  user: UserInfo;
-}
-
-/**
  * 刷新用户Token
+ * 注意：后端此接口仅返回 accessToken 和 refreshToken，不包含 user 信息
  */
-export async function refreshToken(token: string): Promise<AuthResponse> {
+export async function refreshToken(token: string): Promise<Omit<AuthResponse, 'user'>> {
   return httpRequest.post("/auth/refreshToken", {
     refreshToken: token,
   });
