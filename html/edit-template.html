@@ -359,16 +359,20 @@
 
         document.addEventListener('DOMContentLoaded', function() {
             const params = new URLSearchParams(window.location.search);
-            const index = params.get('index') || 0;
+            // 支持 index 或 dayIndex 参数
+            const index = params.get('dayIndex') || params.get('index') || 0;
             const planType = params.get('type') || 'custom';
+            
             document.getElementById('pageTitle').textContent = `编辑 Day ${parseInt(index) + 1}`;
             
             // 加载碳循环配置
-            const savedConfig = localStorage.getItem('carbCycleConfig');
-            if (savedConfig && planType === 'carb-cycle') {
-                carbCycleConfig = JSON.parse(savedConfig);
-                // 根据索引确定阶段类型并显示
-                setupCarbCyclePhase(parseInt(index));
+            if (planType === 'carb-cycle') {
+                const savedConfig = localStorage.getItem('carbCycleConfig');
+                if (savedConfig) {
+                    carbCycleConfig = JSON.parse(savedConfig);
+                    // 根据索引确定阶段类型并显示
+                    setupCarbCyclePhase(parseInt(index));
+                }
             }
             
             // 初始化字符计数

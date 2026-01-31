@@ -419,17 +419,13 @@ function filterByCategory(category) {
 
   // 清除所有分类按钮的激活状态
   document.querySelectorAll(".category-tab").forEach((tab) => {
-    tab.classList.remove("active", "bg-emerald-500", "text-white");
-    tab.classList.add("bg-gray-100", "text-gray-600");
-    tab.classList.remove("bg-gray-100", "text-gray-600");
-    tab.classList.add("bg-gray-100", "text-gray-600");
+    tab.classList.remove("active");
   });
 
   // 激活选中的分类按钮
   const target = event.target.closest(".category-tab");
   if (target) {
-    target.classList.add("active", "bg-emerald-500", "text-white");
-    target.classList.remove("bg-gray-100", "text-gray-600");
+    target.classList.add("active");
   }
 
   // 筛选食物
@@ -568,6 +564,10 @@ function createFoodCard(food) {
       ? '<span class="px-1.5 py-0.5 bg-gray-100 text-gray-500 text-[10px] rounded">系统</span>'
       : '<span class="px-1.5 py-0.5 bg-purple-100 text-purple-500 text-[10px] rounded">我的</span>';
 
+  const favoriteBadge = food.isFavorite
+    ? '<span class="px-1.5 py-0.5 bg-pink-100 text-pink-500 text-[10px] rounded flex items-center"><span class="mr-0.5">❤️</span>收藏</span>'
+    : "";
+
   return `
         <div class="food-card bg-white rounded-lg p-3 border border-gray-100 flex items-center justify-between" onclick="viewFoodDetail('${food.id}')">
             <div class="flex items-center flex-1 min-w-0">
@@ -578,6 +578,7 @@ function createFoodCard(food) {
                     <div class="flex items-center space-x-2">
                         <h4 class="font-medium text-gray-800 text-sm truncate">${food.name}</h4>
                         ${typeBadge}
+                        ${favoriteBadge}
                     </div>
                     <div class="flex items-center text-[10px] text-gray-400 mt-0.5 space-x-2">
                         <span>🔹 蛋白 ${food.protein}g</span>
@@ -728,6 +729,119 @@ function selectFoodIcon(btn, emoji) {
   document.getElementById("selectedFoodIcon").value = emoji;
 }
 
+// 标签颜色配置
+const tagColors = {
+  蛋白质: {
+    bg: "bg-rose-50",
+    text: "text-rose-600",
+    border: "border-rose-200",
+    activeBg: "bg-rose-500",
+    activeText: "text-white",
+    activeBorder: "border-rose-500",
+  },
+  蔬菜: {
+    bg: "bg-green-50",
+    text: "text-green-600",
+    border: "border-green-200",
+    activeBg: "bg-green-500",
+    activeText: "text-white",
+    activeBorder: "border-green-500",
+  },
+  水果: {
+    bg: "bg-amber-50",
+    text: "text-amber-600",
+    border: "border-amber-200",
+    activeBg: "bg-amber-500",
+    activeText: "text-white",
+    activeBorder: "border-amber-500",
+  },
+  谷物: {
+    bg: "bg-yellow-50",
+    text: "text-yellow-700",
+    border: "border-yellow-200",
+    activeBg: "bg-yellow-500",
+    activeText: "text-white",
+    activeBorder: "border-yellow-500",
+  },
+  乳制品: {
+    bg: "bg-blue-50",
+    text: "text-blue-600",
+    border: "border-blue-200",
+    activeBg: "bg-blue-500",
+    activeText: "text-white",
+    activeBorder: "border-blue-500",
+  },
+  坚果: {
+    bg: "bg-orange-50",
+    text: "text-orange-600",
+    border: "border-orange-200",
+    activeBg: "bg-orange-500",
+    activeText: "text-white",
+    activeBorder: "border-orange-500",
+  },
+  零食: {
+    bg: "bg-pink-50",
+    text: "text-pink-600",
+    border: "border-pink-200",
+    activeBg: "bg-pink-500",
+    activeText: "text-white",
+    activeBorder: "border-pink-500",
+  },
+  饮品: {
+    bg: "bg-cyan-50",
+    text: "text-cyan-600",
+    border: "border-cyan-200",
+    activeBg: "bg-cyan-500",
+    activeText: "text-white",
+    activeBorder: "border-cyan-500",
+  },
+};
+
+// 切换标签选中状态
+function toggleTag(btn) {
+  const tag = btn.dataset.tag;
+  const selectedTagsInput = document.getElementById("selectedTags");
+  let selectedTags = selectedTagsInput.value
+    ? selectedTagsInput.value.split(",")
+    : [];
+
+  const colors = tagColors[tag] || tagColors["蛋白质"];
+  const isSelected = btn.classList.contains(colors.activeBg);
+
+  if (isSelected) {
+    // 取消选中 - 恢复原始颜色
+    btn.classList.remove(
+      colors.activeBg,
+      colors.activeText,
+      colors.activeBorder,
+      "ring-2",
+      "ring-offset-1",
+    );
+    btn.classList.add(colors.bg, colors.text, colors.border);
+    selectedTags = selectedTags.filter((t) => t !== tag);
+  } else {
+    // 选中 - 使用深色主题
+    btn.classList.remove(colors.bg, colors.text, colors.border);
+    btn.classList.add(
+      colors.activeBg,
+      colors.activeText,
+      colors.activeBorder,
+      "ring-2",
+      "ring-offset-1",
+      "ring-" + colors.activeBg.split("-")[1] + "-300",
+    );
+    if (!selectedTags.includes(tag)) {
+      selectedTags.push(tag);
+    }
+  }
+  selectedTagsInput.value = selectedTags.join(",");
+}
+
+// 添加自定义标签（已移除输入框，保留函数兼容）
+function addCustomTag() {
+  // 自定义标签功能已移除，使用预设标签
+}
+
 // 切换收藏状态
 function toggleFavorite(foodId) {
   const food = getAllFoods().find((f) => f.id === foodId);
@@ -774,6 +888,47 @@ function closeCustomFoodModal() {
     complete: () => {
       modal.classList.add("hidden");
       document.getElementById("customFoodForm").reset();
+      // 重置公开开关
+      const isPublicCheckbox = document.getElementById("isPublicFood");
+      if (isPublicCheckbox) {
+        isPublicCheckbox.checked = false;
+      }
+      // 重置标签
+      const selectedTagsInput = document.getElementById("selectedTags");
+      if (selectedTagsInput) {
+        selectedTagsInput.value = "";
+      }
+      document.querySelectorAll(".tag-btn").forEach((btn) => {
+        const tag = btn.dataset.tag;
+        const colors = tagColors[tag];
+        if (colors) {
+          // 移除所有可能的状态类
+          btn.classList.remove(
+            colors.activeBg,
+            colors.activeText,
+            colors.activeBorder,
+            "ring-2",
+            "ring-offset-1",
+            "ring-rose-300",
+            "ring-green-300",
+            "ring-amber-300",
+            "ring-yellow-300",
+            "ring-blue-300",
+            "ring-orange-300",
+            "ring-pink-300",
+            "ring-cyan-300",
+          );
+          // 恢复默认状态
+          btn.classList.add(colors.bg, colors.text, colors.border);
+        }
+      });
+      // 移除动态添加的自定义标签
+      const tagContainer = document.getElementById("tagContainer");
+      if (tagContainer) {
+        tagContainer
+          .querySelectorAll('.tag-btn[data-custom="true"]')
+          .forEach((btn) => btn.remove());
+      }
     },
   });
 }
@@ -781,7 +936,7 @@ function closeCustomFoodModal() {
 // 创建自定义食物项
 function createCustomFoodItem() {
   const formData = {
-    name: document.getElementById("customFoodName").value,
+    name: document.getElementById("customFoodName").value.trim(),
     unit: document.getElementById("customFoodUnit").value,
     calories: parseFloat(document.getElementById("customFoodCalories").value),
     protein:
@@ -791,11 +946,22 @@ function createCustomFoodItem() {
     description:
       document.getElementById("customFoodDescription").value || "自定义食材",
     emoji: document.getElementById("selectedFoodIcon").value || "🥗",
+    isPublic: document.getElementById("isPublicFood")?.checked || false,
   };
 
   // 验证必填字段
   if (!formData.name || !formData.calories) {
     alert("请填写食材名称和热量");
+    return;
+  }
+
+  // 检查食材名称是否已存在
+  const allFoods = getAllFoods();
+  const existingFood = allFoods.find(
+    (food) => food.name.toLowerCase() === formData.name.toLowerCase(),
+  );
+  if (existingFood) {
+    alert(`食材"${formData.name}"已存在于食材库中，请使用其他名称`);
     return;
   }
 
@@ -806,6 +972,9 @@ function createCustomFoodItem() {
     category: "custom",
     type: "custom",
     isFavorite: false,
+    tags: document.getElementById("selectedTags")?.value
+      ? document.getElementById("selectedTags").value.split(",")
+      : [],
     createdAt: new Date().toISOString(),
   };
 
