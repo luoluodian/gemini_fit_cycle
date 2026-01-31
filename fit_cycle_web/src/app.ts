@@ -10,10 +10,13 @@ const App = createApp({
   setup() {
     const userStore = useUserStore()
 
-    useLaunch((options) => {
+    useLaunch(async (options) => {
       console.log('[App] onLaunch options:', options)
       
-      // 启动时的权限检查
+      // 1. 检查登录状态
+      await userStore.checkLoginStatus()
+      
+      // 2. 启动时的权限检查
       const startPath = options.path
       if (startPath && !isPublicPage(startPath)) {
         if (!userStore.isLoggedIn) {

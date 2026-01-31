@@ -55,7 +55,6 @@ export class FoodItem {
   /** 升糖指数 GI（0–100） */
   @Column({
     type: 'tinyint',
-    unsigned: true,
     nullable: true,
     comment: '升糖指数(GI)，0-100',
   })

@@ -3,7 +3,7 @@
     <!-- Main Content -->
     <view class="flex flex-col items-center justify-center min-h-screen px-4">
       <!-- Logo/App Info -->
-      <view class="animate-item">
+      <view class="animate-item pt-30">
         <LogoHeader />
       </view>
 
@@ -68,21 +68,32 @@ const handleWechatLogin = async (): Promise<void> => {
 
     // 2. 调用后端接口
     const authData = await userStore.login(loginRes.code);
-    
+
     console.log("登录成功:", authData);
     await showSuccess("登录成功！");
-    
+
     // 3. 跳转重定向页面或首页
-    const targetUrl = routerParams.redirect ? decodeURIComponent(routerParams.redirect) : "/pages/index/index";
+    const targetUrl = routerParams.redirect
+      ? decodeURIComponent(routerParams.redirect)
+      : "/pages/index/index";
     await reLaunch(targetUrl as any);
   } catch (error: any) {
     console.error("微信登录失败:", error);
-    const msg = error.message || "登录失败，请重试";
-    await showModal({
-      title: "登录失败",
-      content: msg,
-      showCancel: false
-    });
+    // 区分用户拒绝和其他错误
+    if (error.errMsg && error.errMsg.includes("auth deny")) {
+      await showModal({
+        title: "提示",
+        content: "需要您的授权才能登录使用完整功能",
+        showCancel: false,
+      });
+    } else {
+      const msg = error.message || "登录失败，请重试";
+      await showModal({
+        title: "登录失败",
+        content: msg,
+        showCancel: false,
+      });
+    }
   } finally {
     isLoading.value = false;
   }
@@ -99,8 +110,10 @@ const handleGuestMode = async (): Promise<void> => {
       if (res.confirm) {
         setStorage("demoMode", "true");
         await showSuccess("进入体验模式");
-        
-        const targetUrl = routerParams.redirect ? decodeURIComponent(routerParams.redirect) : "/pages/index/index";
+
+        const targetUrl = routerParams.redirect
+          ? decodeURIComponent(routerParams.redirect)
+          : "/pages/index/index";
         await reLaunch(targetUrl as any);
       }
     },

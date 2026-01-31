@@ -4,6 +4,9 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AppModule } from '../src/app.module';
 import { User } from '../src/database/entity/user.entity';
+import { ConfigService, ConfigModule } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { DatabaseModule } from '../src/database/database.module';
 
 describe('User Entity (e2e)', () => {
   let app: INestApplication;
@@ -13,13 +16,25 @@ describe('User Entity (e2e)', () => {
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
-    }).compile();
+    })
+    .overrideModule(DatabaseModule)
+    .useModule(TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: () => ({
+        type: 'sqlite',
+        database: ':memory:',
+        synchronize: true,
+        autoLoadEntities: true,
+      }),
+    }))
+    .compile();
 
     app = moduleFixture.createNestApplication();
     await app.init();
 
     userRepository = app.get<Repository<User>>(getRepositoryToken(User));
-  });
+  }, 30000);
 
   afterAll(async () => {
     if (createdUserId) {
@@ -35,10 +50,6 @@ describe('User Entity (e2e)', () => {
     user.openId = openId;
     user.nickname = 'test-user';
     user.avatarUrl = 'http://example.com/avatar.png';
-    user.target_calories = 2000;
-    user.target_protein = 150;
-    user.target_fat = 50;
-    user.target_carbs = 250;
 
     // 2. Save the user
     const savedUser = await userRepository.save(user);
@@ -51,6 +62,5 @@ describe('User Entity (e2e)', () => {
     expect(foundUser).not.toBeNull();
     expect(foundUser!.openId).toEqual(openId);
     expect(foundUser!.nickname).toEqual('test-user');
-    expect(foundUser!.target_calories).toEqual(2000);
   });
 });

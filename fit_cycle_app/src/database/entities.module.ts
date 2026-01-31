@@ -29,6 +29,7 @@ import { Reminder } from './entity/reminder.entity';
 import { MealRecord } from './entity/meal-record.entity';
 import { PlanDetail } from './entity/plan-detail.entity';
 import { DailyGoal } from './entity/daily-goal.entity';
+import { HealthProfile } from './entity/health-profile.entity';
 
 /**
  * 统一实体模块：
@@ -40,6 +41,7 @@ import { DailyGoal } from './entity/daily-goal.entity';
   imports: [
     TypeOrmModule.forFeature([
       User,
+      HealthProfile,
       DataDictionary,
       DietPlan,
       PlanDay,

@@ -14,45 +14,77 @@ export const useUserStore = defineStore('user', {
     isLoggedIn: (state) => !!state.accessToken,
   },
   actions: {
+    /**
+     * 微信登录
+     */
     async login(code: string) {
       try {
         const res = await apiLogin(code);
         this.setLoginState(res);
         return res;
       } catch (error) {
-        console.error('Login failed:', error);
+        console.error('[UserStore] Login failed:', error);
         throw error;
       }
     },
 
+    /**
+     * 设置登录状态
+     */
     setLoginState(res: AuthResponse) {
       this.accessToken = res.accessToken;
       this.refreshToken = res.refreshToken || '';
-      this.userInfo = res.user;
+      this.userInfo = res.user || null;
 
-      setStorage(ACCESS_TOKEN_KEY, res.accessToken);
-      if (res.refreshToken) {
-        setStorage(REFRESH_TOKEN_KEY, res.refreshToken);
+      setStorage(ACCESS_TOKEN_KEY, this.accessToken);
+      if (this.refreshToken) {
+        setStorage(REFRESH_TOKEN_KEY, this.refreshToken);
       }
-      setStorage(USER_INFO_KEY, res.user);
+      if (this.userInfo) {
+        setStorage(USER_INFO_KEY, this.userInfo);
+      }
     },
 
+    /**
+     * 检查登录状态（通常在 App 启动时调用）
+     */
+    async checkLoginStatus() {
+      // 1. 检查本地是否有 Token
+      if (!this.accessToken) {
+        this.clearLoginState();
+        return false;
+      }
+
+      // 2. 检查微信 Session 是否过期
+      try {
+        await Taro.checkSession();
+        return true;
+      } catch (e) {
+        console.warn('[UserStore] WeChat session expired');
+        // Session 过期，但 Token 可能仍然有效（拦截器会处理 401）
+        // 这里可以根据业务决定是否强制退出，目前选择保留 Token，依赖后端 401 触发刷新
+        return true; 
+      }
+    },
+
+    /**
+     * 退出登录
+     */
     logout() {
+      this.clearLoginState();
+      Taro.reLaunch({ url: '/pages/login/index' });
+    },
+
+    /**
+     * 清除登录状态
+     */
+    clearLoginState() {
       this.accessToken = '';
       this.refreshToken = '';
       this.userInfo = null;
       removeStorage(ACCESS_TOKEN_KEY);
       removeStorage(REFRESH_TOKEN_KEY);
       removeStorage(USER_INFO_KEY);
-      
-      Taro.reLaunch({ url: '/pages/login/index' });
-    },
-
-    checkAuth() {
-        if (!this.isLoggedIn) {
-            // Logic to redirect if not logged in, if needed here
-            // Often handled by route guards
-        }
     }
   },
 });

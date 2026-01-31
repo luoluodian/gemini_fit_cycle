@@ -5,6 +5,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   OneToMany,
+  OneToOne,
 } from 'typeorm';
 import { DailyCheckin } from './daily-checkin.entity';
 import { DietPlan } from './diet-plan.entity';
@@ -18,6 +19,7 @@ import { TemplateLike } from './template-like.entity';
 import { UserBadge } from './user-badge.entity';
 import { WeightRecord } from './weight-record.entity';
 import { DailyGoal } from './daily-goal.entity';
+import { HealthProfile } from './health-profile.entity';
 
 @Entity('users')
 export class User {
@@ -30,32 +32,14 @@ export class User {
   @Column({ nullable: true })
   nickname: string;
 
-  @Column({ name: 'avatar_url', nullable: true })
+  @Column({ nullable: true })
   avatarUrl: string;
 
   @Column({ nullable: true })
-  email?: string;
+  email: string;
 
   @Column({ nullable: true })
-  phone?: string;
-
-  @Column({ name: 'date_of_birth', type: 'date', nullable: true })
-  dateOfBirth?: string;
-
-  @Column({ name: 'gender_id', type: 'int', nullable: true })
-  genderId?: number;
-
-  @Column({ name: 'activity_level_id', type: 'int', nullable: true })
-  activityLevelId?: number;
-
-  @Column({ name: 'goal_type_id', type: 'int', nullable: true })
-  goalTypeId?: number;
-
-  @Column({ name: 'height_cm', type: 'decimal', precision: 5, scale: 2, nullable: true })
-  heightCm?: number;
-
-  @Column({ name: 'weight_kg', type: 'decimal', precision: 5, scale: 2, nullable: true })
-  weightKg?: number;
+  phone: string;
 
   @Column({ name: 'refresh_token', type: 'text', nullable: true })
   refreshToken?: string;
@@ -66,7 +50,10 @@ export class User {
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 
-  // --- Inverse Relations ---
+  // --- Relations ---
+  @OneToOne(() => HealthProfile, (profile) => profile.user, { cascade: true })
+  healthProfile: HealthProfile;
+
   @OneToMany(() => DailyCheckin, (dailyCheckin) => dailyCheckin.user)
   dailyCheckins: DailyCheckin[];
 

@@ -15,7 +15,7 @@ import { PlanDetail } from './plan-detail.entity';
 @Entity({ name: 'foods', comment: '食物表 - 存储食物营养成分信息' })
 export class Food {
   /** 主键 ID */
-  @PrimaryGeneratedColumn({ type: 'bigint' })
+  @PrimaryGeneratedColumn()
   id: number;
 
   /** 食物名称 */

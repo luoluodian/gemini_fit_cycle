@@ -4,6 +4,9 @@ import * as request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { TransformInterceptor } from '../src/common/interceptors/transform.interceptor';
 import { HttpExceptionFilter } from '../src/common/filters/http-exception.filter';
+import { ConfigService, ConfigModule } from '@nestjs/config'; // Import ConfigModule
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { DatabaseModule } from '../src/database/database.module';
 import axios from 'axios';
 
 jest.mock('axios');
@@ -15,7 +18,19 @@ describe('AuthController (e2e)', () => {
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
-    }).compile();
+    })
+    .overrideModule(DatabaseModule)
+    .useModule(TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: () => ({
+        type: 'sqlite',
+        database: ':memory:',
+        synchronize: true,
+        autoLoadEntities: true,
+      }),
+    }))
+    .compile();
 
     app = moduleFixture.createNestApplication();
     app.useGlobalPipes(new ValidationPipe({ transform: true, whitelist: true }));
@@ -27,7 +42,7 @@ describe('AuthController (e2e)', () => {
     app.useGlobalFilters(httpExceptionFilter);
 
     await app.init();
-  });
+  }, 30000);
 
   afterAll(async () => {
     await app.close();

@@ -63,7 +63,8 @@ const typeClasses = {
     "bg-gradient-to-br from-emerald-400 to-emerald-600 text-white shadow-lg shadow-emerald-100",
   secondary:
     "bg-transparent border border-gray-200 text-gray-400 active:bg-gray-50",
-  wechat: "bg-[#07c160] text-white shadow-lg shadow-green-100",
+  wechat:
+    "bg-[linear-gradient(135deg,#07c160_0%,#06ad56_100%)] text-white shadow-lg shadow-green-100/50",
   danger:
     "bg-gradient-to-br from-red-400 to-red-600 text-white shadow-lg shadow-red-100",
   ghost: "bg-transparent text-gray-500",
