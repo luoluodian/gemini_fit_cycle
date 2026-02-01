@@ -121,6 +121,23 @@ export class UserResponseDto {
   @IsString()
   goalTypeText?: string;
 
+  /** 基础代谢率 */
+  @IsOptional()
+  @IsNumber()
+  bmr?: number;
+
+  /** 每日总消耗 */
+  @IsOptional()
+  @IsNumber()
+  tdee?: number;
+
+  /** 用户统计数据 */
+  @IsOptional()
+  stats?: {
+    totalDays: number;
+    completedPlans: number;
+  };
+
   isCompleted?: boolean;
 }
 

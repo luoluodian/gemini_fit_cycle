@@ -77,19 +77,26 @@ export class UserService {
         profile.activityLevel = activityMap[dto.activityLevelId] || 1.2;
       }
 
-      // 自动计算 BMR/TDEE (仅当必要数据存在时)
-      if (profile.height && profile.weight && profile.birthday && profile.gender) {
-        const age = new Date().getFullYear() - new Date(profile.birthday).getFullYear();
-        // Mifflin-St Jeor 公式
-        let bmr = 10 * Number(profile.weight) + 6.25 * Number(profile.height) - 5 * age;
-        bmr += profile.gender === 'male' ? 5 : -161;
-        profile.bmr = Math.round(bmr);
-        profile.tdee = Math.round(bmr * Number(profile.activityLevel));
-      }
+      // 自动计算 BMR/TDEE
+      this.calculateHealthMetrics(profile);
 
       await manager.save(HealthProfile, profile);
     });
 
     return this.findUserById(id) as Promise<User>;
+  }
+
+  /**
+   * 计算 BMR 和 TDEE (Mifflin-St Jeor 公式)
+   */
+  private calculateHealthMetrics(profile: HealthProfile): void {
+    if (profile.height && profile.weight && profile.birthday && profile.gender) {
+      const age = new Date().getFullYear() - new Date(profile.birthday).getFullYear();
+      let bmr = 10 * Number(profile.weight) + 6.25 * Number(profile.height) - 5 * age;
+      bmr += profile.gender === 'male' ? 5 : -161;
+      
+      profile.bmr = Math.round(bmr);
+      profile.tdee = Math.round(bmr * Number(profile.activityLevel || 1.2));
+    }
   }
 }

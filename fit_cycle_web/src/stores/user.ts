@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import { login as apiLogin, AuthResponse, UserInfo } from '@/services/modules/auth';
+import { getUserProfile, updateUserInfo as apiUpdateUserInfo, HealthProfile, UserStats } from '@/services/modules/user';
 import { setStorage, getStorage, removeStorage } from '@/utils/storage';
 import { ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY, USER_INFO_KEY } from '@/constants/storage';
 import Taro from '@tarojs/taro';
@@ -9,6 +10,8 @@ export const useUserStore = defineStore('user', {
     accessToken: getStorage<string>(ACCESS_TOKEN_KEY) || '',
     refreshToken: getStorage<string>(REFRESH_TOKEN_KEY) || '',
     userInfo: getStorage<UserInfo>(USER_INFO_KEY) || null,
+    healthProfile: null as HealthProfile | null,
+    stats: null as UserStats | null,
   }),
   getters: {
     isLoggedIn: (state) => !!state.accessToken,
@@ -24,6 +27,41 @@ export const useUserStore = defineStore('user', {
         return res;
       } catch (error) {
         console.error('[UserStore] Login failed:', error);
+        throw error;
+      }
+    },
+
+    /**
+     * 获取用户完整档案
+     */
+    async fetchUserProfile() {
+      try {
+        const res = await getUserProfile();
+        if (res.user) {
+          this.userInfo = { ...this.userInfo, ...res.user };
+          setStorage(USER_INFO_KEY, this.userInfo);
+        }
+        this.healthProfile = res.health;
+        this.stats = res.stats;
+        return res;
+      } catch (error) {
+        console.error('[UserStore] Fetch profile failed:', error);
+        // 不抛出错误，以免阻断页面显示，仅记录日志
+      }
+    },
+
+    /**
+     * 更新用户信息
+     */
+    async updateUserInfo(data: Partial<UserInfo>) {
+      try {
+        const res = await apiUpdateUserInfo(data);
+        // 后端返回的是 UserInfo，但通常我们需要重新拉取完整档案以同步 BMR/TDEE
+        // 这里为了简化，直接调用 fetchUserProfile
+        await this.fetchUserProfile();
+        return res;
+      } catch (error) {
+        console.error('[UserStore] Update user info failed:', error);
         throw error;
       }
     },

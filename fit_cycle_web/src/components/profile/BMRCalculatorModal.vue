@@ -5,9 +5,10 @@
         <view class="flex items-center justify-between mb-4">
           <text class="text-lg font-semibold text-gray-800">BMR/TDEE 计算器</text>
           <view @click="handleClose" class="text-gray-400">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
+            <image 
+              src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGZpbGw9Im5vbmUiIHZpZXdCb3g9IjAgMCAyNCAyNCIgc3Ryb2tlPSIjOTZBRUIzIj48cGF0aSBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS13aWR0aD0iMiIgZD0iTTYgMThMMTggNk02IDZsMTIgMTIiLz48L3N2Zz4="
+              class="w-6 h-6"
+            />
           </view>
         </view>
         
@@ -105,7 +106,8 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue';
-import { showError } from '@/utils/toast';
+import { showError, showSuccess } from '@/utils/toast';
+import { useUserStore } from '@/stores/user';
 
 const props = defineProps<{
   visible: boolean;
@@ -115,6 +117,8 @@ const emit = defineEmits<{
   close: [];
 }>();
 
+const userStore = useUserStore();
+
 const genderOptions = ['男性', '女性'];
 const genderIndex = ref(0);
 const age = ref('');
@@ -122,11 +126,11 @@ const height = ref('');
 const weight = ref('');
 
 const activityOptions = [
-  { label: '久坐 (办公室工作)', value: 1.2 },
-  { label: '轻度活动 (每周1-3次运动)', value: 1.375 },
-  { label: '中度活动 (每周3-5次运动)', value: 1.55 },
-  { label: '高度活动 (每周6-7次运动)', value: 1.725 },
-  { label: '极高活动 (体力劳动者或专业运动员)', value: 1.9 },
+  { label: '久坐 (办公室工作)', value: 1.2, id: 1 },
+  { label: '轻度活动 (每周1-3次运动)', value: 1.375, id: 2 },
+  { label: '中度活动 (每周3-5次运动)', value: 1.55, id: 3 },
+  { label: '高度活动 (每周6-7次运动)', value: 1.725, id: 4 },
+  { label: '极高活动 (体力劳动者或专业运动员)', value: 1.9, id: 5 },
 ];
 const activityIndex = ref(0);
 
@@ -156,7 +160,7 @@ const handleBackdropClick = (e: any) => {
   }
 };
 
-const handleCalculate = () => {
+const handleCalculate = async () => {
   const ageNum = parseFloat(age.value);
   const heightNum = parseFloat(height.value);
   const weightNum = parseFloat(weight.value);
@@ -171,7 +175,7 @@ const handleCalculate = () => {
     return;
   }
   
-  // 计算BMR (Mifflin-St Jeor公式)
+  // 1. 前端先行计算 (Optimistic UI)
   const gender = genderIndex.value === 0 ? 'male' : 'female';
   let bmr;
   if (gender === 'male') {
@@ -180,11 +184,9 @@ const handleCalculate = () => {
     bmr = 10 * weightNum + 6.25 * heightNum - 5 * ageNum - 161;
   }
   
-  // 计算TDEE
   const activityLevel = activityOptions[activityIndex.value].value;
   const tdee = bmr * activityLevel;
   
-  // 显示结果
   bmrResult.value = Math.round(bmr).toString();
   tdeeResult.value = Math.round(tdee).toString();
   fatLossTarget.value = Math.round(tdee * 0.8).toString();
@@ -192,16 +194,44 @@ const handleCalculate = () => {
   muscleGainTarget.value = Math.round(tdee * 1.2).toString();
   
   showResult.value = true;
+
+  // 2. 同步到后端
+  try {
+    const birthday = `${new Date().getFullYear() - ageNum}-01-01`; // 估算生日
+    await userStore.updateUserInfo({
+      heightCm: heightNum,
+      weightKg: weightNum,
+      genderId: genderIndex.value + 1,
+      activityLevelId: activityOptions[activityIndex.value].id,
+      dateOfBirth: birthday
+    });
+    showSuccess('健康档案已更新');
+  } catch (e) {
+    console.error('Failed to sync health data:', e);
+  }
 };
 
 watch(() => props.visible, (newVal) => {
-  if (!newVal) {
+  if (newVal) {
+    // 回显数据
+    if (userStore.healthProfile) {
+      const p = userStore.healthProfile;
+      height.value = String(p.height || '');
+      weight.value = String(p.weight || '');
+      genderIndex.value = p.gender === 'male' ? 0 : 1;
+      
+      // 匹配活动水平索引
+      const idx = activityOptions.findIndex(opt => Math.abs(opt.value - p.activityLevel) < 0.01);
+      if (idx !== -1) activityIndex.value = idx;
+
+      // 估算年龄
+      if (p.birthday) {
+        const birthYear = new Date(p.birthday).getFullYear();
+        age.value = String(new Date().getFullYear() - birthYear);
+      }
+    }
+  } else {
     showResult.value = false;
-    age.value = '';
-    height.value = '';
-    weight.value = '';
-    genderIndex.value = 0;
-    activityIndex.value = 0;
   }
 });
 </script>

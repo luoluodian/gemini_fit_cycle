@@ -3,16 +3,18 @@
     <view class="px-4 py-8">
       <view class="flex items-center mb-6">
         <!-- 头像区域 -->
-        <view class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mr-4 overflow-hidden border-2 border-white/30">
+        <view class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mr-4 overflow-hidden border-2 border-white/30 box-border">
           <image 
             v-if="userData.avatarUrl" 
             :src="userData.avatarUrl" 
             mode="aspectFill" 
             class="w-full h-full"
           />
-          <svg v-else class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-          </svg>
+          <image 
+            v-else 
+            src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGZpbGw9Im5vbmUiIHZpZXdCb3g9IjAgMCAyNCAyNCIgc3Ryb2tlPSJ3aGl0ZSI+PHBhdGggc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2Utd2lkdGg9IjEuNSIgZD0iTTE2IDdhNCA0IDAgMTEtOCAwIDQgNCAwIDAxOCAwek0xMiAxNGE3IDcgMCAwMC03IDdoMTRhNyA3IDAgMDAtNy03eiIvPjwvc3ZnPg=="
+            class="w-8 h-8 opacity-90"
+          />
         </view>
 
         <!-- 昵称区域 -->

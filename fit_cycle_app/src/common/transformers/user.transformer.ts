@@ -30,6 +30,14 @@ export class UserTransformer {
       activityLevelId: 1, // TODO: 反向映射
       activityLevelText: String(profile?.activityLevel ?? 1.2),
 
+      bmr: profile?.bmr,
+      tdee: profile?.tdee,
+      
+      stats: {
+        totalDays: 0, // TODO: 从 DietLog 统计
+        completedPlans: 0 // TODO: 从 DietPlan 统计
+      },
+
       isCompleted,
     };
   }

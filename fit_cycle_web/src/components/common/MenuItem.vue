@@ -1,6 +1,6 @@
 <template>
   <view 
-    class="menu-item flex items-center p-3 rounded-xl transition-all active:bg-emerald-50 active:translate-x-1"
+    class="menu-item flex items-center p-3 rounded-lg transition-all active:bg-emerald-50 active:translate-x-1"
     @click="$emit('click')"
   >
     <!-- 左侧图标插槽 -->
@@ -17,19 +17,15 @@
     <!-- 中间文本 -->
     <view class="flex-1">
       <text class="font-medium text-gray-800 block text-base">{{ title }}</text>
-      <text v-if="description" class="text-sm text-gray-500 block mt-0.5">{{ description }}</text>
+      <text v-if="description" class="text-sm text-gray-600 block mt-0.5">{{ description }}</text>
     </view>
 
     <!-- 右侧箭头 -->
-    <svg 
+    <image 
       v-if="showArrow"
-      class="w-5 h-5 text-gray-300" 
-      fill="none" 
-      stroke="currentColor" 
-      viewBox="0 0 24 24"
-    >
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-    </svg>
+      src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGZpbGw9Im5vbmUiIHZpZXdCb3g9IjAgMCAyNCAyNCIgc3Ryb2tlPSIjRDFENUVUIj48cGF0aSBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS13aWR0aD0iMiIgZD0iTTkgNWw3IDctNyA3Ii8+PC9zdmc+"
+      class="w-5 h-5"
+    />
   </view>
 </template>
 

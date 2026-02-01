@@ -12,6 +12,37 @@ import type { UserInfo, AuthResponse } from "./auth";
 export type { UserInfo, AuthResponse };
 
 /**
+ * 健康档案
+ */
+export interface HealthProfile {
+  id: number;
+  gender: 'male' | 'female';
+  height: number;
+  weight: number;
+  birthday: string;
+  activityLevel: number;
+  bmr: number;
+  tdee: number;
+}
+
+/**
+ * 用户统计数据
+ */
+export interface UserStats {
+  totalDays: number;
+  completedPlans: number;
+}
+
+/**
+ * 用户完整档案响应
+ */
+export interface UserProfileResponse {
+  user: UserInfo;
+  health: HealthProfile;
+  stats: UserStats;
+}
+
+/**
  * 用户登录参数
  */
 export interface LoginParams {
@@ -31,10 +62,17 @@ export async function refreshToken(token: string): Promise<Omit<AuthResponse, 'u
 }
 
 /**
- * 获取用户信息
+ * 获取用户信息 (旧接口，建议迁移到 getUserProfile)
  */
 export async function getUserInfo(): Promise<UserInfo> {
   return httpRequest.get("/user/info");
+}
+
+/**
+ * 获取用户完整档案 (包含健康数据和统计)
+ */
+export async function getUserProfile(): Promise<UserProfileResponse> {
+  return httpRequest.get("/user/profile");
 }
 
 /**
