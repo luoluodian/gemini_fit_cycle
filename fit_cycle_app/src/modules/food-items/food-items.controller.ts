@@ -38,13 +38,24 @@ export class FoodItemsController {
    * ========================================
    */
   @Get()
-  async list(@Query() query: QueryFoodItemDto) {
-    return this.service.list(query);
+  async list(@Query() query: QueryFoodItemDto, @Req() req) {
+    return this.service.list(query, req.user.userId);
   }
 
   /**
    * ========================================
-   * ➕ 2. 创建食材
+   * 🌟 2. 热门食材
+   * GET /food-items/popular
+   * ========================================
+   */
+  @Get('popular')
+  async popular(@Req() req) {
+    return this.service.getPopular(req.user.userId);
+  }
+
+  /**
+   * ========================================
+   * ➕ 3. 创建食材
    * POST /food-items
    * ========================================
    */
@@ -61,8 +72,8 @@ export class FoodItemsController {
    * ========================================
    */
   @Get(':id')
-  async detail(@Param('id', ParseIntPipe) id: number) {
-    return this.service.detail(id);
+  async detail(@Param('id', ParseIntPipe) id: number, @Req() req) {
+    return this.service.detail(id, req.user.userId);
   }
 
   /**
@@ -91,6 +102,28 @@ export class FoodItemsController {
     return this.service.delete(id, req.user.userId);
   }
 
+  /**
+   * ========================================
+   * ❤️ 6. 收藏食材
+   * POST /food-items/:id/favorite
+   * ========================================
+   */
+  @Post(':id/favorite')
+  async favorite(@Param('id', ParseIntPipe) id: number, @Req() req) {
+    return this.service.favorite(req.user.userId, id);
+  }
+
+  /**
+   * ========================================
+   * 💔 7. 取消收藏
+   * DELETE /food-items/:id/favorite
+   * ========================================
+   */
+  @Delete(':id/favorite')
+  async unfavorite(@Param('id', ParseIntPipe) id: number, @Req() req) {
+    return this.service.unfavorite(req.user.userId, id);
+  }
+
   @Get('check-name')
   async checkName(@Query('name') name: string) {
     if (!name) {
@@ -102,7 +135,7 @@ export class FoodItemsController {
 
   /**
    * ========================================
-   * 🔄 6. 同步系统食材
+   * 🔄 8. 同步系统食材
    * POST /food-items/sync
    * ========================================
    */

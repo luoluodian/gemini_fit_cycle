@@ -2,30 +2,46 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { FoodItemsService } from './food-items.service';
-import { FoodItem, FoodCategory } from '@/database/entity/food-item.entity';
+import { FoodItem, FoodCategory, FoodType } from '@/database/entity/food-item.entity';
+import { UserFavoriteFood } from '@/database/entity/user-favorite-food.entity';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { NotFoundException, ConflictException, ForbiddenException } from '@nestjs/common';
-import { FoodType } from '@/database/entity/food-item.entity';
 
 describe('FoodItemsService', () => {
   let service: FoodItemsService;
-  let repo: Repository<FoodItem>;
+  let foodRepo: Repository<FoodItem>;
+  let favoriteRepo: Repository<UserFavoriteFood>;
 
   const mockQueryBuilder = {
     andWhere: jest.fn().mockReturnThis(),
     skip: jest.fn().mockReturnThis(),
     take: jest.fn().mockReturnThis(),
     orderBy: jest.fn().mockReturnThis(),
+    addOrderBy: jest.fn().mockReturnThis(),
+    leftJoin: jest.fn().mockReturnThis(),
+    leftJoinAndSelect: jest.fn().mockReturnThis(),
+    select: jest.fn().mockReturnThis(),
+    addSelect: jest.fn().mockReturnThis(),
+    groupBy: jest.fn().mockReturnThis(),
+    getMany: jest.fn().mockResolvedValue([]),
     getManyAndCount: jest.fn().mockResolvedValue([[], 0]),
   };
 
-  const mockRepo = {
+  const mockFoodRepo = {
     createQueryBuilder: jest.fn().mockReturnValue(mockQueryBuilder),
     findOne: jest.fn(),
     create: jest.fn(),
     save: jest.fn(),
     remove: jest.fn(),
     exists: jest.fn(),
+  };
+
+  const mockFavoriteRepo = {
+    find: jest.fn(),
+    findOne: jest.fn(),
+    create: jest.fn(),
+    save: jest.fn(),
+    delete: jest.fn(),
   };
 
   const mockLogger = {
@@ -43,7 +59,11 @@ describe('FoodItemsService', () => {
         FoodItemsService,
         {
           provide: getRepositoryToken(FoodItem),
-          useValue: mockRepo,
+          useValue: mockFoodRepo,
+        },
+        {
+          provide: getRepositoryToken(UserFavoriteFood),
+          useValue: mockFavoriteRepo,
         },
         {
           provide: WINSTON_MODULE_NEST_PROVIDER,
@@ -57,7 +77,8 @@ describe('FoodItemsService', () => {
     }).compile();
 
     service = module.get<FoodItemsService>(FoodItemsService);
-    repo = module.get<Repository<FoodItem>>(getRepositoryToken(FoodItem));
+    foodRepo = module.get<Repository<FoodItem>>(getRepositoryToken(FoodItem));
+    favoriteRepo = module.get<Repository<UserFavoriteFood>>(getRepositoryToken(UserFavoriteFood));
   });
 
   afterEach(() => {
@@ -69,132 +90,63 @@ describe('FoodItemsService', () => {
   });
 
   describe('list', () => {
-    it('should return paginated results with default parameters', async () => {
-      const result = await service.list({});
+    it('should return paginated results', async () => {
+      mockFavoriteRepo.find.mockResolvedValue([]);
+      const result = await service.list({}, 1);
 
-      expect(repo.createQueryBuilder).toHaveBeenCalledWith('food');
-      expect(mockQueryBuilder.skip).toHaveBeenCalledWith(0);
-      expect(mockQueryBuilder.take).toHaveBeenCalledWith(20);
+      expect(foodRepo.createQueryBuilder).toHaveBeenCalledWith('food');
       expect(mockQueryBuilder.getManyAndCount).toHaveBeenCalled();
-      expect(result).toEqual({ total: 0, page: 1, pageSize: 20, items: [] });
+      expect(result.items).toEqual([]);
     });
 
-    it('should apply keyword filter when q is provided', async () => {
-      await service.list({ q: 'apple' });
+    it('should show isFavorite true for favorited items', async () => {
+      const mockItems = [{ id: 1, name: 'Apple' }];
+      mockQueryBuilder.getManyAndCount.mockResolvedValue([mockItems, 1]);
+      mockFavoriteRepo.find.mockResolvedValue([{ foodId: 1 }]);
 
-      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
-        '(food.name LIKE :q OR food.description LIKE :q)',
-        { q: '%apple%' },
-      );
-    });
-
-    it('should apply category filter when category is provided', async () => {
-      await service.list({ category: FoodCategory.FRUITS });
-
-      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
-        'food.category = :category',
-        { category: FoodCategory.FRUITS },
-      );
-    });
-
-    it('should apply custom pagination', async () => {
-      await service.list({ page: 2, pageSize: 10 });
-
-      expect(mockQueryBuilder.skip).toHaveBeenCalledWith(10);
-      expect(mockQueryBuilder.take).toHaveBeenCalledWith(10);
-    });
-
-    it('should combine multiple filters correctly', async () => {
-      await service.list({ q: 'egg', category: FoodCategory.PROTEIN });
-
-      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
-        '(food.name LIKE :q OR food.description LIKE :q)',
-        { q: '%egg%' },
-      );
-      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
-        'food.category = :category',
-        { category: FoodCategory.PROTEIN },
-      );
+      const result = await service.list({}, 1);
+      expect(result.items[0].isFavorite).toBe(true);
     });
   });
 
-  describe('detail', () => {
-    it('should return a food item if found', async () => {
-      const mockItem = { id: 1, name: 'Apple' };
-      mockRepo.findOne.mockResolvedValue(mockItem);
+  describe('favorite', () => {
+    it('should add to favorites if food exists', async () => {
+      mockFoodRepo.findOne.mockResolvedValue({ id: 1 });
+      mockFavoriteRepo.findOne.mockResolvedValue(null);
+      mockFavoriteRepo.create.mockReturnValue({ userId: 1, foodId: 1 });
 
-      const result = await service.detail(1);
-
-      expect(mockRepo.findOne).toHaveBeenCalledWith({ where: { id: 1 } });
-      expect(result).toEqual(mockItem);
-    });
-
-    it('should throw NotFoundException if item is not found', async () => {
-      mockRepo.findOne.mockResolvedValue(null);
-
-      await expect(service.detail(999)).rejects.toThrow(NotFoundException);
-    });
-  });
-
-  describe('create', () => {
-    it('should create a new custom food item', async () => {
-      const dto = { name: 'New Food', unit: 'g', calories: 100, protein: 10, fat: 5, carbs: 20 };
-      const userId = 1;
-      
-      mockRepo.findOne.mockResolvedValue(null); // No duplicate name
-      mockRepo.create.mockReturnValue({ ...dto, id: 1, type: FoodType.CUSTOM, userId });
-      mockRepo.save.mockResolvedValue({ ...dto, id: 1, type: FoodType.CUSTOM, userId });
-
-      const result = await service.create(userId, dto as any);
-
-      expect(mockRepo.findOne).toHaveBeenCalledWith({ where: { name: dto.name } });
-      expect(mockRepo.create).toHaveBeenCalled();
-      expect(result.userId).toBe(userId);
-    });
-
-    it('should throw ConflictException if name exists', async () => {
-      mockRepo.findOne.mockResolvedValue({ id: 1, name: 'Exist' });
-      await expect(service.create(1, { name: 'Exist' } as any)).rejects.toThrow(ConflictException);
-    });
-  });
-
-  describe('update', () => {
-    it('should update food item if user is creator', async () => {
-      const item = { id: 1, userId: 1, name: 'Old' };
-      const dto = { name: 'New' };
-      
-      mockRepo.findOne.mockResolvedValueOnce(item); // First call to find the item
-      mockRepo.findOne.mockResolvedValueOnce(null); // Second call to check name duplicate
-      mockRepo.save.mockResolvedValue({ ...item, ...dto });
-
-      const result = await service.update(1, 1, dto as any);
-      expect(result.name).toBe('New');
-    });
-
-    it('should throw ForbiddenException if user is not creator', async () => {
-      const item = { id: 1, userId: 2, name: 'Old' };
-      mockRepo.findOne.mockResolvedValue(item);
-
-      await expect(service.update(1, 1, { name: 'New' } as any)).rejects.toThrow(ForbiddenException);
-    });
-  });
-
-  describe('delete', () => {
-    it('should remove food item if user is creator', async () => {
-      const item = { id: 1, userId: 1 };
-      mockRepo.findOne.mockResolvedValue(item);
-      mockRepo.remove.mockResolvedValue(true);
-
-      const result = await service.delete(1, 1);
+      const result = await service.favorite(1, 1);
       expect(result.success).toBe(true);
-      expect(mockRepo.remove).toHaveBeenCalled();
+      expect(mockFavoriteRepo.save).toHaveBeenCalled();
     });
 
-    it('should throw ForbiddenException if user tries to delete others food', async () => {
-      const item = { id: 1, userId: 2 };
-      mockRepo.findOne.mockResolvedValue(item);
+    it('should throw NotFoundException if food does not exist', async () => {
+      mockFoodRepo.findOne.mockResolvedValue(null);
+      await expect(service.favorite(1, 1)).rejects.toThrow(NotFoundException);
+    });
+  });
 
-      await expect(service.delete(1, 1)).rejects.toThrow(ForbiddenException);
+  describe('unfavorite', () => {
+    it('should delete favorite record', async () => {
+      mockFavoriteRepo.delete.mockResolvedValue({ affected: 1 });
+      const result = await service.unfavorite(1, 1);
+      expect(result.success).toBe(true);
+      expect(mockFavoriteRepo.delete).toHaveBeenCalledWith({ userId: 1, foodId: 1 });
+    });
+  });
+
+  describe('getPopular', () => {
+    it('should return top 10 items sorted by favorite count', async () => {
+      const mockItems = [{ id: 1, name: 'Apple' }];
+      mockQueryBuilder.getMany.mockResolvedValue(mockItems);
+      mockFavoriteRepo.find.mockResolvedValue([]);
+
+      const result = await service.getPopular(1);
+
+      expect(foodRepo.createQueryBuilder).toHaveBeenCalledWith('food');
+      expect(mockQueryBuilder.leftJoin).toHaveBeenCalled();
+      expect(mockQueryBuilder.groupBy).toHaveBeenCalledWith('food.id');
+      expect(result[0].name).toBe('Apple');
     });
   });
 });

@@ -28,6 +28,7 @@ import { Reminder } from './entity/reminder.entity';
 import { MealRecord } from './entity/meal-record.entity';
 import { PlanDetail } from './entity/plan-detail.entity';
 import { DailyGoal } from './entity/daily-goal.entity';
+import { UserFavoriteFood } from './entity/user-favorite-food.entity';
 import { HealthProfile } from './entity/health-profile.entity';
 
 /**
@@ -65,6 +66,7 @@ import { HealthProfile } from './entity/health-profile.entity';
       MealRecord,
       PlanDetail,
       DailyGoal,
+      UserFavoriteFood,
     ]),
   ],
   exports: [TypeOrmModule],

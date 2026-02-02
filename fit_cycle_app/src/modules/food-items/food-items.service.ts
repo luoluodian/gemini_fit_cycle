@@ -12,6 +12,7 @@ import { Repository, Like, DataSource } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { FoodItem, FoodType, FoodCategory } from '@/database/entity/food-item.entity';
+import { UserFavoriteFood } from '@/database/entity/user-favorite-food.entity';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { CreateFoodItemDto, UpdateFoodItemDto, QueryFoodItemDto } from '@/dtos/food-item.dto';
@@ -21,6 +22,8 @@ export class FoodItemsService {
   constructor(
     @InjectRepository(FoodItem)
     private readonly foodRepo: Repository<FoodItem>,
+    @InjectRepository(UserFavoriteFood)
+    private readonly favoriteRepo: Repository<UserFavoriteFood>,
     @Inject(WINSTON_MODULE_NEST_PROVIDER)
     private readonly logger: Logger,
     private readonly dataSource: DataSource,
@@ -31,7 +34,7 @@ export class FoodItemsService {
    * 🔍 分页搜索
    * ========================================
    */
-  async list(dto: QueryFoodItemDto) {
+  async list(dto: QueryFoodItemDto, userId?: number) {
     const { q, category, page = 1, pageSize = 20 } = dto;
     this.logger.log({
       level: 'info',
@@ -40,6 +43,7 @@ export class FoodItemsService {
       category,
       page,
       pageSize,
+      userId,
     });
 
     const queryBuilder = this.foodRepo.createQueryBuilder('food');
@@ -54,18 +58,44 @@ export class FoodItemsService {
       queryBuilder.andWhere('food.category = :category', { category });
     }
 
+    // 处理收藏状态
+    if (userId) {
+      queryBuilder.leftJoinAndSelect(
+        'user_favorite_foods',
+        'fav',
+        'fav.food_id = food.id AND fav.user_id = :userId',
+        { userId },
+      );
+      queryBuilder.addSelect('fav.id', 'isFavorite');
+    }
+
     const [items, total] = await queryBuilder
       .skip((page - 1) * pageSize)
       .take(pageSize)
       .orderBy('food.id', 'DESC')
       .getManyAndCount();
 
+    // 转换结果，增加 isFavorite 布尔值
+    let favoriteIds: Set<number> = new Set();
+    if (userId) {
+      const favorites = await this.favoriteRepo.find({
+        where: { userId },
+        select: ['foodId'],
+      });
+      favoriteIds = new Set(favorites.map((f) => Number(f.foodId)));
+    }
+
+    const itemsWithFav = items.map((item) => ({
+      ...item,
+      isFavorite: favoriteIds.has(Number(item.id)),
+    }));
+
     this.logger.log({ level: 'info', message: '食材分页查询完成', total });
     return {
       total,
       page,
       pageSize,
-      items,
+      items: itemsWithFav,
     };
   }
 
@@ -103,11 +133,22 @@ export class FoodItemsService {
    * 🔎 食材详情
    * ========================================
    */
-  async detail(id: number) {
+  async detail(id: number, userId?: number) {
     const item = await this.foodRepo.findOne({ where: { id } });
     if (!item) throw new NotFoundException('食材不存在');
 
-    return item;
+    let isFavorite = false;
+    if (userId) {
+      const fav = await this.favoriteRepo.findOne({
+        where: { userId, foodId: id },
+      });
+      isFavorite = !!fav;
+    }
+
+    return {
+      ...item,
+      isFavorite,
+    };
   }
 
   /**
@@ -167,6 +208,64 @@ export class FoodItemsService {
     });
 
     return { exists };
+  }
+
+  /**
+   * ❤️ 收藏食材
+   */
+  async favorite(userId: number, foodId: number) {
+    const food = await this.foodRepo.findOne({ where: { id: foodId } });
+    if (!food) throw new NotFoundException('食材不存在');
+
+    const exists = await this.favoriteRepo.findOne({
+      where: { userId, foodId },
+    });
+    if (exists) return { success: true };
+
+    const fav = this.favoriteRepo.create({ userId, foodId });
+    await this.favoriteRepo.save(fav);
+    return { success: true };
+  }
+
+  /**
+   * 💔 取消收藏
+   */
+  async unfavorite(userId: number, foodId: number) {
+    await this.favoriteRepo.delete({ userId, foodId });
+    return { success: true };
+  }
+
+  /**
+   * 🌟 获取热门食材
+   * 按收藏量排序取前10
+   */
+  async getPopular(userId?: number) {
+    // 1. 聚合查询收藏量
+    const queryBuilder = this.foodRepo.createQueryBuilder('food')
+      .leftJoin('user_favorite_foods', 'fav', 'fav.food_id = food.id')
+      .select('food')
+      .addSelect('COUNT(fav.id)', 'favorite_count')
+      .groupBy('food.id')
+      .orderBy('favorite_count', 'DESC')
+      .addOrderBy('food.id', 'DESC')
+      .take(10);
+
+    const items = await queryBuilder.getMany();
+
+    // 2. 增强 isFavorite 状态
+    let favoriteIds: Set<number> = new Set();
+    if (userId) {
+      const favorites = await this.favoriteRepo.find({
+        where: { userId },
+        select: ['foodId'],
+      });
+      favoriteIds = new Set(favorites.map((f) => Number(f.foodId)));
+    }
+
+    return items.map((item) => ({
+      ...item,
+      isFavorite: favoriteIds.has(Number(item.id)),
+    }));
   }
 
   /**
