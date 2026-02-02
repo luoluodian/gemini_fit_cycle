@@ -9,7 +9,7 @@ import {
   Unique,
 } from 'typeorm';
 import { DietPlan } from './diet-plan.entity';
-import { Food } from './food.entity';
+import { FoodItem } from './food-item.entity';
 
 /**
  * 计划详情表：饮食计划的每日详细食物安排
@@ -40,9 +40,9 @@ export class PlanDetail {
   @Column({ name: 'food_id' })
   foodId: number;
 
-  @ManyToOne(() => Food, { onDelete: 'RESTRICT' })
+  @ManyToOne(() => FoodItem, { onDelete: 'RESTRICT' })
   @JoinColumn({ name: 'food_id' })
-  food: Food;
+  food: FoodItem;
 
   @Column({ type: 'decimal', precision: 8, scale: 2 })
   quantity: number;

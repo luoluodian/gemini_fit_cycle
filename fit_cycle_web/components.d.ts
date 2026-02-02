@@ -39,6 +39,7 @@ declare module 'vue' {
     FoodList: typeof import('./src/components/food/FoodList.vue')['default']
     FoodModal: typeof import('./src/components/daily-plan/FoodModal.vue')['default']
     FoodSelectionModal: typeof import('./src/components/common/FoodSelectionModal.vue')['default']
+    FoodSelectorModal: typeof import('./src/components/food/FoodSelectorModal.vue')['default']
     FrequentlyUsed: typeof import('./src/components/food/FrequentlyUsed.vue')['default']
     GlassCard: typeof import('./src/components/common/GlassCard.vue')['default']
     HealthTools: typeof import('./src/components/profile/HealthTools.vue')['default']

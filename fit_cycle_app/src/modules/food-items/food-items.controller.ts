@@ -16,7 +16,7 @@ import {
 } from '@nestjs/common';
 
 import { FoodItemsService } from './food-items.service';
-import { CreateFoodItemDto, UpdateFoodItemDto } from '@/dtos/food-item.dto';
+import { CreateFoodItemDto, UpdateFoodItemDto, QueryFoodItemDto } from '@/dtos/food-item.dto';
 
 import { JwtAuthGuard } from '@/modules/auth/jwt.guard';
 
@@ -34,16 +34,12 @@ export class FoodItemsController {
   /**
    * ========================================
    * 🔍 1. 分页搜索
-   * GET /food-items?q=鸡&page=1&pageSize=20
+   * GET /food-items?q=鸡&category=protein&page=1&pageSize=20
    * ========================================
    */
   @Get()
-  async list(
-    @Query('q') q: string,
-    @Query('page') page = 1,
-    @Query('pageSize') pageSize = 20,
-  ) {
-    return this.service.list(q, Number(page), Number(pageSize));
+  async list(@Query() query: QueryFoodItemDto) {
+    return this.service.list(query);
   }
 
   /**
@@ -102,5 +98,16 @@ export class FoodItemsController {
     }
 
     return this.service.checkNameExists(name);
+  }
+
+  /**
+   * ========================================
+   * 🔄 6. 同步系统食材
+   * POST /food-items/sync
+   * ========================================
+   */
+  @Post('sync')
+  async sync(@Body() foodData: any[]) {
+    return this.service.syncSystemFoods(foodData);
   }
 }

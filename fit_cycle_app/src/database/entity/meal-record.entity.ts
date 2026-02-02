@@ -9,34 +9,19 @@ import {
   Unique,
 } from 'typeorm';
 import { User } from './user.entity';
-import { Food } from './food.entity';
+import { FoodItem } from './food-item.entity';
 
 /**
- * 饮食记录表：记录用户每日实际摄入的食物信息
+ * 每日饮食单项记录
  */
-@Entity({
-  name: 'meal_records',
-  comment: '饮食记录表 - 记录用户每日实际摄入的食物信息',
-})
-@Index(['userId', 'recordedDate'])
-@Unique(['userId', 'foodId', 'recordedDate', 'mealType'])
+@Entity({ name: 'meal_records' })
 export class MealRecord {
+  /** 主键 ID */
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ name: 'user_id' })
-  userId: number;
-
-  @ManyToOne(() => User, (user) => user.dietLogs, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'user_id' })
-  user: User;
-
-  @Column({ name: 'food_id' })
-  foodId: number;
-
-  @ManyToOne(() => Food, { onDelete: 'RESTRICT' })
-  @JoinColumn({ name: 'food_id' })
-  food: Food;
+  @ManyToOne(() => FoodItem, { onDelete: 'RESTRICT' })
+  food: FoodItem;
 
   @Column({ name: 'meal_type', length: 20 })
   mealType: string;

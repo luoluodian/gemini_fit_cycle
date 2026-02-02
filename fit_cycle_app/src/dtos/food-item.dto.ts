@@ -3,9 +3,12 @@ import {
   IsOptional,
   IsNumber,
   IsBoolean,
+  IsEnum,
   Min,
   Max,
 } from 'class-validator';
+import { Type } from 'class-transformer';
+import { FoodCategory } from '@/database/entity/food-item.entity';
 
 /**
  * ================================
@@ -23,45 +26,44 @@ export class CreateFoodItemDto {
   @IsString()
   description?: string;
 
+  /** 分类 */
+  @IsOptional()
+  @IsEnum(FoodCategory)
+  category?: FoodCategory;
+
+  /** 图片或Emoji */
+  @IsOptional()
+  @IsString()
+  imageUrl?: string;
+
   /** 单位（g / ml / 份 ...） */
   @IsString()
   unit: string;
 
-  /** 每单位能量 kcal */
+  /** 热量 kcal/100g or per unit */
   @IsNumber()
-  caloriesPerUnit: number;
+  calories: number;
 
-  /** 每单位蛋白质 g */
+  /** 蛋白质 g */
   @IsNumber()
-  proteinPerUnit: number;
+  protein: number;
 
-  /** 每单位脂肪 g */
+  /** 脂肪 g */
   @IsNumber()
-  fatPerUnit: number;
+  fat: number;
 
-  /** 每单位碳水 g */
+  /** 碳水 g */
   @IsNumber()
-  carbsPerUnit: number;
-
-  /** 每单位纤维 g */
-  @IsNumber()
-  fiberPerUnit: number;
+  carbs: number;
 
   /** 是否公开 */
   @IsOptional()
   @IsBoolean()
   isPublic?: boolean;
 
-  /** GI（0~100） */
+  /** 标签 */
   @IsOptional()
-  @Min(0)
-  @Max(100)
-  glycemicIndex?: number;
-
-  /** 每单位 GL */
-  @IsOptional()
-  @IsNumber()
-  glycemicLoadPerUnit?: number;
+  tags?: string[];
 }
 
 /**
@@ -81,6 +83,16 @@ export class UpdateFoodItemDto {
   @IsString()
   description?: string;
 
+  /** 分类 */
+  @IsOptional()
+  @IsEnum(FoodCategory)
+  category?: FoodCategory;
+
+  /** 图片或Emoji */
+  @IsOptional()
+  @IsString()
+  imageUrl?: string;
+
   /** 单位 */
   @IsOptional()
   @IsString()
@@ -88,42 +100,31 @@ export class UpdateFoodItemDto {
 
   @IsOptional()
   @IsNumber()
-  caloriesPerUnit?: number;
+  calories?: number;
 
   @IsOptional()
   @IsNumber()
-  proteinPerUnit?: number;
+  protein?: number;
 
   @IsOptional()
   @IsNumber()
-  fatPerUnit?: number;
+  fat?: number;
 
   @IsOptional()
   @IsNumber()
-  carbsPerUnit?: number;
-
-  @IsOptional()
-  @IsNumber()
-  fiberPerUnit?: number;
+  carbs?: number;
 
   @IsOptional()
   @IsBoolean()
   isPublic?: boolean;
 
   @IsOptional()
-  @Min(0)
-  @Max(100)
-  glycemicIndex?: number;
-
-  @IsOptional()
-  @IsNumber()
-  glycemicLoadPerUnit?: number;
+  tags?: string[];
 }
 
 /**
  * ================================
  * Query DTO（用于分页查询参数）
- * /food-items?page=1&pageSize=20&q=鸡
  * ================================
  */
 export class QueryFoodItemDto {
@@ -132,15 +133,22 @@ export class QueryFoodItemDto {
   @IsString()
   q?: string;
 
+  /** 分类筛选 */
+  @IsOptional()
+  @IsEnum(FoodCategory)
+  category?: FoodCategory;
+
   /** 页码 */
   @IsOptional()
   @IsNumber()
   @Min(1)
+  @Type(() => Number)
   page?: number;
 
   /** 每页数量 */
   @IsOptional()
   @IsNumber()
   @Min(1)
+  @Type(() => Number)
   pageSize?: number;
 }

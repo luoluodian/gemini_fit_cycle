@@ -7,7 +7,6 @@ import { EntitiesModule } from './database/entities.module';
 
 import { AuthModule } from './modules/auth/auth.module';
 import { UserModule } from './modules/user/user.module';
-import { FoodModule } from './modules/food/food.module';
 import { DictModule } from './modules/dict/dict.module';
 import { DietPlansModule } from './modules/diet-plans/diet-plans.module';
 import { DietLogsModule } from './modules/diet-logs/diet-logs.module';
@@ -33,7 +32,6 @@ import { TrimInterceptor } from './common/interceptors/trim.interceptor';
     EntitiesModule,
     AuthModule,
     UserModule,
-    FoodModule,
     DictModule,
     DietPlansModule,
     DietLogsModule,

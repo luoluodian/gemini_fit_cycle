@@ -1,85 +1,99 @@
 import {
   Entity,
-  Column,
   PrimaryGeneratedColumn,
-  ManyToOne,
-  JoinColumn,
+  Column,
   CreateDateColumn,
   UpdateDateColumn,
+  DeleteDateColumn,
+  ManyToOne,
+  JoinColumn,
+  Index,
 } from 'typeorm';
+import { User } from './user.entity';
 
-import { User } from '@/database/entity/user.entity';
+export enum FoodType {
+  SYSTEM = 'system',
+  CUSTOM = 'custom',
+}
+
+export enum FoodCategory {
+  PROTEIN = 'protein',
+  VEGETABLES = 'vegetables',
+  FRUITS = 'fruits',
+  GRAINS = 'grains',
+  DAIRY = 'dairy',
+  NUTS = 'nuts',
+  OILS = 'oils',
+  SNACKS = 'snacks',
+  CUSTOM = 'custom',
+}
 
 @Entity('food_items')
 export class FoodItem {
-  /** 主键ID */
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn({ type: 'bigint', unsigned: true })
   id: number;
 
-  /** 食材名称 */
-  @Column({ type: 'varchar', length: 255, nullable: false })
+  @Index('idx_name')
+  @Column({ length: 100, comment: '食材名称' })
   name: string;
 
-  /** 食材描述（可选） */
-  @Column({ type: 'text', nullable: true })
-  description: string | null;
+  @Column({
+    type: 'enum',
+    enum: FoodType,
+    default: FoodType.SYSTEM,
+    comment: '类型:系统/自定义',
+  })
+  type: FoodType;
 
-  /** 单位（如 g、ml、份） */
-  @Column({ type: 'varchar', length: 20, nullable: false })
-  unit: string;
+  @Column({ name: 'user_id', type: 'bigint', unsigned: true, nullable: true, comment: '创建者ID(系统为NULL)' })
+  userId: number;
 
-  /** 每单位能量(kcal) */
-  @Column({ type: 'decimal', precision: 10, scale: 4, nullable: false })
-  caloriesPerUnit: number;
+  @ManyToOne(() => User, { onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'user_id' })
+  user: User;
 
-  /** 每单位蛋白质(g) */
-  @Column({ type: 'decimal', precision: 10, scale: 4, nullable: false })
-  proteinPerUnit: number;
+  @Index('idx_category')
+  @Column({
+    type: 'enum',
+    enum: FoodCategory,
+    default: FoodCategory.CUSTOM,
+    comment: '分类',
+  })
+  category: FoodCategory;
 
-  /** 每单位脂肪(g) */
-  @Column({ type: 'decimal', precision: 10, scale: 4, nullable: false })
-  fatPerUnit: number;
+  @Column({ length: 255, nullable: true, comment: '描述' })
+  description: string;
 
-  /** 每单位碳水(g) */
-  @Column({ type: 'decimal', precision: 10, scale: 4, nullable: false })
-  carbsPerUnit: number;
+  @Column({ name: 'image_url', length: 255, nullable: true, comment: '图片或Emoji' })
+  imageUrl: string;
 
-  /** 每单位纤维(g) */
-  @Column({ type: 'decimal', precision: 10, scale: 4, nullable: false })
-  fiberPerUnit: number;
-
-  /** 是否公开（默认 true） */
-  @Column({ type: 'tinyint', default: 1 })
+  @Column({ name: 'is_public', default: false, comment: '是否公开' })
   isPublic: boolean;
 
-  /** 升糖指数 GI（0–100） */
-  @Column({
-    type: 'tinyint',
-    nullable: true,
-    comment: '升糖指数(GI)，0-100',
-  })
-  glycemicIndex: number | null;
+  @Column({ type: 'int', default: 0, comment: '热量(kcal/100g)' })
+  calories: number;
 
-  /** 每单位升糖负荷 GL */
-  @Column({
-    type: 'decimal',
-    precision: 8,
-    scale: 4,
-    nullable: true,
-    comment: '每单位升糖负荷(GL)',
-  })
-  glycemicLoadPerUnit: number | null;
+  @Column({ type: 'decimal', precision: 8, scale: 2, default: 0, comment: '蛋白质(g)' })
+  protein: number;
 
-  /** 创建时间 */
-  @CreateDateColumn({ type: 'datetime', precision: 6 })
+  @Column({ type: 'decimal', precision: 8, scale: 2, default: 0, comment: '脂肪(g)' })
+  fat: number;
+
+  @Column({ type: 'decimal', precision: 8, scale: 2, default: 0, comment: '碳水(g)' })
+  carbs: number;
+
+  @Column({ length: 20, default: 'g', comment: '计量单位' })
+  unit: string;
+
+  @Column({ type: 'json', nullable: true, comment: '标签' })
+  tags: string[];
+
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
-  /** 更新时间 */
-  @UpdateDateColumn({ type: 'datetime', precision: 6 })
+  @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 
-  /** 创建者（仅限用户自定义食材） */
-  @ManyToOne(() => User, (user) => user.id, { nullable: true })
-  @JoinColumn({ name: 'created_by_user_id' })
-  createdByUser: User | null;
+  @DeleteDateColumn({ name: 'deleted_at' })
+  deletedAt: Date;
 }

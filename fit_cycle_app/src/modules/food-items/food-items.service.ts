@@ -8,13 +8,13 @@ import {
   Inject,
 } from '@nestjs/common';
 
-import { Repository, Like } from 'typeorm';
+import { Repository, Like, DataSource } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 
-import { FoodItem } from '@/database/entity/food-item.entity';
+import { FoodItem, FoodType, FoodCategory } from '@/database/entity/food-item.entity';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { CreateFoodItemDto, UpdateFoodItemDto } from '@/dtos/food-item.dto';
+import { CreateFoodItemDto, UpdateFoodItemDto, QueryFoodItemDto } from '@/dtos/food-item.dto';
 
 @Injectable()
 export class FoodItemsService {
@@ -23,6 +23,7 @@ export class FoodItemsService {
     private readonly foodRepo: Repository<FoodItem>,
     @Inject(WINSTON_MODULE_NEST_PROVIDER)
     private readonly logger: Logger,
+    private readonly dataSource: DataSource,
   ) {}
 
   /**
@@ -30,24 +31,34 @@ export class FoodItemsService {
    * 🔍 分页搜索
    * ========================================
    */
-  async list(q: string, page = 1, pageSize = 20) {
+  async list(dto: QueryFoodItemDto) {
+    const { q, category, page = 1, pageSize = 20 } = dto;
     this.logger.log({
       level: 'info',
       message: '食材分页查询开始',
       q,
+      category,
       page,
       pageSize,
     });
-    const where = q
-      ? [{ name: Like(`%${q}%`) }, { description: Like(`%${q}%`) }]
-      : {};
 
-    const [items, total] = await this.foodRepo.findAndCount({
-      where,
-      skip: (page - 1) * pageSize,
-      take: pageSize,
-      order: { id: 'DESC' },
-    });
+    const queryBuilder = this.foodRepo.createQueryBuilder('food');
+
+    if (q) {
+      queryBuilder.andWhere('(food.name LIKE :q OR food.description LIKE :q)', {
+        q: `%${q}%`,
+      });
+    }
+
+    if (category) {
+      queryBuilder.andWhere('food.category = :category', { category });
+    }
+
+    const [items, total] = await queryBuilder
+      .skip((page - 1) * pageSize)
+      .take(pageSize)
+      .orderBy('food.id', 'DESC')
+      .getManyAndCount();
 
     this.logger.log({ level: 'info', message: '食材分页查询完成', total });
     return {
@@ -59,7 +70,7 @@ export class FoodItemsService {
   }
 
   /**
-   * ➕ 创建食材（新增：名称不能重复）
+   * ➕ 创建食材
    */
   async create(userId: number, dto: CreateFoodItemDto) {
     this.logger.log({
@@ -76,16 +87,17 @@ export class FoodItemsService {
       throw new ConflictException('食材名称已存在，请更换一个名称');
     }
 
-    // ② 创建数据
     const item = this.foodRepo.create({
       ...dto,
-      createdByUser: { id: userId },
+      type: FoodType.CUSTOM,
+      userId,
     });
 
     await this.foodRepo.save(item);
     this.logger.log({ level: 'info', message: '创建食材完成', id: item.id });
     return item;
   }
+
   /**
    * ========================================
    * 🔎 食材详情
@@ -116,11 +128,11 @@ export class FoodItemsService {
 
     if (dto.name) {
       const exists = await this.foodRepo.findOne({ where: { name: dto.name } });
-      if (exists && exists.id !== item.id) {
+      if (exists && Number(exists.id) !== Number(item.id)) {
         throw new ConflictException('食材名称已存在，请更换一个名称');
       }
     }
-    if (item.createdByUser?.id !== userId) {
+    if (item.userId && Number(item.userId) !== Number(userId)) {
       throw new ForbiddenException('无权修改此食材');
     }
 
@@ -140,7 +152,7 @@ export class FoodItemsService {
     const item = await this.foodRepo.findOne({ where: { id } });
     if (!item) throw new NotFoundException('食材不存在');
 
-    if (item.createdByUser?.id !== userId) {
+    if (item.userId && Number(item.userId) !== Number(userId)) {
       throw new ForbiddenException('无权删除此食材');
     }
 
@@ -150,11 +162,42 @@ export class FoodItemsService {
   }
 
   async checkNameExists(name: string) {
-    // 只查 name 是否已存在（大小写不敏感）
     const exists = await this.foodRepo.exists({
       where: { name },
     });
 
     return { exists };
+  }
+
+  /**
+   * 🔄 同步系统食材
+   * 源数据来自 html/food.js
+   */
+  async syncSystemFoods(foodData: any[]) {
+    return await this.dataSource.transaction(async (manager) => {
+      // 1. 删除现有系统食材
+      await manager.delete(FoodItem, { type: FoodType.SYSTEM });
+
+      // 2. 构造并插入新食材
+      const items = foodData.map(f => {
+        return manager.create(FoodItem, {
+          name: f.name,
+          type: FoodType.SYSTEM,
+          category: f.category as FoodCategory,
+          description: f.description,
+          imageUrl: f.emoji,
+          isPublic: true,
+          calories: f.calories,
+          protein: f.protein,
+          fat: f.fat,
+          carbs: f.carbs,
+          unit: f.unit,
+        });
+      });
+
+      const result = await manager.save(FoodItem, items);
+      this.logger.log({ level: 'info', message: '系统食材同步完成', count: result.length });
+      return { count: result.length };
+    });
   }
 }

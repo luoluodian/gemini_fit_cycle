@@ -10,7 +10,6 @@ import { PlanDay } from './entity/plan-day.entity';
 import { PlanMeal } from './entity/plan-meal.entity';
 import { PlanMealItem } from './entity/plan-meal-item.entity';
 import { DietLog } from './entity/diet-log.entity';
-import { Food } from './entity/food.entity';
 import { FoodItem } from './entity/food-item.entity';
 import { ExerciseLog } from './entity/exercise-log.entity';
 import { ExerciseType } from './entity/exercise-type.entity';
@@ -48,7 +47,6 @@ import { HealthProfile } from './entity/health-profile.entity';
       PlanMeal,
       PlanMealItem,
       DietLog,
-      Food,
       FoodItem,
       ExerciseLog,
       ExerciseType,
