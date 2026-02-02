@@ -59,13 +59,15 @@ export const SILENT_ROUTES = [
  * @param url 请求URL
  */
 export function needAuth(url: string): boolean {
-  // 检查是否在公共路由中
+  // 1. 排除公共路由 (如登录接口)
   if (PUBLIC_ROUTES.some((route) => url.includes(route))) {
     return false;
   }
 
-  // 检查是否匹配认证路由规则
-  return AUTH_ROUTES.some((pattern) => pattern.test(url));
+  // 2. 检查是否包含认证关键词 (只要路径包含即匹配，增强兼容性)
+  // 去除结尾斜杠以支持 /food-items?q=... 这种形式
+  const authKeywords = ['/user/', '/diet-logs', '/diet-plans', '/food-items', '/dict/'];
+  return authKeywords.some(keyword => url.includes(keyword));
 }
 
 /**

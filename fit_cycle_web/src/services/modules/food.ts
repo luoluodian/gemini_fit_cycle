@@ -47,6 +47,20 @@ export async function updateFoodItem(id: number | string, data: Partial<FoodItem
 }
 
 /**
+ * 获取热门食材
+ */
+export async function getPopularFoodItems(): Promise<FoodItem[]> {
+  return httpRequest.get("/food-items/popular");
+}
+
+/**
+ * 删除自定义食材
+ */
+export async function deleteFoodItem(id: number | string): Promise<void> {
+  return httpRequest.delete(`/food-items/${id}`);
+}
+
+/**
  * 收藏食材
  */
 export async function favoriteFood(id: number | string): Promise<void> {

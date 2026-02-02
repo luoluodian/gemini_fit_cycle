@@ -4,19 +4,19 @@ import {
   UnauthorizedException,
   BadRequestException,
   Inject,
-} from '@nestjs/common';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+} from "@nestjs/common";
+import { WINSTON_MODULE_NEST_PROVIDER } from "nest-winston";
+import { Logger } from "winston";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
 
-import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
-import axios from 'axios';
+import { JwtService } from "@nestjs/jwt";
+import { ConfigService } from "@nestjs/config";
+import axios from "axios";
 
-import { UserTransformer } from '@/common/transformers/user.transformer';
-import { UserService } from '../user/user.service'; // ADDED: Import UserService
-import { WechatAuthDto, UserResponseDto } from '@/dtos/user.dto';
+import { UserTransformer } from "@/common/transformers/user.transformer";
+import { UserService } from "../user/user.service"; // ADDED: Import UserService
+import { WechatAuthDto, UserResponseDto } from "@/dtos/user.dto";
 
 @Injectable()
 export class AuthService {
@@ -33,9 +33,9 @@ export class AuthService {
     @Inject(WINSTON_MODULE_NEST_PROVIDER)
     private readonly logger: Logger,
   ) {
-    this.appId = this.config.get<string>('WECHAT_APPID') || '';
-    this.secret = this.config.get<string>('WECHAT_SECRET') || '';
-    this.api = this.config.get<string>('WECHAT_API') || '';
+    this.appId = this.config.get<string>("WECHAT_APPID") || "";
+    this.secret = this.config.get<string>("WECHAT_SECRET") || "";
+    this.api = this.config.get<string>("WECHAT_API") || "";
   }
 
   /**
@@ -45,33 +45,44 @@ export class AuthService {
    */
   async wechatAuth(dto: WechatAuthDto) {
     if (!dto.code) {
-      throw new BadRequestException('缺少 code');
+      throw new BadRequestException("缺少 code");
     }
     const session = await this.code2Session(dto.code);
     const { openid } = session;
 
-    // MODIFIED: Use UserService to find or create user
+    // 1. 查找或创建用户
     let user = await this.userService.findOrCreateByOpenid(openid);
 
-    // 第一次授权：头像昵称
-    if (dto.rawData) {
-      try {
-        const profile = JSON.parse(dto.rawData);
-        user.nickname = profile.nickName;
-        user.avatarUrl = profile.avatarUrl;
-      } catch (e) {
-        this.logger.log({ level: 'warn', message: 'rawData解析失败', error: String(e) });
+    // 2. 生成 Token
+    const refreshToken = this.createRefreshToken(user.id);
+    const accessToken = this.createAccessToken(user.id);
+
+    // 3. 只有在非 Mock 模式或有 rawData 更新时才执行数据库写入，减少锁竞争
+    if (dto.code !== "mock_code" || dto.rawData) {
+      let needsSave = false;
+      if (dto.rawData) {
+        try {
+          const profile = JSON.parse(dto.rawData);
+          if (user.nickname !== profile.nickName || user.avatarUrl !== profile.avatarUrl) {
+            user.nickname = profile.nickName;
+            user.avatarUrl = profile.avatarUrl;
+            needsSave = true;
+          }
+        } catch (e) {
+          this.logger.warn("rawData解析失败: " + String(e));
+        }
+      }
+
+      // 为了安全和静默登录，非 Mock 情况下还是保存一下 refreshToken
+      if (dto.code !== "mock_code") {
+        user.refreshToken = refreshToken;
+        needsSave = true;
+      }
+
+      if (needsSave) {
+        await this.userService.userRepository.save(user);
       }
     }
-
-    // 生成 Refresh Token
-    const refreshToken = this.createRefreshToken(user.id);
-    user.refreshToken = refreshToken;
-
-    await this.userService.userRepository.save(user); // MODIFIED: Use userService's repository to save
-
-    // accessToken
-    const accessToken = this.createAccessToken(user.id);
 
     return {
       accessToken,
@@ -87,10 +98,10 @@ export class AuthService {
    */
   async code2Session(code: string) {
     // Mock bypass for testing
-    if (code === 'mock_code') {
+    if (code === "mock_code") {
       return {
-        openid: 'mock_openid_123456',
-        session_key: 'mock_session_key',
+        openid: "mock_openid_123456",
+        session_key: "mock_session_key",
       };
     }
 
@@ -101,11 +112,11 @@ export class AuthService {
       const data = res.data;
 
       if (!data.openid) {
-        throw new UnauthorizedException(data.errmsg || '微信认证失败');
+        throw new UnauthorizedException(data.errmsg || "微信认证失败");
       }
       return data;
     } catch (e) {
-      throw new UnauthorizedException(e.message || '微信认证失败');
+      throw new UnauthorizedException(e.message || "微信认证失败");
     }
   }
 
@@ -118,8 +129,8 @@ export class AuthService {
     return this.jwtService.sign(
       { uid },
       {
-        expiresIn: '7d',
-        secret: this.config.get('JWT_SECRET'),
+        expiresIn: "7d",
+        secret: this.config.get("JWT_SECRET"),
       },
     );
   }
@@ -131,10 +142,10 @@ export class AuthService {
    */
   createRefreshToken(uid: number) {
     return this.jwtService.sign(
-      { uid, tokenType: 'refresh' },
+      { uid, tokenType: "refresh" },
       {
-        expiresIn: '30d',
-        secret: this.config.get('JWT_REFRESH_SECRET'),
+        expiresIn: "30d",
+        secret: this.config.get("JWT_REFRESH_SECRET"),
       },
     );
   }
@@ -147,11 +158,11 @@ export class AuthService {
    */
   async refreshToken(uid: number, refreshToken: string) {
     const user = await this.userService.findUserById(uid); // MODIFIED: Use userService
-    if (!user) throw new UnauthorizedException('用户不存在');
+    if (!user) throw new UnauthorizedException("用户不存在");
 
     // 校验 refresh token 是否一致
     if (user.refreshToken !== refreshToken) {
-      throw new UnauthorizedException('RefreshToken 已失效');
+      throw new UnauthorizedException("RefreshToken 已失效");
     }
 
     // 生成新 token
@@ -172,10 +183,10 @@ export class AuthService {
   verifyToken(token: string) {
     try {
       return this.jwtService.verify(token, {
-        secret: this.config.get('JWT_SECRET'),
+        secret: this.config.get("JWT_SECRET"),
       });
     } catch (e) {
-      throw new UnauthorizedException(e.message || 'Token 失效');
+      throw new UnauthorizedException(e.message || "Token 失效");
     }
   }
 }

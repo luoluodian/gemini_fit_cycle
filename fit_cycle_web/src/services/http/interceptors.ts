@@ -71,6 +71,8 @@ export class AuthInterceptor implements Interceptor {
    */
   async onError(error: any): Promise<any> {
     if (error instanceof ApiError && error.code === ERROR_CODES.UNAUTHORIZED) {
+      console.warn('[Auth] Unauthorized access detected, attempting refresh...');
+      
       // 如果是认证错误，尝试刷新token
       try {
         const newToken = await this.refreshToken();
@@ -82,11 +84,19 @@ export class AuthInterceptor implements Interceptor {
             Authorization: `Bearer ${newToken}`,
           };
           error.config._isRetry = true;
+          console.log('[Auth] Token refreshed, request config updated for retry.');
         }
 
-        return error; // 返回错误供重试
+        // 必须抛出这个错误，以便上层 request.ts 的 catch 块能捕获并根据 _isRetry 进行重试
+        throw error; 
       } catch (refreshError) {
-        // 刷新失败，需要重新登录
+        // 如果 refreshError 本身就是带 _isRetry 的原始错误，则继续向上抛出以便重试
+        if (refreshError instanceof ApiError && refreshError.config?._isRetry) {
+          throw refreshError;
+        }
+        
+        // 刷新真的失败了，或者没有 token 可刷
+        console.error('[Auth] Refresh flow failed, force logging out.');
         await this.navigateToLogin();
         throw createApiError(ERROR_CODES.UNAUTHORIZED, "登录失效，请重新登录");
       }

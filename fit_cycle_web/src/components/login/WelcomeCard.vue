@@ -3,7 +3,7 @@
     <view class="text-center">
       <h2 class="text-xl font-semibold text-gray-800 mb-3">欢迎使用</h2>
       <p class="text-gray-600 text-sm leading-relaxed mb-4">
-        为了保存你的饮食计划和记录，需要绑定微信账号。我们仅会获取你的昵称和头像，不会向好友或朋友圈主动发送消息。
+        为保存您的饮食计划和记录，需要绑定微信账号。我们仅会获取您的昵称和头像，不会向好友或朋友圈主动发送消息。
       </p>
       <view class="bg-emerald-50 rounded-lg p-3">
         <view class="flex items-center text-sm text-emerald-700">
@@ -30,4 +30,3 @@
 <script setup lang="ts">
 // WelcomeCard组件 - 显示欢迎信息和隐私承诺
 </script>
-

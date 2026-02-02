@@ -14,6 +14,14 @@ import { TraceMiddleware } from './common/logger/trace.middleware';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
+  
+  // ✅ 开启 CORS 跨域支持
+  app.enableCors({
+    origin: true,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    credentials: true,
+  });
+
   // ✅ 让 Nest 自己的日志也走 winston（控制台 + 文件）
   app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
 

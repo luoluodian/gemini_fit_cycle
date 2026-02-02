@@ -52,6 +52,7 @@ export class WechatAuthDto {
  */
 export class UserResponseDto {
   user: {
+    id: number;
     nickname?: string;
     avatarUrl?: string;
     email?: string;

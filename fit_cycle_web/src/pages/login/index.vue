@@ -1,7 +1,9 @@
 <template>
   <view class="min-h-screen no-tabbar">
     <!-- Main Content -->
-    <view class="flex flex-col items-center justify-center min-h-screen px-4">
+    <view
+      class="flex flex-col items-center justify-center min-h-screen px-4 pt-20"
+    >
       <!-- Logo/App Info -->
       <view class="animate-item pt-30">
         <LogoHeader />
@@ -16,11 +18,8 @@
       <LoginButton :loading="isLoading" @click="handleWechatLogin" />
 
       <!-- 开发者 Mock 登录 (仅开发环境显示) -->
-      <view 
-        v-if="isDev"
-        class="mt-6 flex flex-col items-center"
-      >
-        <view 
+      <view v-if="isDev" class="mt-6 flex flex-col items-center">
+        <view
           class="text-xs text-gray-400 mb-2 px-4 py-1 border border-dashed border-gray-200 rounded-full"
           @click="handleMockLogin"
         >
@@ -63,7 +62,7 @@ import PrivacyModal from "@/components/login/PrivacyModal.vue";
 
 // 响应式状态
 const isLoading = ref<boolean>(false);
-const isDev = process.env.NODE_ENV === 'development';
+const isDev = process.env.NODE_ENV === "development";
 const privacyModal = ref(false);
 const userStore = useUserStore();
 const routerParams = useRouterParams();
@@ -76,7 +75,7 @@ const handleMockLogin = async (): Promise<void> => {
     isLoading.value = true;
     await showSuccess("触发 Mock 登录");
     const authData = await userStore.login("mock_code");
-    
+
     if (authData.accessToken) {
       await showSuccess("登录成功 (Mock)");
       const targetUrl = routerParams.redirect
@@ -109,7 +108,7 @@ const handleWechatLogin = async (): Promise<void> => {
       console.warn("Taro.login failed, using mock_code for dev");
       code = "mock_code";
     }
-    
+
     if (!code || code === "undefined") {
       code = "mock_code";
     }

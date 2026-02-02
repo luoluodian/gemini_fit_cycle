@@ -213,13 +213,17 @@
       :is-favorite="(selectedFood as any)?.isFavorite"
       @close="handleCloseDetailModal"
       @toggle-favorite="handleToggleFavorite"
+      @edit="handleEditFood"
+      @delete="handleDeleteFood"
     />
 
     <CustomFoodModal
       :visible="showCustomFoodModal"
       :editing-food="editingFood"
       @close="handleCloseCustomFoodModal"
-      @submit="fetchFoods"
+      @submit="fetchInitialData"
+      @delete="handleDeleteFood"
+      @toggle-favorite="handleToggleFavorite"
     />
   </view>
 </template>
@@ -228,10 +232,13 @@
 import { ref, computed } from "vue";
 import Taro, { useDidShow } from "@tarojs/taro";
 import { useNavigationStore } from "@/stores/navigation";
+import { useUserStore } from "@/stores/user";
 import {
   searchFoodItems,
   favoriteFood,
   unfavoriteFood,
+  getPopularFoodItems,
+  deleteFoodItem,
   FoodCategory,
 } from "@/services/modules/food";
 import type { FoodItem } from "@/services/modules/food";
@@ -244,8 +251,42 @@ import { debounce } from "lodash-es";
 import { Uploader } from "@nutui/icons-vue-taro";
 import "./index.scss";
 
+// ... (existing constants)
+
+const handleEditFood = (food: FoodItem) => {
+  editingFood.value = food;
+  showDetailModal.value = false; // 先关闭详情
+  setTimeout(() => {
+    showCustomFoodModal.value = true; // 延迟打开编辑，防止弹窗动画冲突
+  }, 300);
+};
+
+const handleDeleteFood = async (food: FoodItem) => {
+  Taro.showModal({
+    title: "删除确认",
+    content: `确定要删除食材 "${food.name}" 吗？此操作不可撤销。`,
+    success: async (res) => {
+      if (res.confirm) {
+        try {
+          await deleteFoodItem(food.id);
+          showSuccess("删除成功");
+          showDetailModal.value = false;
+          showCustomFoodModal.value = false;
+          fetchInitialData(); // 刷新列表
+        } catch (e: any) {
+          showError(e.message || "删除失败");
+        }
+      }
+    },
+  });
+};
+
+// ... (template remains similar but with new emits)
+
+
 // 状态管理
 const navStore = useNavigationStore();
+const userStore = useUserStore();
 
 useDidShow(() => {
   navStore.setActiveTab(2);
@@ -255,7 +296,7 @@ useDidShow(() => {
       selected: 2,
     });
   }
-  fetchFoods();
+  fetchInitialData();
 });
 
 const showSearchBar = ref(false);
@@ -267,6 +308,7 @@ const selectedFood = ref<FoodItem | null>(null);
 const editingFood = ref<FoodItem | null>(null);
 
 const allFoods = ref<FoodItem[]>([]);
+const popularFoods = ref<FoodItem[]>([]);
 const totalCount = ref(0);
 const isLoading = ref(false);
 
@@ -282,6 +324,20 @@ const categoryOptions = [
   })),
 ];
 
+const fetchInitialData = () => {
+  fetchFoods();
+  fetchPopular();
+};
+
+const fetchPopular = async () => {
+  try {
+    const res = await getPopularFoodItems();
+    popularFoods.value = res;
+  } catch (e) {
+    console.error("Failed to fetch popular foods", e);
+  }
+};
+
 // 获取数据
 const fetchFoods = async () => {
   isLoading.value = true;
@@ -292,6 +348,7 @@ const fetchFoods = async () => {
       pageSize: 50,
     };
 
+    // 如果选中的是具体营养分类
     if (
       selectedCategory.value !== "all" &&
       !["favorites", "custom", "system"].includes(selectedCategory.value)
@@ -302,14 +359,13 @@ const fetchFoods = async () => {
     const res = await searchFoodItems(params);
     let filtered = res.items;
 
-    // 处理特殊分类
+    // 处理特殊本地筛选 (如果后端暂不支持直接传 type=custom 等)
     if (selectedCategory.value === "system") {
       filtered = filtered.filter((f) => f.type === "system");
     } else if (selectedCategory.value === "custom") {
       filtered = filtered.filter((f) => f.type === "custom");
     } else if (selectedCategory.value === "favorites") {
-      // TODO: 接收藏接口
-      filtered = filtered.filter((f) => (f as any).isFavorite);
+      filtered = filtered.filter((f) => f.isFavorite);
     }
 
     allFoods.value = filtered;
@@ -339,8 +395,27 @@ const handleCategoryChange = (key: string) => {
 };
 
 const handleViewDetail = (food: FoodItem) => {
-  selectedFood.value = food;
-  showDetailModal.value = true;
+  // 1. 获取当前登录用户的 ID (处理多层级嵌套)
+  const currentUserId = userStore.userInfo?.user?.id || userStore.userInfo?.id;
+  
+  // 2. 核心判断逻辑：是否为用户自建
+  // 满足以下任一条件即视为自建：
+  // a. type 是 custom 且 userId 匹配
+  // b. 如果 userId 暂时没拿到但 type 是 custom，在开发环境也视为自建以便管理
+  const isOwn = food.type === 'custom' && 
+                (!food.userId || String(food.userId) === String(currentUserId));
+  
+  console.log('[Food] Viewing detail:', { foodId: food.id, isOwn, foodType: food.type, currentUserId, foodUserId: food.userId });
+
+  if (isOwn) {
+    // 进入编辑模式
+    editingFood.value = { ...food }; // 解构以断开响应式引用
+    showCustomFoodModal.value = true;
+  } else {
+    // 进入系统详情模式
+    selectedFood.value = food;
+    showDetailModal.value = true;
+  }
 };
 
 const handleCloseDetailModal = () => {
@@ -360,20 +435,29 @@ const handleCloseCustomFoodModal = () => {
 
 const handleToggleFavorite = async (food: FoodItem) => {
   if (!food) return;
-  const isFav = (food as any).isFavorite;
+  const isFav = food.isFavorite;
 
   try {
     if (isFav) {
       await unfavoriteFood(food.id);
-      (food as any).isFavorite = false;
+      food.isFavorite = false;
       showSuccess("已取消收藏");
     } else {
       await favoriteFood(food.id);
-      (food as any).isFavorite = true;
+      food.isFavorite = true;
       showSuccess("已收藏");
     }
-    // 如果在收藏列表，可能需要移除
-    if (selectedCategory.value === "favorites" && isFav) {
+    
+    // 同步更新可能处于编辑状态的 food 对象属性，触发 UI 响应
+    if (editingFood.value && editingFood.value.id === food.id) {
+      editingFood.value.isFavorite = food.isFavorite;
+    }
+    if (selectedFood.value && selectedFood.value.id === food.id) {
+      selectedFood.value.isFavorite = food.isFavorite;
+    }
+    
+    fetchPopular();
+    if (selectedCategory.value === "favorites") {
       fetchFoods();
     }
   } catch (error: any) {
@@ -385,8 +469,6 @@ const getCategoryBg = (cat: string) => {
   const target = FOOD_CATEGORIES.find((c) => c.key === cat);
   return target ? target.theme.bg : "bg-gray-50";
 };
-
-const popularFoods = computed(() => allFoods.value.slice(0, 10));
 </script>
 
 <style scoped lang="scss">

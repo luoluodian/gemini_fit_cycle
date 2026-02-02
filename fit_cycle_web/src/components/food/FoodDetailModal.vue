@@ -22,13 +22,13 @@
         food?.name || "食物名称"
       }}</text>
 
-      <!-- Favorite Button -->
+      <!-- Favorite Button (Toggle between Heart and HeartFill) -->
       <view
         class="p-1 transition-all active:scale-95"
         @click="handleToggleFavorite"
       >
-        <Follow v-if="isFavorite" font-size="18" color="#ef4444"></Follow>
-        <Addfollow v-else font-size="18" color="#d1d5db"></Addfollow>
+        <HeartFill v-if="isFavorite" font-size="18" color="#ef4444"></HeartFill>
+        <Heart v-else font-size="18" color="#d1d5db"></Heart>
       </view>
     </view>
 
@@ -88,6 +88,24 @@
           </view>
         </view>
       </view>
+
+      <!-- Admin Actions (Only for own custom foods) -->
+      <view v-if="isOwnCustomFood" class="mt-2 flex items-center justify-center gap-6 py-2 border-t border-solid border-gray-100">
+        <view 
+          class="flex items-center gap-1.5 px-4 py-1 rounded-full bg-gray-50 active:bg-gray-100 transition-all"
+          @click="handleEdit"
+        >
+          <Edit font-size="14" color="#4b5563"></Edit>
+          <text class="text-xs text-gray-600">修改信息</text>
+        </view>
+        <view 
+          class="flex items-center gap-1.5 px-4 py-1 rounded-full bg-red-50 active:bg-red-100 transition-all"
+          @click="handleDelete"
+        >
+          <Del font-size="14" color="#ef4444"></Del>
+          <text class="text-xs text-red-500">删除食材</text>
+        </view>
+      </view>
     </view>
   </BaseModal>
 </template>
@@ -95,10 +113,11 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import BaseModal from "../common/BaseModal.vue";
-import { Addfollow, Follow, Close } from "@nutui/icons-vue-taro";
+import { Heart, HeartFill, Close, Edit, Del } from "@nutui/icons-vue-taro";
 import { FoodCategory } from "@/services/modules/food";
 import type { FoodItem } from "@/services/modules/food";
 import { getFoodCategoryConfig } from "@/constants/food-categories";
+import { useUserStore } from "@/stores/user";
 
 // Define a simplified interface for props if FoodItem is too complex or just use FoodItem
 interface Food extends FoodItem {
@@ -115,7 +134,18 @@ const emit = defineEmits<{
   close: [];
   addToMeal: [food: Food];
   toggleFavorite: [food: Food];
+  edit: [food: Food];
+  delete: [food: Food];
 }>();
+
+const userStore = useUserStore();
+
+// 是否为当前用户的自定义食材
+const isOwnCustomFood = computed(() => {
+  if (!props.food) return false;
+  const currentUserId = userStore.userInfo?.user?.id;
+  return props.food.type === 'custom' && currentUserId && String(props.food.userId) === String(currentUserId);
+});
 
 // Sync visible prop with BaseModal
 const modalVisible = computed({
@@ -137,6 +167,18 @@ const handleClose = () => {
 const handleToggleFavorite = () => {
   if (props.food) {
     emit("toggleFavorite", props.food);
+  }
+};
+
+const handleEdit = () => {
+  if (props.food) {
+    emit("edit", props.food);
+  }
+};
+
+const handleDelete = () => {
+  if (props.food) {
+    emit("delete", props.food);
   }
 };
 </script>

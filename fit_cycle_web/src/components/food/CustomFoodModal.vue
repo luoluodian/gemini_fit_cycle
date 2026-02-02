@@ -8,11 +8,32 @@
     style="width: 90vw"
   >
     <view class="p-1">
-      <!-- 标题 -->
-      <view class="text-center mb-3">
+      <!-- 标题栏 (增加删除与收藏) -->
+      <view class="flex items-center justify-between mb-3 relative">
+        <view class="w-10">
+          <view 
+            v-if="props.editingFood" 
+            class="p-1 text-red-400 active:opacity-60"
+            @click="$emit('delete', props.editingFood)"
+          >
+            <Del font-size="18"></Del>
+          </view>
+        </view>
+
         <text class="text-lg font-semibold text-gray-800">{{
-          editingFood ? "编辑食材" : "创建食材"
+          props.editingFood ? "编辑食材" : "创建食材"
         }}</text>
+
+        <view class="w-10 flex justify-end">
+          <view 
+            v-if="props.editingFood" 
+            class="p-1 transition-all active:scale-95"
+            @click="$emit('toggleFavorite', props.editingFood)"
+          >
+            <HeartFill v-if="props.editingFood.isFavorite" font-size="18" color="#ef4444"></HeartFill>
+            <Heart v-else font-size="18" color="#d1d5db"></Heart>
+          </view>
+        </view>
       </view>
 
       <view class="space-y-3">
@@ -219,6 +240,7 @@
 <script setup lang="ts">
 import { ref, watch, computed } from "vue";
 import BaseModal from "../common/BaseModal.vue";
+import { Heart, HeartFill, Del } from "@nutui/icons-vue-taro";
 import {
   FoodCategory,
   createFoodItem,
@@ -235,6 +257,8 @@ const props = defineProps<{
 const emit = defineEmits<{
   close: [];
   submit: [];
+  delete: [food: FoodItem];
+  toggleFavorite: [food: FoodItem];
 }>();
 
 const submitting = ref(false);

@@ -4,22 +4,29 @@ import { httpRequest } from '@/services/http';
  * 用户信息接口定义（对齐后端 UserResponseDto）
  */
 export interface UserInfo {
-  nickname?: string;
-  avatarUrl?: string;
-  email?: string;
-  phone?: string;
-  dateOfBirth?: string;
-  heightCm?: number;
-  weightKg?: number;
-  targetWeightKg?: number;
-  goalRate?: number;
-  genderId?: number;
-  genderText?: string;
-  activityLevelId?: number;
-  activityLevelText?: string;
-  goalTypeId?: number;
-  goalTypeText?: string;
-  isCompleted?: boolean;
+  user: {
+    id: number;
+    nickname?: string;
+    avatarUrl?: string;
+    email?: string;
+    phone?: string;
+    isCompleted?: boolean;
+  };
+  health: {
+    genderId?: number;
+    genderText?: string;
+    heightCm?: number;
+    weightKg?: number;
+    dateOfBirth?: string;
+    activityLevelId?: number;
+    activityLevelText?: string;
+    bmr?: number;
+    tdee?: number;
+  };
+  stats: {
+    totalDays: number;
+    completedPlans: number;
+  };
 }
 
 /**

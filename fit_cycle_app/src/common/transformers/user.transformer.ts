@@ -16,6 +16,7 @@ export class UserTransformer {
 
     return {
       user: {
+        id: Number(user.id),
         nickname: user.nickname,
         avatarUrl: user.avatarUrl,
         email: user.email ?? undefined,
