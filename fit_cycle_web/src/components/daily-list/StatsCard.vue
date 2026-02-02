@@ -1,5 +1,5 @@
 <template>
-  <view class="glass-card rounded-xl p-3 text-center">
+  <view class="glass-card rounded-lg p-3 text-center">
     <text :class="['text-lg font-bold', colorClass]">{{ count }}</text>
     <text class="text-xs text-gray-600 block mt-1">{{ label }}</text>
   </view>

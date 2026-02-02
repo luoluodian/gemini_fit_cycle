@@ -31,10 +31,12 @@ export const API_BASE_CONFIG = {
  * 更灵活，支持复杂的匹配规则
  */
 export const AUTH_ROUTES = [
-  /^\/user\//,
-  /^\/diet-logs\//,
-  /^\/diet-plans\//,
-  /^\/auth\/refreshToken/,
+  /\/user\//,
+  /\/diet-logs\//,
+  /\/diet-plans\//,
+  /\/food-items/,
+  /\/dict\//,
+  /\/auth\/refreshToken/,
 ];
 
 /**

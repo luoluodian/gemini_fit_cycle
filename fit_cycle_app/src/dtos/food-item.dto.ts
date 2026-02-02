@@ -40,6 +40,11 @@ export class CreateFoodItemDto {
   @IsString()
   unit: string;
 
+  /** 营养成分基准数量 (如 100) */
+  @IsNumber()
+  @IsOptional()
+  baseCount?: number;
+
   /** 热量 kcal/100g or per unit */
   @IsNumber()
   calories: number;
@@ -97,6 +102,10 @@ export class UpdateFoodItemDto {
   @IsOptional()
   @IsString()
   unit?: string;
+
+  @IsOptional()
+  @IsNumber()
+  baseCount?: number;
 
   @IsOptional()
   @IsNumber()

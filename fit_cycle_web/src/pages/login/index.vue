@@ -12,9 +12,25 @@
         <WelcomeCard />
       </view>
 
-      <!-- 登录按钮 -->
-      <view class="animate-item w-full flex justify-center">
-        <LoginButton @login="handleWechatLogin" @guest="handleGuestMode" />
+      <!-- 微信登录按钮 -->
+      <LoginButton :loading="isLoading" @click="handleWechatLogin" />
+
+      <!-- 开发者 Mock 登录 (仅开发环境显示) -->
+      <view 
+        v-if="isDev"
+        class="mt-6 flex flex-col items-center"
+      >
+        <view 
+          class="text-xs text-gray-400 mb-2 px-4 py-1 border border-dashed border-gray-200 rounded-full"
+          @click="handleMockLogin"
+        >
+          🛠️ 开发者入口: 点击 Mock 登录
+        </view>
+      </view>
+
+      <!-- 游客模式入口 -->
+      <view class="mt-8 flex justify-center items-center space-x-4">
+        <!-- 可以在这里添加游客模式按钮 -->
       </view>
 
       <!-- 隐私政策 -->
@@ -47,12 +63,36 @@ import PrivacyModal from "@/components/login/PrivacyModal.vue";
 
 // 响应式状态
 const isLoading = ref<boolean>(false);
-const privacyModal = ref<boolean>(false);
+const isDev = process.env.NODE_ENV === 'development';
+const privacyModal = ref(false);
 const userStore = useUserStore();
-const routerParams = useRouterParams<{ redirect?: string }>();
+const routerParams = useRouterParams();
 
 /**
- * 处理微信登录流程
+ * 处理 Mock 登录 (开发环境专用)
+ */
+const handleMockLogin = async (): Promise<void> => {
+  try {
+    isLoading.value = true;
+    await showSuccess("触发 Mock 登录");
+    const authData = await userStore.login("mock_code");
+    
+    if (authData.accessToken) {
+      await showSuccess("登录成功 (Mock)");
+      const targetUrl = routerParams.redirect
+        ? decodeURIComponent(routerParams.redirect)
+        : "/pages/index/index";
+      await reLaunch(targetUrl as any);
+    }
+  } catch (error: any) {
+    showError(error.message || "Mock 登录失败");
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+/**
+ * 处理微信登录逻辑
  */
 const handleWechatLogin = async (): Promise<void> => {
   if (isLoading.value) return;

@@ -9,7 +9,7 @@
         <view class="flex flex-col items-center justify-center mt-8 space-y-2">
           <view
             :class="[
-              'step-indicator w-8 h-8 rounded-xl flex items-center justify-center text-sm font-medium ',
+              'step-indicator w-8 h-8 rounded-lg flex items-center justify-center text-sm font-medium ',
               getStepClass(index + 1),
             ]"
           >

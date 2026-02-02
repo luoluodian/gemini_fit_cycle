@@ -1,15 +1,15 @@
 <template>
   <view class="px-4 py-4">
     <view class="grid grid-cols-3 gap-3">
-      <view class="glass-card rounded-xl p-3 text-center">
+      <view class="glass-card rounded-lg p-3 text-center">
         <view class="text-lg font-bold text-emerald-600">{{ completedCount }}</view>
         <view class="text-xs text-gray-600">已完成</view>
       </view>
-      <view class="glass-card rounded-xl p-3 text-center">
+      <view class="glass-card rounded-lg p-3 text-center">
         <view class="text-lg font-bold text-blue-600">{{ configuredCount }}</view>
         <view class="text-xs text-gray-600">已配置</view>
       </view>
-      <view class="glass-card rounded-xl p-3 text-center">
+      <view class="glass-card rounded-lg p-3 text-center">
         <view class="text-lg font-bold text-orange-600">{{ remainingCount }}</view>
         <view class="text-xs text-gray-600">待配置</view>
       </view>

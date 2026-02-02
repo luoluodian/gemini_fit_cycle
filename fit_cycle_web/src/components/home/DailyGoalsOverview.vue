@@ -1,5 +1,5 @@
 <template>
-  <view class="glass-card rounded-2xl p-4 mb-6 shadow-lg">
+  <view class="glass-card rounded-lg p-4 mb-6 shadow-lg">
     <h3 class="text-lg font-semibold text-gray-800 mb-4">今日目标</h3>
     <view class="grid grid-cols-2 gap-4">
       <view class="text-center">
@@ -20,9 +20,9 @@
         <span>蛋白质</span>
         <span>{{ proteinText }}</span>
       </view>
-      <view class="w-full bg-gray-200 rounded-xl h-2">
+      <view class="w-full bg-gray-200 rounded-lg h-2">
         <view
-          class="progress-bar h-2 rounded-xl"
+          class="progress-bar h-2 rounded-lg"
           :style="{ width: proteinPercent + '%' }"
         ></view>
       </view>
@@ -32,9 +32,9 @@
         <span>脂肪</span>
         <span>{{ fatText }}</span>
       </view>
-      <view class="w-full bg-gray-200 rounded-xl h-2">
+      <view class="w-full bg-gray-200 rounded-lg h-2">
         <view
-          class="progress-bar h-2 rounded-xl"
+          class="progress-bar h-2 rounded-lg"
           :style="{ width: fatPercent + '%' }"
         ></view>
       </view>
@@ -44,9 +44,9 @@
         <span>碳水化合物</span>
         <span>{{ carbText }}</span>
       </view>
-      <view class="w-full bg-gray-200 rounded-xl h-2">
+      <view class="w-full bg-gray-200 rounded-lg h-2">
         <view
-          class="progress-bar h-2 rounded-xl"
+          class="progress-bar h-2 rounded-lg"
           :style="{ width: carbPercent + '%' }"
         ></view>
       </view>

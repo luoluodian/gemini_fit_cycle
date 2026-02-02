@@ -1,7 +1,7 @@
 <template>
   <view v-if="visible" class="fixed inset-0 bg-black bg-opacity-50 z-50" @click="handleBackdropClick">
     <view class="flex items-center justify-center min-h-screen p-4" @click.stop>
-      <view class="bg-white rounded-2xl w-full max-w-sm p-6">
+      <view class="bg-white rounded-lg w-full max-w-sm p-6">
         <view class="flex items-center justify-between mb-4">
           <text class="text-lg font-semibold text-gray-800">导入计划</text>
           <view @click="handleClose" class="text-gray-400">

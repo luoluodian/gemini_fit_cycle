@@ -6,7 +6,7 @@
         type="primary"
         size="sm"
         :block="false"
-        class="flex-none !w-20 !px-0 !rounded-xl !py-2.5"
+        class="flex-none !w-20 !px-0 !rounded-lg !py-2.5"
         style="margin: 0"
         @click="$emit('import')"
       >

@@ -16,7 +16,7 @@
         type="ghost"
         size="sm"
         :block="false"
-        class="!bg-white/30 !text-white !border-transparent flex-1 !rounded-xl !py-2.5"
+        class="!bg-white/30 !text-white !border-transparent flex-1 !rounded-lg !py-2.5"
         @click="$emit('viewPlan')"
       >
         查看计划
@@ -25,7 +25,7 @@
         type="ghost"
         size="sm"
         :block="false"
-        class="!bg-white/20 !text-white !border-transparent flex-none !w-20 !rounded-xl !py-2.5"
+        class="!bg-white/20 !text-white !border-transparent flex-none !w-20 !rounded-lg !py-2.5"
         style="margin-top: 0"
         @click="$emit('editPlan')"
       >

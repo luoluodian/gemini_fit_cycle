@@ -1,5 +1,5 @@
 <template>
-  <view class="food-card bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+  <view class="food-card bg-white rounded-lg p-4 shadow-sm border border-gray-100">
     <view class="flex items-center justify-between">
       <view class="flex items-center">
         <view

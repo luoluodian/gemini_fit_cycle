@@ -9,7 +9,7 @@
       @click.stop
     >
       <view
-        class="bg-white rounded-2xl w-full max-w-md p-6 max-h-[90vh] overflow-y-auto"
+        class="bg-white rounded-lg w-full max-w-md p-6 max-h-[90vh] overflow-y-auto"
       >
         <view class="flex items-center justify-between mb-4">
           <h3 class="text-lg font-semibold text-gray-800">创建新计划</h3>

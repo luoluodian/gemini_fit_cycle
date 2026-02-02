@@ -1,7 +1,7 @@
 <template>
   <view
     :class="[
-      'bg-white rounded-xl p-4 shadow-sm border border-gray-100 transition-all duration-300',
+      'bg-white rounded-lg p-4 shadow-sm border border-gray-100 transition-all duration-300',
       hoverEffect && 'hover:-translate-y-0.5 hover:shadow-lg',
       clickable && 'cursor-pointer',
       status === 'completed' && 'border-l-4 border-l-emerald-500',

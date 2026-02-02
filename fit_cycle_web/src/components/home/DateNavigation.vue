@@ -1,8 +1,8 @@
 <template>
-  <view class="glass-card rounded-2xl p-4 mb-6 shadow-lg">
+  <view class="glass-card rounded-lg p-4 mb-6 shadow-lg">
     <view class="flex items-center justify-between">
       <view
-        class="p-2 rounded-3xl bg-gray-100 hover:bg-gray-200 transition-colors flex items-center justify-center"
+        class="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors flex items-center justify-center"
         @click="handlePrevDate"
       >
         <svg
@@ -24,7 +24,7 @@
         <view class="text-sm text-gray-500">{{ planText }}</view>
       </view>
       <view
-        class="p-2 rounded-3xl bg-gray-100 hover:bg-gray-200 transition-colors flex items-center justify-center"
+        class="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors flex items-center justify-center"
         @click="handleNextDate"
       >
         <svg

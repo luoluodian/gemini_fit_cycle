@@ -3,7 +3,7 @@
     :class="[
       'base-button transition-all duration-200 flex items-center justify-center font-semibold',
       block ? 'w-full' : '',
-      round ? 'rounded-full' : 'rounded-2xl',
+      round ? 'rounded-full' : 'rounded-lg',
       sizeClasses[size],
       typeClasses[type],
       loading || disabled

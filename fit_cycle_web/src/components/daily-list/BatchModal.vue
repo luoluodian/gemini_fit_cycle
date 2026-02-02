@@ -5,7 +5,7 @@
     @click="handleClose"
   >
     <view
-      class="bg-white rounded-2xl p-6 w-full max-w-sm"
+      class="bg-white rounded-lg p-6 w-full max-w-sm"
       @click.stop
     >
       <text class="text-lg font-bold text-gray-800 mb-4 block">批量配置</text>

@@ -8,7 +8,7 @@
       class="flex items-center justify-center min-h-screen p-4"
       @click.stop
     >
-      <view class="bg-white rounded-2xl p-6 w-full max-w-sm">
+      <view class="bg-white rounded-lg p-6 w-full max-w-sm">
         <text class="text-lg font-bold text-gray-800 mb-4 block"
           >编辑营养目标</text
         >

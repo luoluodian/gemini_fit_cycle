@@ -15,30 +15,28 @@ export class UserTransformer {
     const isCompleted = !!(profile && profile.height && profile.weight && profile.gender && profile.birthday);
 
     return {
-      nickname: user.nickname,
-      avatarUrl: user.avatarUrl,
-      email: user.email ?? undefined,
-      phone: user.phone ?? undefined,
-      
-      // 从 HealthProfile 获取
-      dateOfBirth: profile?.birthday ?? undefined,
-      heightCm: profile ? Number(profile.height) : undefined,
-      weightKg: profile ? Number(profile.weight) : undefined,
-      genderText: profile?.gender === 'male' ? '男' : (profile?.gender === 'female' ? '女' : undefined),
-      genderId: profile?.gender === 'male' ? 1 : (profile?.gender === 'female' ? 2 : undefined),
-      
-      activityLevelId: 1, // TODO: 反向映射
-      activityLevelText: String(profile?.activityLevel ?? 1.2),
-
-      bmr: profile?.bmr,
-      tdee: profile?.tdee,
-      
+      user: {
+        nickname: user.nickname,
+        avatarUrl: user.avatarUrl,
+        email: user.email ?? undefined,
+        phone: user.phone ?? undefined,
+        isCompleted,
+      },
+      health: {
+        genderId: profile?.gender === 'male' ? 1 : (profile?.gender === 'female' ? 2 : undefined),
+        genderText: profile?.gender === 'male' ? '男' : (profile?.gender === 'female' ? '女' : undefined),
+        heightCm: profile ? Number(profile.height) : undefined,
+        weightKg: profile ? Number(profile.weight) : undefined,
+        dateOfBirth: profile?.birthday ?? undefined,
+        activityLevelId: 1, // TODO: 从 profile.activityLevel 反向映射
+        activityLevelText: String(profile?.activityLevel ?? 1.2),
+        bmr: profile?.bmr,
+        tdee: profile?.tdee,
+      },
       stats: {
         totalDays: 0, // TODO: 从 DietLog 统计
         completedPlans: 0 // TODO: 从 DietPlan 统计
-      },
-
-      isCompleted,
+      }
     };
   }
 }

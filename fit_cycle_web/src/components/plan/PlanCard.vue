@@ -1,7 +1,7 @@
 <template>
   <view
     :class="[
-      'plan-card bg-white rounded-xl p-4 shadow-sm',
+      'plan-card bg-white rounded-lg p-4 shadow-sm',
       plan.isActive ? 'active' : '',
     ]"
   >

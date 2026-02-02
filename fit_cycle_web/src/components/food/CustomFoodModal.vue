@@ -1,177 +1,230 @@
 <template>
   <BaseModal
     :visible="modalVisible"
-    :title="editingFood ? '编辑食材' : '创建自定义食材'"
+    :show-header="false"
     position="center"
     @close="handleClose"
-    @update="(val) => modalVisible = val"
+    @update="(val) => (modalVisible = val)"
+    style="width: 90vw"
   >
-    <view class="space-y-5 max-h-[70vh] overflow-y-auto px-1 scrollbar-hide">
-      <!-- 食物名称和单位 -->
-      <view class="flex gap-3">
-        <view class="flex-1">
-          <text class="block text-sm font-medium text-gray-700 mb-2">食物名称</text>
-          <input
-            v-model="formData.name"
-            type="text"
-            class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all"
-            placeholder="例如：自制沙拉"
-          />
+    <view class="p-1">
+      <!-- 标题 -->
+      <view class="text-center mb-3">
+        <text class="text-lg font-semibold text-gray-800">{{
+          editingFood ? "编辑食材" : "创建食材"
+        }}</text>
+      </view>
+
+      <view class="space-y-3">
+        <!-- 名称和单位在一行展示 -->
+        <view class="flex items-center gap-3">
+          <view class="flex flex-1 items-center gap-2">
+            <text class="text-sm font-medium text-gray-700 whitespace-nowrap"
+              >名称</text
+            >
+            <input
+              v-model="formData.name"
+              type="text"
+              class="flex-1 px-3 py-1.5 border-[1rpx] border-solid border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 transition-all text-sm"
+              placeholder="例如：自制沙拉"
+            />
+          </view>
+          <view class="flex items-center gap-2 w-32">
+            <text class="text-sm font-medium text-gray-700 whitespace-nowrap"
+              >单位</text
+            >
+            <picker
+              :value="unitIndex"
+              :range="unitLabels"
+              @change="handleUnitChange"
+              class="flex-1"
+            >
+              <view
+                class="py-1.5 border-[1rpx] border-solid border-gray-300 rounded-lg flex items-center justify-between bg-white px-2"
+              >
+                <text class="text-xs text-gray-800">{{
+                  unitLabels[unitIndex]
+                }}</text>
+                <image
+                  src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGZpbGw9Im5vbmUiIHZpZXdCb3g9IjAgMCAyNCAyNCIgc3Ryb2tlPSIjOTY5RkExIj48cGF0aSBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS13aWR0aD0iMiIgZD0iTTE5IDlsLTcgNy03LTciLz48L3N2Zz4="
+                  class="w-3 h-3 opacity-40 ml-1"
+                />
+              </view>
+            </picker>
+          </view>
         </view>
-        <view class="w-28">
-          <text class="block text-sm font-medium text-gray-700 mb-2">单位</text>
-          <picker
-            :value="unitIndex"
-            :range="unitLabels"
-            @change="handleUnitChange"
+
+        <!-- 分类标签在一行展示 -->
+
+        <view class="flex items-center gap-2 py-1">
+          <text class="text-sm font-medium text-gray-700 whitespace-nowrap"
+            >标签</text
           >
-            <view class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg flex items-center justify-between">
-              <text class="text-sm text-gray-800">{{ unitLabels[unitIndex] }}</text>
-              <image 
-                src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGZpbGw9Im5vbmUiIHZpZXdCb3g9IjAgMCAyNCAyNCIgc3Ryb2tlPSIjOTY5RkExIj48cGF0aSBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS13aWR0aD0iMiIgZD0iTTE5IDlsLTcgNy03LTciLz48L3N2Zz4="
-                class="w-4 h-4 opacity-40"
+
+          <scroll-view
+            :scroll-x="true"
+            :enable-flex="true"
+            :enhanced="true"
+            :show-scrollbar="false"
+            class="flex-1 whitespace-nowrap scrollbar-hide"
+            style="width: 0; min-height: 60rpx"
+          >
+            <view class="flex gap-2 pr-4">
+              <view
+                v-for="cat in categoryOptions"
+                :key="cat.key"
+                class="px-3 py-1 text-[22rpx] rounded-lg border border-solid transition-all whitespace-nowrap inline-flex items-center flex-shrink-0"
+                :style="
+                  formData.category === cat.key
+                    ? 'background-color: #10b981; color: #fff; border-color: #10b981;'
+                    : 'background-color: #fff; color: #6b7280; border-color: #e5e7eb;'
+                "
+                @click="
+                  formData.category = cat.key;
+
+                  formData.imageUrl = cat.emoji;
+                "
+              >
+                <text class="mr-1">{{ cat.emoji }}</text>
+
+                <text>{{ cat.label }}</text>
+              </view>
+            </view>
+          </scroll-view>
+        </view>
+
+        <!-- 营养成分输入 -->
+        <view
+          class="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-lg p-3 border border-emerald-100"
+        >
+          <view class="flex items-center justify-center gap-1 mb-2">
+            <view class="w-1.5 h-1.5 rounded-full bg-emerald-500"></view>
+            <text class="text-[18rpx] font-medium text-emerald-700">每</text>
+            <input
+              v-model="formData.baseCount"
+              type="number"
+              class="w-12 h-5 border-[1rpx] border-solid border-emerald-300 rounded px-1 text-center text-[20rpx] text-emerald-700 font-bold bg-white"
+              placeholder="100"
+            />
+            <text class="text-[18rpx] font-medium text-emerald-700"
+              >{{ formData.unit }} 营养成分</text
+            >
+          </view>
+          <view class="grid grid-cols-2 gap-2">
+            <view class="bg-white rounded-lg p-1.5 border border-orange-100">
+              <text
+                class="block text-[18rpx] text-orange-600 font-medium mb-0.5"
+                >🔥 热量 (kcal)</text
+              >
+              <input
+                v-model="formData.calories"
+                type="number"
+                class="px-1 py-1 border border-gray-200 rounded-md focus:ring-2 focus:ring-orange-400 text-xs bg-gray-50"
+                placeholder="0"
               />
             </view>
-          </picker>
-        </view>
-      </view>
-
-      <!-- 图标选择 -->
-      <view>
-        <text class="block text-sm font-medium text-gray-700 mb-2">图标选择</text>
-        <view class="flex flex-wrap gap-2">
-          <view
-            v-for="emoji in emojiOptions"
-            :key="emoji"
-            class="w-10 h-10 flex items-center justify-center rounded-lg border transition-all active:scale-90"
-            :class="formData.imageUrl === emoji ? 'bg-emerald-100 border-emerald-500 ring-1 ring-emerald-500' : 'bg-gray-50 border-gray-100'"
-            @click="formData.imageUrl = emoji"
-          >
-            <text class="text-xl">{{ emoji }}</text>
-          </view>
-        </view>
-      </view>
-
-      <!-- 分类标签 -->
-      <view>
-        <text class="block text-sm font-medium text-gray-700 mb-2">所属分类</text>
-        <scroll-view scroll-x class="whitespace-nowrap pb-1 scrollbar-hide">
-          <view class="flex gap-2">
-            <view
-              v-for="cat in categoryOptions"
-              :key="cat.key"
-              class="px-3 py-1.5 text-xs rounded-full border transition-all whitespace-nowrap"
-              :class="formData.category === cat.key ? cat.activeClass : cat.normalClass"
-              @click="formData.category = cat.key"
-            >
-              <text>{{ cat.emoji }} {{ cat.label }}</text>
+            <view class="bg-white rounded-lg p-1.5 border border-rose-100">
+              <text class="block text-[18rpx] text-rose-600 font-medium mb-0.5"
+                >💪 蛋白质 (g)</text
+              >
+              <input
+                v-model="formData.protein"
+                type="number"
+                class="px-1 py-1 border border-gray-200 rounded-md focus:ring-2 focus:ring-rose-400 text-xs bg-gray-50"
+                placeholder="0"
+              />
+            </view>
+            <view class="bg-white rounded-lg p-1.5 border border-yellow-100">
+              <text
+                class="block text-[18rpx] text-yellow-600 font-medium mb-0.5"
+                >🧈 脂肪 (g)</text
+              >
+              <input
+                v-model="formData.fat"
+                type="number"
+                class="px-1 py-1 border border-gray-200 rounded-md focus:ring-2 focus:ring-yellow-400 text-xs bg-gray-50"
+                placeholder="0"
+              />
+            </view>
+            <view class="bg-white rounded-lg p-1.5 border border-amber-100">
+              <text class="block text-[18rpx] text-amber-600 font-medium mb-0.5"
+                >🌾 碳水 (g)</text
+              >
+              <input
+                v-model="formData.carbs"
+                type="number"
+                class="px-1 py-1 border border-gray-200 rounded-md focus:ring-2 focus:ring-amber-400 text-xs bg-gray-50"
+                placeholder="0"
+              />
             </view>
           </view>
-        </scroll-view>
-      </view>
-
-      <!-- 营养成分输入 -->
-      <view class="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl p-4 border border-emerald-100 shadow-sm">
-        <view class="flex items-center justify-center gap-2 mb-3">
-          <view class="w-1.5 h-1.5 rounded-full bg-emerald-500"></view>
-          <text class="text-[10px] font-bold text-emerald-700 uppercase tracking-wider">每100g/单位营养成分</text>
         </view>
-        <view class="grid grid-cols-2 gap-3">
-          <view class="bg-white rounded-lg p-2 border border-orange-100 shadow-sm">
-            <text class="block text-[10px] text-orange-600 font-bold mb-1">🔥 热量 (kcal)</text>
-            <input
-              v-model="formData.calories"
-              type="number"
-              class="w-full px-1 py-0.5 text-sm font-semibold text-gray-800"
-              placeholder="0"
-            />
-          </view>
-          <view class="bg-white rounded-lg p-2 border border-rose-100 shadow-sm">
-            <text class="block text-[10px] text-rose-600 font-bold mb-1">💪 蛋白质 (g)</text>
-            <input
-              v-model="formData.protein"
-              type="number"
-              class="w-full px-1 py-0.5 text-sm font-semibold text-gray-800"
-              placeholder="0"
-            />
-          </view>
-          <view class="bg-white rounded-lg p-2 border border-yellow-100 shadow-sm">
-            <text class="block text-[10px] text-yellow-600 font-bold mb-1">🧈 脂肪 (g)</text>
-            <input
-              v-model="formData.fat"
-              type="number"
-              class="w-full px-1 py-0.5 text-sm font-semibold text-gray-800"
-              placeholder="0"
-            />
-          </view>
-          <view class="bg-white rounded-lg p-2 border border-amber-100 shadow-sm">
-            <text class="block text-[10px] text-amber-600 font-bold mb-1">🌾 碳水 (g)</text>
-            <input
-              v-model="formData.carbs"
-              type="number"
-              class="w-full px-1 py-0.5 text-sm font-semibold text-gray-800"
-              placeholder="0"
-            />
-          </view>
+
+        <!-- 描述 -->
+        <view class="w-full">
+          <textarea
+            v-model="formData.description"
+            class="w-full py-1.5 px-3 border-[1rpx] border-solid border-gray-300 rounded-lg text-sm h-12 focus:ring-2 focus:ring-emerald-500"
+            style="box-sizing: border-box"
+            placeholder="简单描述这个食材...（可选）"
+          ></textarea>
         </view>
-      </view>
 
-      <!-- 描述 -->
-      <view>
-        <text class="block text-sm font-medium text-gray-700 mb-2">描述 (可选)</text>
-        <textarea
-          v-model="formData.description"
-          class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm min-h-[80px]"
-          placeholder="简单描述这个食材..."
-        ></textarea>
-      </view>
-
-      <!-- 公开食材 -->
-      <view class="flex items-center justify-between bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-4 border border-purple-100">
-        <view class="flex items-center gap-3">
-          <view class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center text-white text-lg shadow-sm">
-            🌐
+        <!-- 公开食材 -->
+        <view
+          class="flex items-center justify-between bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg p-2 border border-purple-100"
+        >
+          <view class="flex items-center gap-2">
+            <view
+              class="w-7 h-7 rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center text-white text-sm"
+            >
+              <text>🌐</text>
+            </view>
+            <view>
+              <text class="block text-xs font-medium text-gray-800"
+                >公开食材</text
+              >
+              <text class="text-[18rpx] text-gray-500">允许其他用户使用</text>
+            </view>
           </view>
-          <view>
-            <text class="block text-sm font-bold text-gray-800">公开食材</text>
-            <text class="text-[10px] text-gray-500">允许其他用户在食材库搜索到它</text>
+          <switch
+            :checked="formData.isPublic"
+            color="#8b5cf6"
+            style="transform: scale(0.6)"
+            @change="(e: any) => (formData.isPublic = e.detail.value)"
+          />
+        </view>
+
+        <!-- Buttons -->
+        <view class="flex space-x-3 pt-1">
+          <view
+            class="flex-1 bg-gray-100 text-gray-700 py-2 px-4 rounded-lg font-medium hover:bg-gray-200 transition-colors text-center text-sm"
+            @click="handleClose"
+          >
+            取消
+          </view>
+          <view
+            class="flex-1 bg-emerald-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-emerald-700 transition-colors text-center flex items-center justify-center text-sm"
+            @click="handleSubmit"
+          >
+            <text v-if="submitting">提交中...</text>
+            <text v-else>{{ editingFood ? "保存" : "创建" }}</text>
           </view>
         </view>
-        <switch 
-          :checked="formData.isPublic" 
-          color="#8b5cf6"
-          @change="(e: any) => formData.isPublic = e.detail.value" 
-        />
       </view>
     </view>
-
-    <template #footer>
-      <view class="flex space-x-3">
-        <BaseButton 
-          type="secondary" 
-          class="flex-1 !rounded-xl !py-2.5"
-          @click="handleClose"
-        >
-          取消
-        </BaseButton>
-        <BaseButton 
-          type="primary" 
-          class="flex-1 !rounded-xl !py-2.5 shadow-md"
-          :loading="submitting"
-          @click="handleSubmit"
-        >
-          {{ editingFood ? '保存修改' : '立即创建' }}
-        </BaseButton>
-      </view>
-    </template>
   </BaseModal>
 </template>
 
 <script setup lang="ts">
 import { ref, watch, computed } from "vue";
 import BaseModal from "../common/BaseModal.vue";
-import BaseButton from "../common/BaseButton.vue";
-import { FoodItem, FoodCategory, createFoodItem, updateFoodItem } from "@/services/modules/food";
+import {
+  FoodCategory,
+  createFoodItem,
+  updateFoodItem,
+} from "@/services/modules/food";
+import type { FoodItem } from "@/services/modules/food";
 import { showError, showSuccess } from "@/utils/toast";
 
 const props = defineProps<{
@@ -186,20 +239,75 @@ const emit = defineEmits<{
 
 const submitting = ref(false);
 
-const emojiOptions = ["🥗", "🥩", "🥦", "🍎", "🍚", "🥛", "🥜", "🍞", "🥚", "🥑", "🥕", "🥣"];
-
 const unitLabels = ["克 (g)", "毫升 (ml)", "个/片", "杯", "勺"];
 const units = ["g", "ml", "piece", "cup", "tbsp"];
 const unitIndex = ref(0);
 
 const categoryOptions = [
-  { key: FoodCategory.PROTEIN, label: "蛋白质", emoji: "🥩", normalClass: "bg-rose-50 text-rose-600 border-rose-100", activeClass: "bg-rose-500 text-white border-rose-500 shadow-sm" },
-  { key: FoodCategory.VEGETABLES, label: "蔬菜", emoji: "🥬", normalClass: "bg-green-50 text-green-600 border-green-100", activeClass: "bg-green-500 text-white border-green-500 shadow-sm" },
-  { key: FoodCategory.FRUITS, label: "水果", emoji: "🍎", normalClass: "bg-amber-50 text-amber-600 border-amber-100", activeClass: "bg-amber-500 text-white border-amber-500 shadow-sm" },
-  { key: FoodCategory.GRAINS, label: "谷物", emoji: "🌾", normalClass: "bg-yellow-50 text-yellow-700 border-yellow-100", activeClass: "bg-yellow-500 text-white border-yellow-500 shadow-sm" },
-  { key: FoodCategory.DAIRY, label: "乳制品", emoji: "🥛", normalClass: "bg-blue-50 text-blue-600 border-blue-100", activeClass: "bg-blue-500 text-white border-blue-500 shadow-sm" },
-  { key: FoodCategory.NUTS, label: "坚果", emoji: "🥜", normalClass: "bg-orange-50 text-orange-600 border-orange-100", activeClass: "bg-orange-500 text-white border-orange-500 shadow-sm" },
-  { key: FoodCategory.SNACKS, label: "零食", emoji: "🍪", normalClass: "bg-pink-50 text-pink-600 border-pink-100", activeClass: "bg-pink-500 text-white border-pink-500 shadow-sm" },
+  {
+    key: FoodCategory.PROTEIN,
+    label: "蛋白质",
+    emoji: "🥩",
+    normalClass: "bg-rose-50 text-rose-600 border border-rose-200",
+    activeClass:
+      "bg-rose-100 text-rose-700 border-rose-300 ring-1 ring-rose-300",
+  },
+  {
+    key: FoodCategory.VEGETABLES,
+    label: "蔬菜",
+    emoji: "🥬",
+    normalClass: "bg-green-50 text-green-600 border border-green-200",
+    activeClass:
+      "bg-green-100 text-green-700 border-green-300 ring-1 ring-green-300",
+  },
+  {
+    key: FoodCategory.FRUITS,
+    label: "水果",
+    emoji: "🍎",
+    normalClass: "bg-amber-50 text-amber-600 border border-amber-200",
+    activeClass:
+      "bg-amber-100 text-amber-700 border-amber-300 ring-1 ring-amber-300",
+  },
+  {
+    key: FoodCategory.GRAINS,
+    label: "谷物",
+    emoji: "🌾",
+    normalClass: "bg-yellow-50 text-yellow-700 border border-yellow-200",
+    activeClass:
+      "bg-yellow-100 text-yellow-800 border-yellow-300 ring-1 ring-yellow-300",
+  },
+  {
+    key: FoodCategory.DAIRY,
+    label: "乳制品",
+    emoji: "🥛",
+    normalClass: "bg-blue-50 text-blue-600 border border-blue-200",
+    activeClass:
+      "bg-blue-100 text-blue-700 border-blue-300 ring-1 ring-blue-300",
+  },
+  {
+    key: FoodCategory.NUTS,
+    label: "坚果",
+    emoji: "🥜",
+    normalClass: "bg-orange-50 text-orange-600 border border-orange-200",
+    activeClass:
+      "bg-orange-100 text-orange-700 border-orange-300 ring-1 ring-orange-300",
+  },
+  {
+    key: FoodCategory.SNACKS,
+    label: "零食",
+    emoji: "🍪",
+    normalClass: "bg-pink-50 text-pink-600 border border-pink-200",
+    activeClass:
+      "bg-pink-100 text-pink-700 border-pink-300 ring-1 ring-pink-300",
+  },
+  {
+    key: FoodCategory.CUSTOM,
+    label: "其他",
+    emoji: "🥢",
+    normalClass: "bg-gray-50 text-gray-600 border border-gray-200",
+    activeClass:
+      "bg-gray-100 text-gray-700 border-gray-300 ring-1 ring-gray-300",
+  },
 ];
 
 const modalVisible = computed({
@@ -214,12 +322,13 @@ const modalVisible = computed({
 const formData = ref({
   name: "",
   unit: "g",
-  imageUrl: "🥗",
-  category: FoodCategory.CUSTOM,
-  calories: 0 as number | string,
-  protein: 0 as number | string,
-  fat: 0 as number | string,
-  carbs: 0 as number | string,
+  baseCount: 100 as string | number,
+  imageUrl: "🥩",
+  category: FoodCategory.PROTEIN,
+  calories: "" as string | number,
+  protein: "" as string | number,
+  fat: "" as string | number,
+  carbs: "" as string | number,
   description: "",
   isPublic: false,
 });
@@ -232,6 +341,7 @@ watch(
       formData.value = {
         name: f.name,
         unit: f.unit,
+        baseCount: f.baseCount || 100,
         imageUrl: f.imageUrl || "🥗",
         category: f.category,
         calories: f.calories,
@@ -243,22 +353,22 @@ watch(
       };
       unitIndex.value = units.indexOf(f.unit);
     } else if (!newVal) {
-      // Reset form
       formData.value = {
         name: "",
         unit: "g",
-        imageUrl: "🥗",
-        category: FoodCategory.CUSTOM,
-        calories: 0,
-        protein: 0,
-        fat: 0,
-        carbs: 0,
+        baseCount: 100,
+        imageUrl: "🥩",
+        category: FoodCategory.PROTEIN,
+        calories: "",
+        protein: "",
+        fat: "",
+        carbs: "",
         description: "",
         isPublic: false,
       };
       unitIndex.value = 0;
     }
-  }
+  },
 );
 
 const handleUnitChange = (e: any) => {
@@ -276,7 +386,8 @@ const handleSubmit = async () => {
     showError("请输入食材名称");
     return;
   }
-  if (!formData.value.calories && formData.value.calories !== 0) {
+
+  if (formData.value.calories === "") {
     showError("请输入热量");
     return;
   }
@@ -285,10 +396,11 @@ const handleSubmit = async () => {
     submitting.value = true;
     const payload = {
       ...formData.value,
+      baseCount: Number(formData.value.baseCount || 100),
       calories: Number(formData.value.calories),
-      protein: Number(formData.value.protein),
-      fat: Number(formData.value.fat),
-      carbs: Number(formData.value.carbs),
+      protein: Number(formData.value.protein || 0),
+      fat: Number(formData.value.fat || 0),
+      carbs: Number(formData.value.carbs || 0),
     };
 
     if (props.editingFood?.id) {
@@ -298,7 +410,7 @@ const handleSubmit = async () => {
       await createFoodItem(payload);
       showSuccess("创建成功");
     }
-    
+
     emit("submit");
     handleClose();
   } catch (e: any) {

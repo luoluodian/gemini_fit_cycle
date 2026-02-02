@@ -32,7 +32,7 @@ export class User {
   @Column({ nullable: true })
   nickname: string;
 
-  @Column({ nullable: true })
+  @Column({ name: 'avatar_url', nullable: true })
   avatarUrl: string;
 
   @Column({ nullable: true })

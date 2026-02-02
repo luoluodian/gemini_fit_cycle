@@ -101,20 +101,25 @@ export class AuthInterceptor implements Interceptor {
   private async refreshToken(): Promise<string> {
     const oldRefresh = getStorage<string>(REFRESH_TOKEN_KEY);
     if (!oldRefresh) {
+      console.warn('[Auth] No refresh token found in storage');
       throw new Error("Refresh token 不存在");
     }
 
     if (AuthInterceptor.refreshing.isRefreshing) {
+      console.log('[Auth] Refresh already in progress, queuing request');
       return new Promise((resolve) =>
         AuthInterceptor.refreshing.queue.push(resolve)
       );
     }
 
     AuthInterceptor.refreshing.isRefreshing = true;
+    console.log('[Auth] Starting token refresh...');
 
     try {
       // 使用refreshToken函数刷新token
       const res = await refreshUserToken(oldRefresh);
+      console.log('[Auth] Refresh response:', res);
+      
       const newAccessToken = res?.accessToken;
       if (!newAccessToken) {
         throw new Error("刷新Token失败：未获取到新的accessToken");
@@ -129,10 +134,12 @@ export class AuthInterceptor implements Interceptor {
       AuthInterceptor.refreshing.queue = [];
       AuthInterceptor.refreshing.isRefreshing = false;
 
+      console.log(`[Auth] Token refreshed. Resuming ${pendingQueue.length} queued requests.`);
       pendingQueue.forEach((resolve) => resolve(newAccessToken));
 
       return newAccessToken;
     } catch (err) {
+      console.error('[Auth] Refresh token failed:', err);
       AuthInterceptor.refreshing.isRefreshing = false;
       AuthInterceptor.refreshing.queue = [];
       removeStorage(ACCESS_TOKEN_KEY);

@@ -17,6 +17,7 @@
     "express": "^5.2.1",
     "http-proxy-middleware": "^3.0.5",
     "jsdom": "^22.1.0",
+    "serve-handler": "^6.1.6",
     "vitest": "^4.0.18"
   },
   "devDependencies": {

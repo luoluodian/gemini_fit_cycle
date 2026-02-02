@@ -1,5 +1,5 @@
 <template>
-  <view class="glass-card rounded-2xl p-4 shadow-lg">
+  <view class="glass-card rounded-lg p-4 shadow-lg">
     <view class="flex items-center justify-between mb-3">
       <text class="font-semibold text-gray-800">营养目标</text>
       <view
@@ -15,7 +15,7 @@
           <text class="text-gray-600">热量</text>
           <text class="font-medium">{{ caloriesText }}</text>
         </view>
-        <view class="bg-gray-200 rounded-xl h-2">
+        <view class="bg-gray-200 rounded-lg h-2">
           <view
             class="nutrition-bar bg-emerald-500"
             :style="{ width: `${caloriesPercent}%` }"
@@ -27,7 +27,7 @@
           <text class="text-gray-600">蛋白质</text>
           <text class="font-medium">{{ proteinText }}</text>
         </view>
-        <view class="bg-gray-200 rounded-xl h-2">
+        <view class="bg-gray-200 rounded-lg h-2">
           <view
             class="nutrition-bar bg-blue-500"
             :style="{ width: `${proteinPercent}%` }"
@@ -39,7 +39,7 @@
           <text class="text-gray-600">脂肪</text>
           <text class="font-medium">{{ fatText }}</text>
         </view>
-        <view class="bg-gray-200 rounded-xl h-2">
+        <view class="bg-gray-200 rounded-lg h-2">
           <view
             class="nutrition-bar bg-orange-500"
             :style="{ width: `${fatPercent}%` }"
@@ -51,7 +51,7 @@
           <text class="text-gray-600">碳水</text>
           <text class="font-medium">{{ carbsText }}</text>
         </view>
-        <view class="bg-gray-200 rounded-xl h-2">
+        <view class="bg-gray-200 rounded-lg h-2">
           <view
             class="nutrition-bar bg-purple-500"
             :style="{ width: `${carbsPercent}%` }"

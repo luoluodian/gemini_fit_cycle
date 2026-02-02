@@ -1,5 +1,5 @@
 <template>
-  <view class="glass-card rounded-2xl p-6 mb-8 shadow-lg max-w-72 w-full">
+  <view class="glass-card rounded-lg p-6 mb-8 shadow-lg max-w-72 w-full">
     <view class="text-center">
       <h2 class="text-xl font-semibold text-gray-800 mb-3">欢迎使用</h2>
       <p class="text-gray-600 text-sm leading-relaxed mb-4">

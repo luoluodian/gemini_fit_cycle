@@ -27,9 +27,9 @@ const props = withDefaults(defineProps<Props>(), {
       shadow === 'lg' && 'shadow-lg',
       shadow === 'xl' && 'shadow-xl',
       radius === 'sm' && 'rounded-lg',
-      radius === 'md' && 'rounded-xl',
-      radius === 'lg' && 'rounded-2xl',
-      radius === 'xl' && 'rounded-3xl',
+      radius === 'md' && 'rounded-lg',
+      radius === 'lg' && 'rounded-lg',
+      radius === 'xl' && 'rounded-lg',
       cardClass,
     ]"
     :style="{

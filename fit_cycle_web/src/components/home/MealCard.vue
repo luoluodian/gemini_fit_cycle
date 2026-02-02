@@ -1,5 +1,5 @@
 <template>
-  <view class="meal-card rounded-2xl p-4 shadow-sm">
+  <view class="meal-card rounded-lg p-4 shadow-sm">
     <view class="flex items-center justify-between mb-3">
       <h4 class="font-semibold text-gray-800">
         {{ mealEmoji }} {{ mealRecord.meal_type_label }}

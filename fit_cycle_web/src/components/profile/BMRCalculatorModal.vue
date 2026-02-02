@@ -1,7 +1,7 @@
 <template>
   <view v-if="visible" class="fixed inset-0 bg-black bg-opacity-50 z-50" @click="handleBackdropClick">
     <view class="flex items-center justify-center min-h-screen p-4" @click.stop>
-      <view class="bg-white rounded-2xl w-full max-w-md p-6 max-h-[90vh] overflow-y-auto">
+      <view class="bg-white rounded-lg w-full max-w-md p-6 max-h-[90vh] overflow-y-auto">
         <view class="flex items-center justify-between mb-4">
           <text class="text-lg font-semibold text-gray-800">BMR/TDEE 计算器</text>
           <view @click="handleClose" class="text-gray-400">
@@ -216,8 +216,8 @@ watch(() => props.visible, (newVal) => {
     // 回显数据
     if (userStore.healthProfile) {
       const p = userStore.healthProfile;
-      height.value = String(p.height || '');
-      weight.value = String(p.weight || '');
+      height.value = String(p.heightCm || '');
+      weight.value = String(p.weightKg || '');
       genderIndex.value = p.gender === 'male' ? 0 : 1;
       
       // 匹配活动水平索引

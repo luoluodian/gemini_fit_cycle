@@ -3,7 +3,7 @@
     :visible="modalVisible"
     position="bottom"
     title="选择食物"
-    :content-class="'bg-white rounded-t-2xl w-full max-h-[80vh] overflow-hidden'"
+    :content-class="'bg-white rounded-t-lg w-full max-h-[80vh] overflow-hidden'"
     :body-class="'p-4 overflow-y-auto'"
     @close="handleClose"
     @update="(val) => modalVisible = val"

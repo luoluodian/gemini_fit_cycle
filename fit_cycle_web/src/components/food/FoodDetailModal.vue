@@ -1,149 +1,146 @@
 <template>
-  <view v-if="visible" class="modal-overlay" @click="handleClose">
-    <view class="modal-content" @click.stop>
-      <view class="bg-white rounded-2xl w-full max-w-md p-6">
-        <view class="flex items-center justify-between mb-4">
-          <text class="text-lg font-semibold text-gray-800">{{ food?.name || "食材详情" }}</text>
-          <view class="text-gray-400 hover:text-gray-600" @click="handleClose">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M6 18L18 6M6 6l12 12"
-              ></path>
-            </svg>
-          </view>
+  <BaseModal
+    :visible="modalVisible"
+    :show-header="false"
+    position="center"
+    @close="handleClose"
+    @update="(val) => (modalVisible = val)"
+    content-class="w-[85vw] overflow-x-hidden"
+  >
+    <!-- Custom Top Bar -->
+    <view class="flex items-center justify-between mb-4 px-1">
+      <!-- Close Button -->
+      <view
+        class="p-1 text-gray-400 active:opacity-60 transition-all"
+        @click="handleClose"
+      >
+        <Close font-size="18"></Close>
+      </view>
+
+      <!-- Title -->
+      <text class="text-base font-bold text-gray-800 truncate px-2">{{
+        food?.name || "食物名称"
+      }}</text>
+
+      <!-- Favorite Button -->
+      <view
+        class="p-1 transition-all active:scale-95"
+        @click="handleToggleFavorite"
+      >
+        <Follow v-if="isFavorite" font-size="18" color="#ef4444"></Follow>
+        <Addfollow v-else font-size="18" color="#d1d5db"></Addfollow>
+      </view>
+    </view>
+
+    <view v-if="food" class="pb-2 overflow-x-hidden">
+      <!-- Hero: Icon + Category -->
+      <view class="text-center mb-5">
+        <text class="text-5xl mb-3 block leading-none">{{ food.imageUrl || "🍎" }}</text>
+        <view class="inline-block px-3 py-1 bg-emerald-100 rounded-full">
+          <text class="text-[20rpx] font-medium text-emerald-600 leading-none">{{
+            getCategoryLabel(food.category)
+          }}</text>
+        </view>
+      </view>
+
+      <!-- Description -->
+      <view class="mb-5 px-4">
+        <text class="text-[22rpx] text-gray-400 text-center leading-relaxed block break-all">{{
+          food.description || "暂无描述"
+        }}</text>
+      </view>
+
+      <!-- Nutrition Card -->
+      <view
+        class="bg-gray-50 rounded-lg p-3 mb-4 border border-solid border-gray-200"
+      >
+        <view class="flex items-center justify-center gap-2 mb-3">
+          <text class="text-[18rpx] text-gray-400">营养成分</text>
+          <text class="text-[18rpx] text-gray-300">|</text>
+          <text class="text-[18rpx] text-gray-500">每{{ food.baseCount || 100 }}{{ food.unit }}</text>
         </view>
 
-        <view v-if="food" class="space-y-4">
-          <view class="text-center mb-4">
-            <text class="text-4xl mb-2 block">{{ food.emoji }}</text>
-            <text class="text-lg font-semibold text-gray-800 block">{{ food.name }}</text>
-            <text class="text-sm text-gray-600 block">{{ food.description }}</text>
+        <view class="grid grid-cols-4 gap-1">
+          <!-- 统一紧凑栅格 -->
+          <view class="text-center">
+            <text class="text-[18rpx] text-gray-400 mb-1 block">碳水</text>
+            <text class="text-sm font-bold text-amber-500 block"
+              >{{ food.carbs }}g</text
+            >
           </view>
-
-          <view class="bg-gray-50 rounded-lg p-4 mb-4">
-            <text class="font-medium text-gray-800 mb-2 block">营养成分 (每{{ food.unit }})</text>
-            <view class="grid grid-cols-2 gap-3 text-sm">
-              <view class="flex justify-between">
-                <text class="text-gray-600">热量</text>
-                <text class="font-medium">{{ food.calories }} kcal</text>
-              </view>
-              <view class="flex justify-between">
-                <text class="text-gray-600">蛋白质</text>
-                <text class="font-medium">{{ food.protein }}g</text>
-              </view>
-              <view class="flex justify-between">
-                <text class="text-gray-600">脂肪</text>
-                <text class="font-medium">{{ food.fat }}g</text>
-              </view>
-              <view class="flex justify-between">
-                <text class="text-gray-600">碳水化合物</text>
-                <text class="font-medium">{{ food.carbs }}g</text>
-              </view>
-            </view>
+          <view class="text-center">
+            <text class="text-[18rpx] text-gray-400 mb-1 block">蛋白质</text>
+            <text class="text-sm font-bold text-rose-500 block"
+              >{{ food.protein }}g</text
+            >
           </view>
-
-          <view class="bg-blue-50 rounded-lg p-4">
-            <text class="font-medium text-gray-800 mb-2 block">健康建议</text>
-            <text class="text-sm text-gray-600 block">{{ healthAdvice }}</text>
+          <view class="text-center">
+            <text class="text-[18rpx] text-gray-400 mb-1 block">脂肪</text>
+            <text class="text-sm font-bold text-blue-500 block"
+              >{{ food.fat }}g</text
+            >
           </view>
-        </view>
-
-        <view class="flex space-x-3 mt-6">
-          <view
-            class="flex-1 bg-gray-100 text-gray-700 py-2 px-4 rounded-lg font-medium hover:bg-gray-200 transition-colors text-center"
-            @click="handleClose"
-          >
-            <text>关闭</text>
-          </view>
-          <view
-            class="flex-1 bg-emerald-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-emerald-700 transition-colors text-center"
-            @click="handleAddToMeal"
-          >
-            <text>添加到餐食</text>
+          <view class="text-center">
+            <text class="text-[18rpx] text-gray-400 mb-1 block">热量</text>
+            <text class="text-sm font-bold text-emerald-500 block">{{
+              food.calories
+            }}</text>
           </view>
         </view>
       </view>
     </view>
-  </view>
+  </BaseModal>
 </template>
 
 <script setup lang="ts">
 import { computed } from "vue";
+import BaseModal from "../common/BaseModal.vue";
+import { Addfollow, Follow, Close } from "@nutui/icons-vue-taro";
+import { FoodCategory } from "@/services/modules/food";
+import type { FoodItem } from "@/services/modules/food";
+import { getFoodCategoryConfig } from "@/constants/food-categories";
 
-interface Food {
-  id: string;
-  name: string;
-  emoji: string;
-  calories: number;
-  protein: number;
-  fat: number;
-  carbs: number;
-  unit: string;
-  description: string;
-  category: string;
-  type: "system" | "custom";
+// Define a simplified interface for props if FoodItem is too complex or just use FoodItem
+interface Food extends FoodItem {
+  emoji?: string; // Compatibility
 }
 
 const props = defineProps<{
   visible: boolean;
   food: Food | null;
+  isFavorite?: boolean;
 }>();
 
 const emit = defineEmits<{
   close: [];
   addToMeal: [food: Food];
+  toggleFavorite: [food: Food];
 }>();
 
-const healthAdvice = computed(() => {
-  if (!props.food) return "";
-  const adviceMap: Record<string, string> = {
-    "chicken-breast": "鸡胸肉是优质蛋白质来源，适合增肌减脂期间食用。",
-    salmon: "三文鱼富含Omega-3脂肪酸，有益心血管健康。",
-    broccoli: "西兰花维生素C含量丰富，有助于增强免疫力。",
-    apple: "苹果膳食纤维丰富，有助于消化和血糖控制。",
-    banana: "香蕉钾含量高，适合运动后补充电解质。",
-    "brown-rice": "糙米是全谷物，提供持续的能量和饱腹感。",
-  };
-  return adviceMap[props.food.id] || "这种食物营养丰富，建议适量食用，搭配其他食物获得均衡营养。";
+// Sync visible prop with BaseModal
+const modalVisible = computed({
+  get: () => props.visible,
+  set: (val) => {
+    if (!val) emit("close");
+  },
 });
+
+const getCategoryLabel = (cat: string) => {
+  const config = getFoodCategoryConfig(cat);
+  return config ? config.label : "其他";
+};
 
 const handleClose = () => {
   emit("close");
 };
 
-const handleAddToMeal = () => {
+const handleToggleFavorite = () => {
   if (props.food) {
-    emit("addToMeal", props.food);
+    emit("toggleFavorite", props.food);
   }
 };
 </script>
 
 <style scoped>
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 50;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
-}
-
-.modal-content {
-  background: white;
-  border-radius: 16px;
-  width: 100%;
-  max-width: 448px;
-  padding: 24px;
-  max-height: 90vh;
-  overflow-y: auto;
-}
+/* 移除之前的 modal-overlay 等手动样式 */
 </style>
-

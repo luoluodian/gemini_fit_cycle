@@ -1,7 +1,7 @@
 <template>
   <view v-if="visible" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex flex-col justify-end sm:justify-center p-0 sm:p-4" @click="handleBackdropClick">
     <view 
-      class="bg-white rounded-t-3xl sm:rounded-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]" 
+      class="bg-white rounded-t-lg sm:rounded-lg w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]" 
       @click.stop
     >
       <!-- Header -->
@@ -23,7 +23,7 @@
             v-model="searchQuery"
             type="text"
             placeholder="搜索食材..."
-            class="w-full px-4 py-3 pl-10 bg-gray-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 transition-all"
+            class="w-full px-4 py-3 pl-10 bg-gray-50 border-none rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 transition-all"
             @input="handleInput"
           />
           <image 
@@ -66,7 +66,7 @@
           <view 
             v-for="item in items" 
             :key="item.id"
-            class="flex items-center p-3 bg-white border border-gray-100 rounded-xl active:bg-gray-50 transition-all"
+            class="flex items-center p-3 bg-white border border-gray-100 rounded-lg active:bg-gray-50 transition-all"
             @click="handleSelect(item)"
           >
             <view class="w-10 h-10 bg-emerald-50 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
@@ -97,8 +97,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue';
-import { FoodItem, FoodCategory, searchFoodItems } from '@/services/modules/food';
+import { ref, watch } from 'vue';
+import { FoodCategory, searchFoodItems } from '../../services/modules/food';
+import type { FoodItem } from '../../services/modules/food';
 import { debounce } from 'lodash-es';
 
 interface Props {

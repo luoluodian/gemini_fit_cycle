@@ -62,7 +62,7 @@ describe('AuthController', () => {
     it('should authenticate user successfully', async () => {
       mockAuthService.wechatAuth.mockResolvedValue(mockWechatAuthResult);
 
-      const result = await controller.login(validDto);
+      const result = await controller.wechatLogin(validDto);
 
       expect(result).toEqual(mockWechatAuthResult);
       expect(authService.wechatAuth).toHaveBeenCalledWith(validDto);
@@ -72,7 +72,7 @@ describe('AuthController', () => {
       const error = new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
       mockAuthService.wechatAuth.mockRejectedValue(error);
 
-      await expect(controller.login(validDto)).rejects.toThrow(error);
+      await expect(controller.wechatLogin(validDto)).rejects.toThrow(error);
       expect(authService.wechatAuth).toHaveBeenCalledWith(validDto);
     });
 
@@ -81,7 +81,7 @@ describe('AuthController', () => {
       const error = new HttpException('Code is required', HttpStatus.BAD_REQUEST);
       mockAuthService.wechatAuth.mockRejectedValue(error);
 
-      await expect(controller.login(invalidDto)).rejects.toThrow(error);
+      await expect(controller.wechatLogin(invalidDto)).rejects.toThrow(error);
     });
 
     it('should handle malformed rawData', async () => {
@@ -92,7 +92,7 @@ describe('AuthController', () => {
 
       mockAuthService.wechatAuth.mockResolvedValue(mockWechatAuthResult);
 
-      const result = await controller.login(invalidDto);
+      const result = await controller.wechatLogin(invalidDto);
 
       expect(result).toEqual(mockWechatAuthResult);
       expect(authService.wechatAuth).toHaveBeenCalledWith(invalidDto);
@@ -102,7 +102,7 @@ describe('AuthController', () => {
       const error = new Error('Service unavailable');
       mockAuthService.wechatAuth.mockRejectedValue(error);
 
-      await expect(controller.login(validDto)).rejects.toThrow(error);
+      await expect(controller.wechatLogin(validDto)).rejects.toThrow(error);
     });
   });
 
@@ -120,7 +120,7 @@ describe('AuthController', () => {
     it('should refresh token successfully', async () => {
       mockAuthService.refreshToken.mockResolvedValue(mockRefreshTokenResult);
 
-      const result = await controller.refresh(mockReq, validDto);
+      const result = await controller.refresh(mockReq as any, validDto);
 
       expect(result).toEqual(mockRefreshTokenResult);
       expect(authService.refreshToken).toHaveBeenCalledWith(1, 'test-refresh-token');
@@ -130,7 +130,7 @@ describe('AuthController', () => {
       const error = new HttpException('Invalid refresh token', HttpStatus.UNAUTHORIZED);
       mockAuthService.refreshToken.mockRejectedValue(error);
 
-      await expect(controller.refresh(mockReq, validDto)).rejects.toThrow(error);
+      await expect(controller.refresh(mockReq as any, validDto)).rejects.toThrow(error);
       expect(authService.refreshToken).toHaveBeenCalledWith(1, 'test-refresh-token');
     });
 
@@ -139,21 +139,21 @@ describe('AuthController', () => {
       const error = new HttpException('Refresh token is required', HttpStatus.BAD_REQUEST);
       mockAuthService.refreshToken.mockRejectedValue(error);
 
-      await expect(controller.refresh(mockReq, invalidDto)).rejects.toThrow(error);
+      await expect(controller.refresh(mockReq as any, invalidDto)).rejects.toThrow(error);
     });
 
     it('should handle expired refresh token', async () => {
       const error = new HttpException('Refresh token expired', HttpStatus.UNAUTHORIZED);
       mockAuthService.refreshToken.mockRejectedValue(error);
 
-      await expect(controller.refresh(mockReq, validDto)).rejects.toThrow(error);
+      await expect(controller.refresh(mockReq as any, validDto)).rejects.toThrow(error);
     });
 
     it('should handle service errors during refresh', async () => {
       const error = new Error('Database error');
       mockAuthService.refreshToken.mockRejectedValue(error);
 
-      await expect(controller.refresh(mockReq, validDto)).rejects.toThrow(error);
+      await expect(controller.refresh(mockReq as any, validDto)).rejects.toThrow(error);
     });
   });
 
@@ -166,7 +166,7 @@ describe('AuthController', () => {
 
       // ValidationPipe is applied at the controller level
       // This test verifies the controller structure
-      expect(controller.login).toBeDefined();
+      expect(controller.wechatLogin).toBeDefined();
     });
 
     it('should validate RefreshTokenDto structure', async () => {
@@ -187,7 +187,7 @@ describe('AuthController', () => {
       const error = new HttpException('Code is required', HttpStatus.BAD_REQUEST);
       mockAuthService.wechatAuth.mockRejectedValue(error);
 
-      await expect(controller.login(emptyDto)).rejects.toThrow(error);
+      await expect(controller.wechatLogin(emptyDto)).rejects.toThrow(error);
     });
 
     it('should handle null request user', async () => {
@@ -198,7 +198,7 @@ describe('AuthController', () => {
       const error = new Error('User not found in request');
       mockAuthService.refreshToken.mockRejectedValue(error);
 
-      await expect(controller.refresh(reqWithNullUser, { refreshToken: 'token' })).rejects.toThrow(error);
+      await expect(controller.refresh(reqWithNullUser as any, { refreshToken: 'token' })).rejects.toThrow(error);
     });
 
     it('should handle very long code', async () => {
@@ -207,7 +207,7 @@ describe('AuthController', () => {
 
       mockAuthService.wechatAuth.mockResolvedValue(mockWechatAuthResult);
 
-      const result = await controller.login(dto);
+      const result = await controller.wechatLogin(dto);
 
       expect(result).toEqual(mockWechatAuthResult);
       expect(authService.wechatAuth).toHaveBeenCalledWith(dto);
@@ -226,7 +226,7 @@ describe('AuthController', () => {
 
       mockAuthService.wechatAuth.mockResolvedValue(mockWechatAuthResult);
 
-      const result = await controller.login(dto);
+      const result = await controller.wechatLogin(dto);
 
       expect(result).toEqual(mockWechatAuthResult);
       expect(authService.wechatAuth).toHaveBeenCalledWith(dto);

@@ -1,65 +1,9 @@
-/**
- * 食材服务
- * 提供食材搜索、同步等相关API接口调用
- */
-
 import { httpRequest } from "../http";
-import { PageResponse } from "../http/types";
+import { FoodCategory, FoodType } from "../../types/food-constants";
+import type { FoodItem, QueryFoodItemParams } from "../../types/food-constants";
 
-/**
- * 食材类型
- */
-export enum FoodType {
-  SYSTEM = 'system',
-  CUSTOM = 'custom',
-}
-
-/**
- * 食材分类
- */
-export enum FoodCategory {
-  PROTEIN = 'protein',
-  VEGETABLES = 'vegetables',
-  FRUITS = 'fruits',
-  GRAINS = 'grains',
-  DAIRY = 'dairy',
-  NUTS = 'nuts',
-  OILS = 'oils',
-  SNACKS = 'snacks',
-  CUSTOM = 'custom',
-}
-
-/**
- * 食材定义
- */
-export interface FoodItem {
-  id: number | string;
-  name: string;
-  type: FoodType;
-  userId?: number | string;
-  category: FoodCategory;
-  description?: string;
-  imageUrl?: string;
-  isPublic: boolean;
-  calories: number;
-  protein: number;
-  fat: number;
-  carbs: number;
-  unit: string;
-  tags?: string[];
-  createdAt?: string;
-  updatedAt?: string;
-}
-
-/**
- * 食材查询参数
- */
-export interface QueryFoodItemParams {
-  q?: string;
-  category?: FoodCategory;
-  page?: number;
-  pageSize?: number;
-}
+export { FoodCategory, FoodType };
+export type { FoodItem, QueryFoodItemParams };
 
 /**
  * 分页搜索食材
@@ -100,5 +44,19 @@ export async function createFoodItem(data: Partial<FoodItem>): Promise<FoodItem>
  */
 export async function updateFoodItem(id: number | string, data: Partial<FoodItem>): Promise<FoodItem> {
   return httpRequest.put(`/food-items/${id}`, data);
+}
+
+/**
+ * 收藏食材
+ */
+export async function favoriteFood(id: number | string): Promise<void> {
+  return httpRequest.post(`/food-items/${id}/favorite`);
+}
+
+/**
+ * 取消收藏食材
+ */
+export async function unfavoriteFood(id: number | string): Promise<void> {
+  return httpRequest.delete(`/food-items/${id}/favorite`);
 }
 

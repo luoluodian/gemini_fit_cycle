@@ -3,7 +3,7 @@
     :visible="popupVisible"
     position="center"
     :show-header="false"
-    :content-class="'bg-white rounded-3xl w-80'"
+    :content-class="'bg-white rounded-lg w-80'"
     @close="handleClose"
     @update="(val) => (popupVisible = val)"
   >
@@ -45,7 +45,7 @@
     </view>
 
     <!-- 营养预览 -->
-    <view class="my-6 p-4 bg-gray-50 rounded-xl border border-gray-200">
+    <view class="my-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
       <text class="text-lg font-medium text-gray-800 mb-3 block">营养预览</text>
       <view class="grid grid-cols-2 gap-4">
         <view class="flex items-center gap-2">
@@ -78,13 +78,13 @@
     <template #footer>
       <view class="flex gap-5">
         <view
-          class="flex-1 py-3 px-4 rounded-xl font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors text-center"
+          class="flex-1 py-3 px-4 rounded-lg font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors text-center"
           @click="handleClose"
         >
           取消
         </view>
         <view
-          class="flex-1 py-3 px-4 rounded-xl font-semibold text-white bg-emerald-600 hover:bg-emerald-700 transition-colors text-center"
+          class="flex-1 py-3 px-4 rounded-lg font-semibold text-white bg-emerald-600 hover:bg-emerald-700 transition-colors text-center"
           @click="handleConfirm"
         >
           {{ confirmButtonText }}

@@ -6,16 +6,24 @@ import {
   BadRequestException,
   ConflictException,
   Inject,
-} from '@nestjs/common';
+} from "@nestjs/common";
 
-import { Repository, Like, DataSource } from 'typeorm';
-import { InjectRepository } from '@nestjs/typeorm';
+import { Repository, Like, DataSource } from "typeorm";
+import { InjectRepository } from "@nestjs/typeorm";
 
-import { FoodItem, FoodType, FoodCategory } from '@/database/entity/food-item.entity';
-import { UserFavoriteFood } from '@/database/entity/user-favorite-food.entity';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
-import { CreateFoodItemDto, UpdateFoodItemDto, QueryFoodItemDto } from '@/dtos/food-item.dto';
+import {
+  FoodItem,
+  FoodType,
+  FoodCategory,
+} from "@/database/entity/food-item.entity";
+import { UserFavoriteFood } from "@/database/entity/user-favorite-food.entity";
+import { WINSTON_MODULE_NEST_PROVIDER } from "nest-winston";
+import { Logger } from "winston";
+import {
+  CreateFoodItemDto,
+  UpdateFoodItemDto,
+  QueryFoodItemDto,
+} from "@/dtos/food-item.dto";
 
 @Injectable()
 export class FoodItemsService {
@@ -37,8 +45,8 @@ export class FoodItemsService {
   async list(dto: QueryFoodItemDto, userId?: number) {
     const { q, category, page = 1, pageSize = 20 } = dto;
     this.logger.log({
-      level: 'info',
-      message: '食材分页查询开始',
+      level: "info",
+      message: "食材分页查询开始",
       q,
       category,
       page,
@@ -46,33 +54,25 @@ export class FoodItemsService {
       userId,
     });
 
-    const queryBuilder = this.foodRepo.createQueryBuilder('food');
+    const queryBuilder = this.foodRepo.createQueryBuilder("food");
 
     if (q) {
-      queryBuilder.andWhere('(food.name LIKE :q OR food.description LIKE :q)', {
+      queryBuilder.andWhere("(food.name LIKE :q OR food.description LIKE :q)", {
         q: `%${q}%`,
       });
     }
 
     if (category) {
-      queryBuilder.andWhere('food.category = :category', { category });
+      queryBuilder.andWhere("food.category = :category", { category });
     }
 
-    // 处理收藏状态
-    if (userId) {
-      queryBuilder.leftJoinAndSelect(
-        'user_favorite_foods',
-        'fav',
-        'fav.food_id = food.id AND fav.user_id = :userId',
-        { userId },
-      );
-      queryBuilder.addSelect('fav.id', 'isFavorite');
-    }
+    // REMOVED: Redundant join causing 'Duplicate column name' error
+    // if (userId) { ... }
 
     const [items, total] = await queryBuilder
       .skip((page - 1) * pageSize)
       .take(pageSize)
-      .orderBy('food.id', 'DESC')
+      .orderBy("food.id", "DESC")
       .getManyAndCount();
 
     // 转换结果，增加 isFavorite 布尔值
@@ -80,7 +80,7 @@ export class FoodItemsService {
     if (userId) {
       const favorites = await this.favoriteRepo.find({
         where: { userId },
-        select: ['foodId'],
+        select: ["foodId"],
       });
       favoriteIds = new Set(favorites.map((f) => Number(f.foodId)));
     }
@@ -90,7 +90,7 @@ export class FoodItemsService {
       isFavorite: favoriteIds.has(Number(item.id)),
     }));
 
-    this.logger.log({ level: 'info', message: '食材分页查询完成', total });
+    this.logger.log({ level: "info", message: "食材分页查询完成", total });
     return {
       total,
       page,
@@ -104,17 +104,17 @@ export class FoodItemsService {
    */
   async create(userId: number, dto: CreateFoodItemDto) {
     this.logger.log({
-      level: 'info',
-      message: '创建食材开始',
+      level: "info",
+      message: "创建食材开始",
       userId,
       name: dto.name,
     });
     if (!dto.name?.trim()) {
-      throw new BadRequestException('食材名称不能为空');
+      throw new BadRequestException("食材名称不能为空");
     }
     const exists = await this.foodRepo.findOne({ where: { name: dto.name } });
     if (exists) {
-      throw new ConflictException('食材名称已存在，请更换一个名称');
+      throw new ConflictException("食材名称已存在，请更换一个名称");
     }
 
     const item = this.foodRepo.create({
@@ -124,7 +124,7 @@ export class FoodItemsService {
     });
 
     await this.foodRepo.save(item);
-    this.logger.log({ level: 'info', message: '创建食材完成', id: item.id });
+    this.logger.log({ level: "info", message: "创建食材完成", id: item.id });
     return item;
   }
 
@@ -135,7 +135,7 @@ export class FoodItemsService {
    */
   async detail(id: number, userId?: number) {
     const item = await this.foodRepo.findOne({ where: { id } });
-    if (!item) throw new NotFoundException('食材不存在');
+    if (!item) throw new NotFoundException("食材不存在");
 
     let isFavorite = false;
     if (userId) {
@@ -158,28 +158,28 @@ export class FoodItemsService {
    */
   async update(id: number, userId: number, dto: UpdateFoodItemDto) {
     this.logger.log({
-      level: 'info',
-      message: '更新食材开始',
+      level: "info",
+      message: "更新食材开始",
       id,
       userId,
       fields: Object.keys(dto || {}),
     });
     const item = await this.foodRepo.findOne({ where: { id } });
-    if (!item) throw new NotFoundException('食材不存在');
+    if (!item) throw new NotFoundException("食材不存在");
 
     if (dto.name) {
       const exists = await this.foodRepo.findOne({ where: { name: dto.name } });
       if (exists && Number(exists.id) !== Number(item.id)) {
-        throw new ConflictException('食材名称已存在，请更换一个名称');
+        throw new ConflictException("食材名称已存在，请更换一个名称");
       }
     }
     if (item.userId && Number(item.userId) !== Number(userId)) {
-      throw new ForbiddenException('无权修改此食材');
+      throw new ForbiddenException("无权修改此食材");
     }
 
     Object.assign(item, dto);
     await this.foodRepo.save(item);
-    this.logger.log({ level: 'info', message: '更新食材完成', id });
+    this.logger.log({ level: "info", message: "更新食材完成", id });
     return item;
   }
 
@@ -189,16 +189,16 @@ export class FoodItemsService {
    * ========================================
    */
   async delete(id: number, userId: number) {
-    this.logger.log({ level: 'info', message: '删除食材开始', id, userId });
+    this.logger.log({ level: "info", message: "删除食材开始", id, userId });
     const item = await this.foodRepo.findOne({ where: { id } });
-    if (!item) throw new NotFoundException('食材不存在');
+    if (!item) throw new NotFoundException("食材不存在");
 
     if (item.userId && Number(item.userId) !== Number(userId)) {
-      throw new ForbiddenException('无权删除此食材');
+      throw new ForbiddenException("无权删除此食材");
     }
 
     await this.foodRepo.remove(item);
-    this.logger.log({ level: 'info', message: '删除食材完成', id });
+    this.logger.log({ level: "info", message: "删除食材完成", id });
     return { success: true };
   }
 
@@ -215,7 +215,7 @@ export class FoodItemsService {
    */
   async favorite(userId: number, foodId: number) {
     const food = await this.foodRepo.findOne({ where: { id: foodId } });
-    if (!food) throw new NotFoundException('食材不存在');
+    if (!food) throw new NotFoundException("食材不存在");
 
     const exists = await this.favoriteRepo.findOne({
       where: { userId, foodId },
@@ -241,13 +241,14 @@ export class FoodItemsService {
    */
   async getPopular(userId?: number) {
     // 1. 聚合查询收藏量
-    const queryBuilder = this.foodRepo.createQueryBuilder('food')
-      .leftJoin('user_favorite_foods', 'fav', 'fav.food_id = food.id')
-      .select('food')
-      .addSelect('COUNT(fav.id)', 'favorite_count')
-      .groupBy('food.id')
-      .orderBy('favorite_count', 'DESC')
-      .addOrderBy('food.id', 'DESC')
+    const queryBuilder = this.foodRepo
+      .createQueryBuilder("food")
+      .leftJoin("user_favorite_foods", "fav", "fav.food_id = food.id")
+      .select("food")
+      .addSelect("COUNT(fav.id)", "favorite_count")
+      .groupBy("food.id")
+      .orderBy("favorite_count", "DESC")
+      .addOrderBy("food.id", "DESC")
       .take(10);
 
     const items = await queryBuilder.getMany();
@@ -257,7 +258,7 @@ export class FoodItemsService {
     if (userId) {
       const favorites = await this.favoriteRepo.find({
         where: { userId },
-        select: ['foodId'],
+        select: ["foodId"],
       });
       favoriteIds = new Set(favorites.map((f) => Number(f.foodId)));
     }
@@ -278,7 +279,7 @@ export class FoodItemsService {
       await manager.delete(FoodItem, { type: FoodType.SYSTEM });
 
       // 2. 构造并插入新食材
-      const items = foodData.map(f => {
+      const items = foodData.map((f) => {
         return manager.create(FoodItem, {
           name: f.name,
           type: FoodType.SYSTEM,
@@ -295,7 +296,11 @@ export class FoodItemsService {
       });
 
       const result = await manager.save(FoodItem, items);
-      this.logger.log({ level: 'info', message: '系统食材同步完成', count: result.length });
+      this.logger.log({
+        level: "info",
+        message: "系统食材同步完成",
+        count: result.length,
+      });
       return { count: result.length };
     });
   }

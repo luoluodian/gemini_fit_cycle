@@ -3,7 +3,7 @@
     :visible="popupVisible"
     position="bottom"
     title="选择食物"
-    :content-class="'bg-white rounded-t-3xl  py-6'"
+    :content-class="'bg-white rounded-t-lg  py-6'"
     @close="handleClose"
     @update="(val) => (popupVisible = val)"
   >

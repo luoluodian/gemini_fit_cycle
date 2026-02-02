@@ -1,5 +1,5 @@
 <template>
-  <GlassCard class="rounded-2xl p-4 mb-6 shadow-lg">
+  <GlassCard class="rounded-lg p-4 mb-6 shadow-lg">
     <BaseTabs
       :tabs="tabs"
       :active-tab="activeTab"

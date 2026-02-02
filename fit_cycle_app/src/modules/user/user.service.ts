@@ -15,24 +15,23 @@ export class UserService {
     private readonly dataSource: DataSource,
   ) {}
 
-  async findOrCreateByOpenid(openId: string): Promise<User> {
-    let user = await this.userRepository.findOne({ 
-      where: { openId },
-      relations: ['healthProfile'] 
-    });
-
-    if (!user) {
-      user = this.userRepository.create({ openId });
-      // 同时初始化空的健康档案
-      const profile = this.healthProfileRepository.create();
-      user.healthProfile = profile;
+        async findOrCreateByOpenid(openid: string): Promise<User> {
+          let user = await this.userRepository.findOne({ 
+            where: { openId: openid },
+            relations: ['healthProfile']
+          });
       
-      await this.userRepository.save(user);
-    }
-    return user;
-  }
-
-  async findUserById(id: number): Promise<User | null> {
+          if (!user) {
+            user = this.userRepository.create({ openId: openid });          // 给 Mock 用户一些初始数据
+          if (openid === 'mock_openid_123456') {
+            user.nickname = '开发者测试';
+            user.avatarUrl = 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix';
+          }
+          user = await this.userRepository.save(user);
+        }
+    
+        return user;
+      }  async findUserById(id: number): Promise<User | null> {
     return this.userRepository.findOne({ 
       where: { id },
       relations: ['healthProfile']

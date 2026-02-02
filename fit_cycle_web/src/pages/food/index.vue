@@ -1,136 +1,208 @@
 <template>
-  <view class="min-h-screen">
-    <!-- Header Area -->
-    <view class="px-4 pt-6 pb-2 animate-fade-in-up">
-      <view class="flex items-center justify-between">
-        <view>
-          <text class="text-xl font-bold text-gray-800 block">食材库</text>
-          <text class="text-sm text-gray-500 mt-0.5 block">管理你的健康食材</text>
+  <view class="min-h-screen flex flex-col overflow-hidden">
+    <BaseNavBar title="食材库">
+      <template #left>
+        <view
+          class="flex items-center justify-center p-3 border-[1rpx] border-solid border-emerald-300 text-emerald-300 rounded-lg active:scale-95 transition-all ml-2 shadow-sm"
+          @click="handleCreateCustomFood"
+        >
+          <Uploader font-size="18"></Uploader>
         </view>
-        <view class="flex items-center space-x-2">
-          <view @click="handleToggleSearch" class="p-2 bg-gray-100 rounded-lg active:scale-95 transition-all">
-            <image 
-              src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGZpbGw9Im5vbmUiIHZpZXdCb3g9IjAgMCAyNCAyNCIgc3Ryb2tlPSIjNEI1NTYzIj48cGF0aSBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS13aWR0aD0iMiIgZD0iTTIxIDIxbC02LTZtMi01YTcgNyAwIDExLTE0IDAgNyA3IDAgMDExNCAweiIvPjwvc3ZnPg=="
-              class="w-5 h-5"
-            />
-          </view>
-          <view 
-            class="flex items-center space-x-1 bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium active:scale-95 transition-all shadow-sm"
-            @click="handleCreateCustomFood"
-          >
-            <image 
-              src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGZpbGw9Im5vbmUiIHZpZXdCb3g9IjAgMCAyNCAyNCIgc3Ryb2tlPSJ3aGl0ZSI+PHBhdGggc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2Utd2lkdGg9IjIiIGQ9Ik0xMiA2djZtMCAwdjZtMC02aDZtLTYgMEg2Ii8+PC9zdmc+"
-              class="w-4 h-4 mr-1"
-            />
-            <text>新建</text>
-          </view>
-        </view>
-      </view>
+      </template>
+    </BaseNavBar>
 
-      <!-- Search Bar -->
-      <view v-if="showSearchBar" class="mt-3 animate-fade-in-up">
-        <view class="relative">
-          <input
-            v-model="searchQuery"
-            type="text"
-            placeholder="搜索食材名称..."
-            class="search-input w-full px-4 py-2 pl-10 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 transition-all text-sm bg-white/90"
-            @input="handleSearchInput"
-          />
-          <image 
-            src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGZpbGw9Im5vbmUiIHZpZXdCb3g9IjAgMCAyNCAyNCIgc3Ryb2tlPSIjOTY5RkExIj48cGF0aSBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS13aWR0aD0iMiIgZD0iTTIxIDIxbC02LTZtMi01YTcgNyAwIDExLTE0IDAgNyA3IDAgMDExNCAweiIvPjwvc3ZnPg=="
-            class="w-4 h-4 absolute left-3 top-2.5 opacity-40"
-          />
-        </view>
+    <!-- Search Bar -->
+    <view class="px-4 mt-3 animate-fade-in-up w-[100vw] flex-shrink-0">
+      <view class="relative">
+        <input
+          v-model="searchQuery"
+          type="text"
+          placeholder="搜索食材名称..."
+          class="search-input px-4 py-2 pl-10 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 transition-all text-sm bg-white/90"
+          @input="handleSearchInput"
+        />
+        <image
+          src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGZpbGw9Im5vbmUiIHZpZXdCb3g9IjAgMCAyNCAyNCIgc3Ryb2tlPSIjOTY5RkExIj48cGF0aSBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS13aWR0aD0iMiIgZD0iTTIxIDIxbC02LTZtMi01YTcgNyAwIDExLTE0IDAgNyA3IDAgMDExNCAweiIvPjwvc3ZnPg=="
+          class="w-4 h-4 absolute left-3 top-2.5 opacity-40"
+        />
       </view>
     </view>
 
-    <!-- Main Content -->
-    <view class="px-4 py-4 pb-20">
+    <!-- Main Content Area -->
+    <view class="flex-1 flex flex-col min-h-0 py-4 px-4 overflow-hidden">
       <!-- Horizontal Categories -->
-      <scroll-view scroll-x class="whitespace-nowrap pb-3 mb-4 -mx-4 px-4 scrollbar-hide animate-fade-in-up delay-100">
-        <view class="flex space-x-2">
-          <view
-            v-for="cat in categoryOptions"
-            :key="cat.key"
-            class="px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center space-x-1.5"
-            :class="selectedCategory === cat.key ? 'bg-emerald-600 text-white shadow-md' : 'bg-gray-100 text-gray-600'"
-            @click="handleCategoryChange(cat.key)"
-          >
-            <text v-if="cat.emoji">{{ cat.emoji }}</text>
-            <text>{{ cat.label }}</text>
-          </view>
-        </view>
-      </scroll-view>
-
-      <!-- Popular Foods (Horizontal Scroll) -->
-      <GlassCard card-class="p-4 mb-6" shadow="lg" class="animate-fade-in-up delay-200">
-        <view class="flex items-center justify-between mb-3">
-          <text class="text-sm font-medium text-gray-700">热门食材</text>
-          <text class="text-xs text-gray-400">滑动查看更多</text>
-        </view>
-        <scroll-view scroll-x class="whitespace-nowrap pb-2 scrollbar-hide">
-          <view class="flex space-x-2">
+      <view class="flex-shrink-0">
+        <scroll-view
+          :scroll-x="true"
+          :enable-flex="true"
+          :enhanced="true"
+          :show-scrollbar="false"
+          class="whitespace-nowrap pb-3 -mx-4 px-4 scrollbar-hide animate-fade-in-up delay-100 w-full"
+        >
+          <view class="flex space-x-2 pr-4">
             <view
-              v-for="food in popularFoods"
-              :key="food.id"
-              class="flex-shrink-0 bg-white rounded-xl p-3 border border-gray-100 min-w-[100px] text-center shadow-sm active:scale-95 transition-all"
-              @click="handleViewDetail(food)"
+              v-for="cat in categoryOptions"
+              :key="cat.key"
+              class="px-4 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center space-x-1.5 border border-solid flex-shrink-0"
+              :class="
+                selectedCategory === cat.key
+                  ? 'bg-emerald-600 text-white shadow-sm border-emerald-600 scale-[1.02]'
+                  : 'bg-white/80 text-gray-400 border-gray-100'
+              "
+              @click="handleCategoryChange(cat.key)"
             >
-              <text class="text-2xl mb-1 block">{{ food.imageUrl || '🥗' }}</text>
-              <text class="text-xs font-medium text-gray-800 block truncate">{{ food.name }}</text>
-              <text class="text-xs text-gray-400 block mt-0.5">{{ food.calories }} kcal</text>
+              <text v-if="cat.emoji" class="text-sm">{{ cat.emoji }}</text>
+              <text>{{ cat.label }}</text>
             </view>
           </view>
         </scroll-view>
+      </view>
+
+      <!-- Popular Foods -->
+      <GlassCard
+        card-class="px-4 pt-4 mb-4 flex-shrink-0"
+        shadow="lg"
+        class="animate-fade-in-up delay-200"
+      >
+        <view class="flex items-center justify-between">
+          <text class="text-sm font-medium text-gray-700">热门食材</text>
+          <text v-if="popularFoods.length > 0" class="text-xs text-gray-400"
+            >滑动查看</text
+          >
+        </view>
+
+        <view style="height: 200rpx">
+          <!-- Empty State -->
+          <view
+            v-if="popularFoods.length === 0"
+            class="h-full flex flex-col items-center justify-center"
+          >
+            <svg
+              class="w-8 h-8 text-gray-100 mb-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="1"
+                d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+              />
+            </svg>
+            <text class="text-[20rpx] text-gray-300">暂无热门食材</text>
+          </view>
+
+          <scroll-view
+            v-else
+            :scroll-x="true"
+            :enable-flex="true"
+            :enhanced="true"
+            :show-scrollbar="false"
+            class="h-full w-full"
+          >
+            <view class="flex space-x-3 pr-4 h-full items-center">
+              <view
+                v-for="food in popularFoods"
+                :key="food.id"
+                class="flex-shrink-0 bg-white rounded-lg w-20 h-[150rpx] text-center shadow-sm active:scale-95 transition-all flex flex-col justify-between py-2 px-1"
+                style="border: 1rpx solid #f3f4f6"
+                @click="handleViewDetail(food)"
+              >
+                <view class="text-2xl">{{ food.imageUrl || "🥗" }}</view>
+                <view class="flex flex-col items-center">
+                  <text
+                    class="text-[20rpx] font-bold text-gray-800 block truncate w-full"
+                    >{{ food.name }}</text
+                  >
+                </view>
+              </view>
+            </view>
+          </scroll-view>
+        </view>
       </GlassCard>
 
       <!-- Food List -->
-      <GlassCard card-class="p-4 flex flex-col" shadow="lg" class="animate-fade-in-up delay-300 min-h-[400px]">
+      <GlassCard
+        card-class="py-3 px-4 flex flex-col"
+        shadow="lg"
+        class="animate-fade-in-up delay-300"
+      >
         <view class="flex items-center justify-between mb-3 flex-shrink-0">
           <text class="text-sm font-medium text-gray-700">食物列表</text>
-          <text class="text-xs text-gray-400" id="foodCount">共 {{ totalCount }} 种</text>
+          <text class="text-xs text-gray-400" id="foodCount"
+            >共 {{ totalCount }} 种</text
+          >
         </view>
-        
-        <view v-if="isLoading && allFoods.length === 0" class="py-10 text-center">
+
+        <view
+          v-if="isLoading && allFoods.length === 0"
+          class="py-10 text-center"
+        >
           <text class="text-sm text-gray-400">正在获取食材数据...</text>
         </view>
-        
-        <view v-else class="space-y-2">
-          <view 
-            v-for="item in allFoods" 
-            :key="item.id"
-            class="flex items-center p-3 bg-white border border-gray-100 rounded-lg active:bg-gray-50 transition-all"
-            @click="handleViewDetail(item)"
-          >
-            <view 
-              class="w-10 h-10 rounded-lg flex items-center justify-center mr-3 flex-shrink-0"
-              :class="getCategoryBg(item.category)"
+
+        <scroll-view
+          v-else
+          :scroll-y="true"
+          :enhanced="true"
+          :show-scrollbar="false"
+          style="height: 640rpx; -webkit-overflow-scrolling: touch"
+          class="w-full"
+        >
+          <view class="pr-2 space-y-2 pb-10">
+            <view
+              v-for="item in allFoods"
+              :key="item.id"
+              class="flex items-center p-3 bg-white rounded-lg active:bg-gray-50 transition-all"
+              style="border: 2rpx solid #d1d5db"
+              @click="handleViewDetail(item)"
             >
-              <text class="text-lg">{{ item.imageUrl || '🥗' }}</text>
-            </view>
-            <view class="flex-1 min-w-0">
-              <view class="flex items-center space-x-2">
-                <text class="font-medium text-gray-800 block text-sm truncate">{{ item.name }}</text>
-                <text
-                  class="px-1.5 py-0.5 text-[10px] rounded"
-                  :class="item.type === 'system' ? 'bg-gray-100 text-gray-500' : 'bg-purple-50 text-purple-600'"
+              <view
+                class="w-10 h-10 rounded-lg flex items-center justify-center mr-3 flex-shrink-0"
+                :class="getCategoryBg(item.category)"
+              >
+                <text class="text-lg">{{ item.imageUrl || "🥗" }}</text>
+              </view>
+              <view class="flex-1 min-w-0">
+                <view class="flex items-center space-x-2">
+                  <text
+                    class="font-medium text-gray-800 block text-xs truncate"
+                    >{{ item.name }}</text
+                  >
+                  <text
+                    class="px-1.5 py-0.5 text-[18rpx] rounded"
+                    :class="
+                      item.type === 'system'
+                        ? 'bg-gray-100 text-gray-500'
+                        : 'bg-purple-50 text-purple-600'
+                    "
+                  >
+                    {{ item.type === "system" ? "系统" : "我的" }}
+                  </text>
+                </view>
+                <view
+                  class="flex items-center text-[18rpx] text-gray-400 mt-0.5 space-x-2"
                 >
-                  {{ item.type === 'system' ? '系统' : '我的' }}
-                </text>
+                  <text>🔹 蛋白 {{ item.protein }}g</text>
+                  <text>🔸 脂肪 {{ item.fat }}g</text>
+                  <text>🔹 碳水 {{ item.carbs }}g</text>
+                </view>
               </view>
-              <view class="flex items-center text-[10px] text-gray-400 mt-0.5 space-x-2">
-                <text>🔹 蛋白 {{ item.protein }}g</text>
-                <text>🔸 脂肪 {{ item.fat }}g</text>
-                <text>🔹 碳水 {{ item.carbs }}g</text>
+              <view class="text-right ml-2">
+                <text class="text-xs font-semibold text-gray-800 block">{{
+                  item.calories
+                }}</text>
+                <text class="text-[18rpx] text-gray-400 block">kcal</text>
               </view>
             </view>
-            <view class="text-right ml-2">
-              <text class="text-sm font-semibold text-gray-800 block">{{ item.calories }}</text>
-              <text class="text-[10px] text-gray-400 block">kcal</text>
+
+            <!-- No More Data Footer -->
+            <view class="py-1 text-center">
+              <text class="text-[20rpx] text-gray-300">—— 已经到底啦 ——</text>
             </view>
           </view>
-        </view>
+        </scroll-view>
       </GlassCard>
     </view>
 
@@ -138,7 +210,9 @@
     <FoodDetailModal
       :visible="showDetailModal"
       :food="selectedFood"
+      :is-favorite="(selectedFood as any)?.isFavorite"
       @close="handleCloseDetailModal"
+      @toggle-favorite="handleToggleFavorite"
     />
 
     <CustomFoodModal
@@ -154,12 +228,20 @@
 import { ref, computed } from "vue";
 import Taro, { useDidShow } from "@tarojs/taro";
 import { useNavigationStore } from "@/stores/navigation";
-import { FoodItem, searchFoodItems, FoodCategory } from "@/services/modules/food";
+import {
+  searchFoodItems,
+  favoriteFood,
+  unfavoriteFood,
+  FoodCategory,
+} from "@/services/modules/food";
+import type { FoodItem } from "@/services/modules/food";
+import { FOOD_CATEGORIES } from "@/constants/food-categories";
 import GlassCard from "@/components/common/GlassCard.vue";
-import BaseButton from "@/components/common/BaseButton.vue";
 import FoodDetailModal from "@/components/food/FoodDetailModal.vue";
 import CustomFoodModal from "@/components/food/CustomFoodModal.vue";
+import { showSuccess, showError } from "@/utils/toast";
 import { debounce } from "lodash-es";
+import { Uploader } from "@nutui/icons-vue-taro";
 import "./index.scss";
 
 // 状态管理
@@ -189,16 +271,15 @@ const totalCount = ref(0);
 const isLoading = ref(false);
 
 const categoryOptions = [
-  { key: 'all', label: '全部', emoji: '📊' },
-  { key: 'favorites', label: '我的收藏', emoji: '❤️' },
-  { key: 'custom', label: '我的创建', emoji: '📝' },
-  { key: 'system', label: '系统食材', emoji: '🏪' },
-  { key: 'protein', label: '蛋白质', emoji: '🥩' },
-  { key: 'vegetables', label: '蔬菜', emoji: '🥬' },
-  { key: 'fruits', label: '水果', emoji: '🍎' },
-  { key: 'grains', label: '谷物', emoji: '🌾' },
-  { key: 'dairy', label: '乳制品', emoji: '🥛' },
-  { key: 'nuts', label: '坚果', emoji: '🥜' },
+  { key: "all", label: "全部", emoji: "📊" },
+  { key: "favorites", label: "我的收藏", emoji: "❤️" },
+  { key: "custom", label: "我的创建", emoji: "📝" },
+  { key: "system", label: "系统食材", emoji: "🏪" },
+  ...FOOD_CATEGORIES.map((cat) => ({
+    key: cat.key,
+    label: cat.label,
+    emoji: cat.emoji,
+  })),
 ];
 
 // 获取数据
@@ -208,24 +289,27 @@ const fetchFoods = async () => {
     const params: any = {
       q: searchQuery.value,
       page: 1,
-      pageSize: 50
+      pageSize: 50,
     };
-    
-    if (selectedCategory.value !== 'all' && !['favorites', 'custom', 'system'].includes(selectedCategory.value)) {
+
+    if (
+      selectedCategory.value !== "all" &&
+      !["favorites", "custom", "system"].includes(selectedCategory.value)
+    ) {
       params.category = selectedCategory.value as FoodCategory;
     }
 
     const res = await searchFoodItems(params);
     let filtered = res.items;
-    
+
     // 处理特殊分类
-    if (selectedCategory.value === 'system') {
-      filtered = filtered.filter(f => f.type === 'system');
-    } else if (selectedCategory.value === 'custom') {
-      filtered = filtered.filter(f => f.type === 'custom');
-    } else if (selectedCategory.value === 'favorites') {
+    if (selectedCategory.value === "system") {
+      filtered = filtered.filter((f) => f.type === "system");
+    } else if (selectedCategory.value === "custom") {
+      filtered = filtered.filter((f) => f.type === "custom");
+    } else if (selectedCategory.value === "favorites") {
       // TODO: 接收藏接口
-      filtered = filtered.filter(f => (f as any).isFavorite);
+      filtered = filtered.filter((f) => (f as any).isFavorite);
     }
 
     allFoods.value = filtered;
@@ -274,18 +358,32 @@ const handleCloseCustomFoodModal = () => {
   editingFood.value = null;
 };
 
+const handleToggleFavorite = async (food: FoodItem) => {
+  if (!food) return;
+  const isFav = (food as any).isFavorite;
+
+  try {
+    if (isFav) {
+      await unfavoriteFood(food.id);
+      (food as any).isFavorite = false;
+      showSuccess("已取消收藏");
+    } else {
+      await favoriteFood(food.id);
+      (food as any).isFavorite = true;
+      showSuccess("已收藏");
+    }
+    // 如果在收藏列表，可能需要移除
+    if (selectedCategory.value === "favorites" && isFav) {
+      fetchFoods();
+    }
+  } catch (error: any) {
+    showError(error.message || "操作失败");
+  }
+};
+
 const getCategoryBg = (cat: string) => {
-  const colors: Record<string, string> = {
-    protein: "bg-red-50",
-    vegetables: "bg-green-50",
-    fruits: "bg-yellow-50",
-    grains: "bg-amber-50",
-    dairy: "bg-blue-50",
-    nuts: "bg-orange-50",
-    oils: "bg-gray-50",
-    custom: "bg-purple-50",
-  };
-  return colors[cat] || "bg-gray-50";
+  const target = FOOD_CATEGORIES.find((c) => c.key === cat);
+  return target ? target.theme.bg : "bg-gray-50";
 };
 
 const popularFoods = computed(() => allFoods.value.slice(0, 10));

@@ -1,5 +1,5 @@
 <template>
-  <view class="meal-card glass-card rounded-2xl p-4 shadow-lg">
+  <view class="meal-card glass-card rounded-lg p-4 shadow-lg">
     <view class="flex items-center justify-between mb-4">
       <text class="font-semibold text-gray-800">{{ mealName }}</text>
       <text class="text-sm text-gray-600">{{ mealCalories }} kcal</text>

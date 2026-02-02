@@ -1,5 +1,5 @@
 <template>
-  <view class="glass-card rounded-2xl p-4 mb-6 shadow-lg">
+  <view class="glass-card rounded-lg p-4 mb-6 shadow-lg">
     <view class="flex items-center justify-between mb-4">
       <text class="text-lg font-semibold text-gray-800">食材列表</text>
       <text class="text-sm text-gray-500">显示 {{ foods.length }} 种食材</text>

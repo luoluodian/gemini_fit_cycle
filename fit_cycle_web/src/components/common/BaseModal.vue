@@ -3,15 +3,19 @@
     v-model:visible="popupVisible"
     :position="position"
     :close-on-click-overlay="closeOnOverlay"
-    :lock-scroll="lockScroll"
-    :round="round"
+    :lock-scroll="true"
+    round
     :z-index="zIndex"
+    style="border-radius: 16rpx"
+    catch-move
   >
     <view
       :class="[
-        'bg-white rounded-2xl p-6 max-h-[90vh] overflow-y-auto',
+        'bg-white rounded-lg p-4 max-h-[75vh] overflow-hidden flex flex-col',
         contentClass,
       ]"
+      style="overflow: hidden; border-radius: 16rpx"
+      @touchmove.stop.prevent
     >
       <!-- 标题栏 -->
       <view v-if="showHeader" class="pb-4 border-b border-gray-200">
@@ -96,7 +100,7 @@ watch(
   () => props.visible,
   (newVal) => {
     popupVisible.value = newVal;
-  }
+  },
 );
 
 watch(popupVisible, (newVal) => {

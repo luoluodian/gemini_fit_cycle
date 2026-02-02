@@ -1,5 +1,5 @@
 <template>
-  <view class="glass-card rounded-2xl p-4 mb-6 shadow-lg">
+  <view class="glass-card rounded-lg p-4 mb-6 shadow-lg">
     <h3 class="text-lg font-semibold text-gray-800 mb-4">推荐计划</h3>
     <view class="space-y-3">
       <view

@@ -82,6 +82,9 @@ export class FoodItem {
   @Column({ type: 'decimal', precision: 8, scale: 2, default: 0, comment: '碳水(g)' })
   carbs: number;
 
+  @Column({ name: 'base_count', type: 'decimal', precision: 8, scale: 2, default: 100, comment: '营养成分基准数量' })
+  baseCount: number;
+
   @Column({ length: 20, default: 'g', comment: '计量单位' })
   unit: string;
 

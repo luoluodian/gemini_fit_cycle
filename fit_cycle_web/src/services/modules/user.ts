@@ -17,8 +17,8 @@ export type { UserInfo, AuthResponse };
 export interface HealthProfile {
   id: number;
   gender: 'male' | 'female';
-  height: number;
-  weight: number;
+  heightCm: number;
+  weightKg: number;
   birthday: string;
   activityLevel: number;
   bmr: number;
@@ -65,7 +65,7 @@ export async function refreshToken(token: string): Promise<Omit<AuthResponse, 'u
  * 获取用户信息 (旧接口，建议迁移到 getUserProfile)
  */
 export async function getUserInfo(): Promise<UserInfo> {
-  return httpRequest.get("/user/info");
+  return httpRequest.get("/user/profile");
 }
 
 /**
@@ -79,7 +79,14 @@ export async function getUserProfile(): Promise<UserProfileResponse> {
  * 更新用户信息
  */
 export async function updateUserInfo(data: Partial<UserInfo>): Promise<UserInfo> {
-  return httpRequest.put("/user/info", data);
+  return httpRequest.put("/user/profile", data);
+}
+
+/**
+ * 更新健康档案 (专用于 BMR/TDEE 相关数据)
+ */
+export async function updateHealthProfile(data: Partial<UserInfo>): Promise<{ bmr: number, tdee: number }> {
+  return httpRequest.put("/user/health-profile", data);
 }
 
 /**

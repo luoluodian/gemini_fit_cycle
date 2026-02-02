@@ -48,97 +48,33 @@ export class WechatAuthDto {
 }
 
 /**
- * 后端返回给前端的用户信息（精简格式）
+ * 后端返回给前端的用户信息 (契约对齐：嵌套格式)
  */
 export class UserResponseDto {
-  @IsOptional()
-  @IsString()
-  nickname?: string;
+  user: {
+    nickname?: string;
+    avatarUrl?: string;
+    email?: string;
+    phone?: string;
+    isCompleted?: boolean;
+  };
 
-  @IsOptional()
-  @IsString()
-  avatarUrl?: string;
+  health: {
+    genderId?: number;
+    genderText?: string;
+    heightCm?: number;
+    weightKg?: number;
+    dateOfBirth?: string;
+    activityLevelId?: number;
+    activityLevelText?: string;
+    bmr?: number;
+    tdee?: number;
+  };
 
-  @IsOptional()
-  @IsEmail()
-  email?: string;
-
-  @IsOptional()
-  @IsString()
-  phone?: string;
-
-  @IsOptional()
-  @IsString()
-  dateOfBirth?: string; // YYYY-MM-DD
-
-  @IsOptional()
-  @Type(() => Number)
-  @IsNumber()
-  heightCm?: number;
-
-  @IsOptional()
-  @Type(() => Number)
-  @IsNumber()
-  weightKg?: number;
-
-  @IsOptional()
-  @Type(() => Number)
-  @IsNumber()
-  targetWeightKg?: number;
-
-  @IsOptional()
-  @Type(() => Number)
-  @IsNumber()
-  goalRate?: number;
-
-  /** 性别 */
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  genderId?: number;
-
-  @IsOptional()
-  @IsString()
-  genderText?: string;
-
-  /** 活动水平 */
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  activityLevelId?: number;
-
-  @IsOptional()
-  @IsString()
-  activityLevelText?: string;
-
-  /** 目标类型 */
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  goalTypeId?: number;
-
-  @IsOptional()
-  @IsString()
-  goalTypeText?: string;
-
-  /** 基础代谢率 */
-  @IsOptional()
-  @IsNumber()
-  bmr?: number;
-
-  /** 每日总消耗 */
-  @IsOptional()
-  @IsNumber()
-  tdee?: number;
-
-  /** 用户统计数据 */
-  @IsOptional()
-  stats?: {
+  stats: {
     totalDays: number;
     completedPlans: number;
   };
-
-  isCompleted?: boolean;
 }
 
 /**

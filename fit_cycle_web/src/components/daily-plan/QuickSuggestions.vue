@@ -1,5 +1,5 @@
 <template>
-  <view class="glass-card rounded-xl p-4 shadow-sm">
+  <view class="glass-card rounded-lg p-4 shadow-sm">
     <text class="font-medium text-gray-800 mb-3 block">快速建议</text>
     <view class="grid grid-cols-2 gap-2">
       <view

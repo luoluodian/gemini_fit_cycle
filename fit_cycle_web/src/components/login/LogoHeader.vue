@@ -1,7 +1,7 @@
 <template>
   <view class="text-center mb-8">
     <view
-      class="w-20 h-20 bg-gradient-to-br from-emerald-400 to-green-500 rounded-3xl flex items-center justify-center mx-auto mb-4 floating-animation"
+      class="w-20 h-20 bg-gradient-to-br from-emerald-400 to-green-500 rounded-lg flex items-center justify-center mx-auto mb-4 floating-animation"
     >
       <svg
         class="w-10 h-10 text-white"
