@@ -21,10 +21,10 @@ import { FoodItem } from './food-item.entity';
 @Index(['planId', 'dayNumber'])
 @Unique(['planId', 'dayNumber', 'mealType', 'foodId'])
 export class PlanDetail {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn({ type: 'bigint', unsigned: true })
   id: number;
 
-  @Column({ name: 'plan_id' })
+  @Column({ name: 'plan_id', type: 'bigint', unsigned: true })
   planId: number;
 
   @ManyToOne(() => DietPlan, (plan) => plan.planDays, { onDelete: 'CASCADE' })
@@ -37,7 +37,7 @@ export class PlanDetail {
   @Column({ name: 'meal_type', length: 20 })
   mealType: string;
 
-  @Column({ name: 'food_id' })
+  @Column({ name: 'food_id', type: 'bigint', unsigned: true })
   foodId: number;
 
   @ManyToOne(() => FoodItem, { onDelete: 'RESTRICT' })

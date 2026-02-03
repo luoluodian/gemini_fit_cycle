@@ -11,10 +11,10 @@ import { User } from './user.entity';
 
 @Entity('health_profiles')
 export class HealthProfile {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn({ type: 'bigint', unsigned: true })
   id: number;
 
-  @Column({ name: 'user_id' })
+  @Column({ name: 'user_id', type: 'bigint', unsigned: true })
   userId: number;
 
   @OneToOne(() => User, (user) => user.healthProfile, { onDelete: 'CASCADE' })
@@ -29,10 +29,10 @@ export class HealthProfile {
   })
   gender: string;
 
-  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true, comment: '身高(cm)' })
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true, comment: '身高(cm)', transformer: { to: (v: number) => v, from: (v: string) => parseFloat(v) } })
   height: number;
 
-  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true, comment: '体重(kg)' })
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true, comment: '体重(kg)', transformer: { to: (v: number) => v, from: (v: string) => parseFloat(v) } })
   weight: number;
 
   @Column({ type: 'date', nullable: true, comment: '出生日期' })
@@ -45,6 +45,7 @@ export class HealthProfile {
     scale: 2,
     default: 1.2,
     comment: '活动系数(1.2-1.9)',
+    transformer: { to: (v: number) => v, from: (v: string) => parseFloat(v) }
   })
   activityLevel: number;
 

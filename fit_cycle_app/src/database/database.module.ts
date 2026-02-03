@@ -9,6 +9,8 @@ import { ConfigService } from '@nestjs/config';
       useFactory: (config: ConfigService) => {
         const syncEnv = config.get<string>('DB_SYNC');
         const isProd = config.get<string>('NODE_ENV') === 'production';
+        console.log('[DatabaseModule] DB_HOST:', config.get('DB_HOST'));
+        console.log('[DatabaseModule] DB_USER:', config.get('DB_USER'));
         return {
           type: 'mysql',
           host: config.get('DB_HOST'),

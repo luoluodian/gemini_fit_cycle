@@ -73,16 +73,16 @@ export class FoodItem {
   @Column({ type: 'int', default: 0, comment: '热量(kcal/100g)' })
   calories: number;
 
-  @Column({ type: 'decimal', precision: 8, scale: 2, default: 0, comment: '蛋白质(g)' })
+  @Column({ type: 'decimal', precision: 8, scale: 2, default: 0, comment: '蛋白质(g)', transformer: { to: (v: number) => v, from: (v: string) => parseFloat(v) } })
   protein: number;
 
-  @Column({ type: 'decimal', precision: 8, scale: 2, default: 0, comment: '脂肪(g)' })
+  @Column({ type: 'decimal', precision: 8, scale: 2, default: 0, comment: '脂肪(g)', transformer: { to: (v: number) => v, from: (v: string) => parseFloat(v) } })
   fat: number;
 
-  @Column({ type: 'decimal', precision: 8, scale: 2, default: 0, comment: '碳水(g)' })
+  @Column({ type: 'decimal', precision: 8, scale: 2, default: 0, comment: '碳水(g)', transformer: { to: (v: number) => v, from: (v: string) => parseFloat(v) } })
   carbs: number;
 
-  @Column({ name: 'base_count', type: 'decimal', precision: 8, scale: 2, default: 100, comment: '营养成分基准数量' })
+  @Column({ name: 'base_count', type: 'decimal', precision: 8, scale: 2, default: 100, comment: '营养成分基准数量', transformer: { to: (v: number) => v, from: (v: string) => parseFloat(v) } })
   baseCount: number;
 
   @Column({ length: 20, default: 'g', comment: '计量单位' })

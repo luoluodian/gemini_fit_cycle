@@ -16,8 +16,11 @@ import { PlanMeal } from './plan-meal.entity';
  */
 @Entity({ name: 'plan_meal_items' })
 export class PlanMealItem {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn({ type: 'bigint', unsigned: true })
   id: number; // 餐次食材明细ID
+
+  @Column({ name: 'plan_meal_id', type: 'bigint', unsigned: true })
+  planMealId: number;
 
   @ManyToOne(() => PlanMeal, (meal) => meal.mealItems)
   @JoinColumn({ name: 'plan_meal_id' })
@@ -30,26 +33,79 @@ export class PlanMealItem {
   @Column({ name: 'custom_name', length: 255, nullable: true })
   customName?: string; // 自定义食材名称（当没有引用食材时）
 
-  @Column({ type: 'decimal', precision: 10, scale: 4 })
-  quantity: string; // 食材数量
+  @Column({
+    type: 'decimal',
+    precision: 10,
+    scale: 4,
+    transformer: {
+      to: (value: number) => value,
+      from: (value: string) => parseFloat(value),
+    },
+  })
+  quantity: number; // 食材数量
 
   @Column({ length: 20 })
   unit: string; // 计量单位
 
-  @Column({ type: 'decimal', precision: 10, scale: 4, nullable: true })
-  calories?: string; // 总能量(kcal)
+  @Column({
+    type: 'decimal',
+    precision: 10,
+    scale: 4,
+    nullable: true,
+    transformer: {
+      to: (value: number) => value,
+      from: (value: string) => (value ? parseFloat(value) : 0),
+    },
+  })
+  calories?: number; // 总能量(kcal)
 
-  @Column({ type: 'decimal', precision: 10, scale: 4, nullable: true })
-  protein?: string; // 总蛋白质
+  @Column({
+    type: 'decimal',
+    precision: 10,
+    scale: 4,
+    nullable: true,
+    transformer: {
+      to: (value: number) => value,
+      from: (value: string) => (value ? parseFloat(value) : 0),
+    },
+  })
+  protein?: number; // 总蛋白质
 
-  @Column({ type: 'decimal', precision: 10, scale: 4, nullable: true })
-  fat?: string; // 总脂肪
+  @Column({
+    type: 'decimal',
+    precision: 10,
+    scale: 4,
+    nullable: true,
+    transformer: {
+      to: (value: number) => value,
+      from: (value: string) => (value ? parseFloat(value) : 0),
+    },
+  })
+  fat?: number; // 总脂肪
 
-  @Column({ type: 'decimal', precision: 10, scale: 4, nullable: true })
-  carbs?: string; // 总碳水
+  @Column({
+    type: 'decimal',
+    precision: 10,
+    scale: 4,
+    nullable: true,
+    transformer: {
+      to: (value: number) => value,
+      from: (value: string) => (value ? parseFloat(value) : 0),
+    },
+  })
+  carbs?: number; // 总碳水
 
-  @Column({ type: 'decimal', precision: 10, scale: 4, nullable: true })
-  fiber?: string; // 总膳食纤维
+  @Column({
+    type: 'decimal',
+    precision: 10,
+    scale: 4,
+    nullable: true,
+    transformer: {
+      to: (value: number) => value,
+      from: (value: string) => (value ? parseFloat(value) : 0),
+    },
+  })
+  fiber?: number; // 总膳食纤维
 
   @Column({ name: 'sort_order', type: 'int', default: 0 })
   sortOrder: number; // 排序值

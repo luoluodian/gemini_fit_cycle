@@ -1,52 +1,58 @@
-import { IsOptional, IsString, IsNumber, IsBoolean } from 'class-validator';
+import { IsString, IsOptional, IsNumber, IsEnum, IsDateString, IsObject, Max, Min } from 'class-validator';
+import { PlanType, PlanStatus } from '@/database/entity/diet-plan.entity';
 
 /**
  * 更新饮食计划请求 DTO。
- * 与创建 DTO 字段相同，所有字段均为可选。
  */
 export class UpdateDietPlanDto {
-  /** 计划名称 */
   @IsOptional()
   @IsString()
-  name?: string;
+  readonly name?: string;
 
-  /** 计划描述 */
   @IsOptional()
   @IsString()
-  description?: string;
+  readonly description?: string;
 
-  /** 目标类型 ID */
+  @IsOptional()
+  @IsEnum(PlanType)
+  readonly type?: PlanType;
+
+  @IsOptional()
+  @IsEnum(PlanStatus)
+  readonly status?: PlanStatus;
+
   @IsOptional()
   @IsNumber()
-  goalTypeId?: number;
+  @Min(1)
+  @Max(31)
+  readonly cycleDays?: number;
 
-  /** 默认能量目标 */
   @IsOptional()
   @IsNumber()
-  targetCalories?: number;
+  @Min(1)
+  readonly cycleCount?: number;
 
-  /** 默认蛋白质目标 */
+  @IsOptional()
+  @IsDateString()
+  readonly startDate?: string;
+
+  @IsOptional()
+  @IsObject()
+  readonly carbCycleConfig?: any;
+
   @IsOptional()
   @IsNumber()
-  targetProtein?: number;
+  readonly targetCalories?: number;
 
-  /** 默认脂肪目标 */
   @IsOptional()
   @IsNumber()
-  targetFat?: number;
+  readonly targetProtein?: number;
 
-  /** 默认碳水目标 */
   @IsOptional()
   @IsNumber()
-  targetCarbs?: number;
+  readonly targetFat?: number;
 
-  /** 周期类型 ID */
   @IsOptional()
   @IsNumber()
-  cycleTypeId?: number;
-
-  /** 是否启用 */
-  @IsOptional()
-  @IsBoolean()
-  isActive?: boolean;
+  readonly targetCarbs?: number;
 }

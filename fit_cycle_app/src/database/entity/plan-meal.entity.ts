@@ -17,8 +17,11 @@ import { PlanMealItem } from './plan-meal-item.entity';
  */
 @Entity({ name: 'plan_meals' })
 export class PlanMeal {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn({ type: 'bigint', unsigned: true })
   id: number; // 计划餐次主键ID
+
+  @Column({ name: 'plan_day_id', type: 'bigint', unsigned: true })
+  planDayId: number;
 
   @ManyToOne(() => PlanDay, (day) => day.planMeals)
   @JoinColumn({ name: 'plan_day_id' })

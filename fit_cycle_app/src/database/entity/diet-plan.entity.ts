@@ -7,96 +7,150 @@ import {
   JoinColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  DeleteDateColumn,
 } from 'typeorm';
 import { User } from './user.entity';
 import { PlanDay } from './plan-day.entity';
 import { DietLog } from './diet-log.entity';
-import { PlanDetail } from './plan-detail.entity';
 import { DailyGoal } from './daily-goal.entity';
 import { PlanTemplate } from './plan-template.entity';
 
+export enum PlanType {
+  FAT_LOSS = 'fat-loss',
+  MUSCLE_GAIN = 'muscle-gain',
+  MAINTENANCE = 'maintenance',
+  CUSTOM = 'custom',
+  CARB_CYCLE = 'carb-cycle',
+}
+
+export enum PlanStatus {
+  ACTIVE = 'active',
+  PAUSED = 'paused',
+  COMPLETED = 'completed',
+  ARCHIVED = 'archived',
+  DRAFT = 'draft',
+}
+
 /**
  * 饮食计划表：用户制定的长期饮食方案。
- * 包含计划目标、默认目标营养及碳循环设置等信息。
  */
 @Entity({ name: 'diet_plans', comment: '饮食计划表 - 用户制定的长期饮食方案' })
 export class DietPlan {
-  @PrimaryGeneratedColumn()
-  id: number; // 计划主键ID
+  @PrimaryGeneratedColumn({ type: 'bigint', unsigned: true })
+  id: number;
 
-  @ManyToOne(() => User, (user) => user.dietPlans)
+  @Column({ name: 'user_id', type: 'bigint', unsigned: true, nullable: true, comment: '所属用户ID (模板为NULL)' })
+  userId: number;
+
+  @ManyToOne(() => User, (user) => user.dietPlans, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
-  user: User; // 创建该计划的用户
+  user: User;
 
-  @Column({ length: 100 })
-  name: string; // 计划名称
+  @Column({ length: 100, comment: '计划名称' })
+  name: string;
 
-  @Column({ name: 'goal_type', length: 20 })
-  goalType: string; // 计划目标类型，如减脂/增肌
+  @Column({ type: 'text', nullable: true, comment: '计划描述' })
+  description: string;
 
-  @Column({ name: 'duration_days', type: 'int' })
-  durationDays: number; // 计划持续天数
+  @Column({
+    type: 'enum',
+    enum: PlanType,
+    default: PlanType.CUSTOM,
+    comment: '计划类型',
+  })
+  type: PlanType;
+
+  @Column({
+    type: 'enum',
+    enum: PlanStatus,
+    default: PlanStatus.DRAFT,
+    comment: '计划状态',
+  })
+  status: PlanStatus;
+
+  @Column({ name: 'is_template', type: 'boolean', default: false, comment: '是否为官方模板' })
+  isTemplate: boolean;
+
+  @Column({ name: 'cycle_days', type: 'int', default: 7, comment: '一个循环的天数' })
+  cycleDays: number;
+
+  @Column({ name: 'cycle_count', type: 'int', default: 4, comment: '循环次数 (总天数 = cycleDays * cycleCount)' })
+  cycleCount: number;
+
+  @Column({ name: 'start_date', type: 'date', nullable: true, comment: '计划开始日期' })
+  startDate: string;
+
+  @Column({ name: 'carb_cycle_config', type: 'json', nullable: true, comment: '碳循环高/中/低碳配置快照' })
+  carbCycleConfig: any;
 
   @Column({
     name: 'target_calories',
-    type: 'decimal',
-    precision: 8,
-    scale: 2,
-    nullable: true,
+    type: 'int',
+    default: 0,
+    comment: '默认每日目标能量(kcal)',
   })
-  targetCalories?: string; // 默认每日目标能量(kcal)
+  targetCalories: number;
 
   @Column({
     name: 'target_protein',
     type: 'decimal',
     precision: 8,
     scale: 2,
-    nullable: true,
+    default: 0,
+    comment: '默认每日目标蛋白质(g)',
+    transformer: {
+      to: (value: number) => value,
+      from: (value: string) => parseFloat(value),
+    },
   })
-  targetProtein?: string; // 默认每日目标蛋白质(g)
+  targetProtein: number;
 
   @Column({
     name: 'target_fat',
     type: 'decimal',
     precision: 8,
     scale: 2,
-    nullable: true,
+    default: 0,
+    comment: '默认每日目标脂肪(g)',
+    transformer: {
+      to: (value: number) => value,
+      from: (value: string) => parseFloat(value),
+    },
   })
-  targetFat?: string; // 默认每日目标脂肪(g)
+  targetFat: number;
 
   @Column({
     name: 'target_carbs',
     type: 'decimal',
     precision: 8,
     scale: 2,
-    nullable: true,
+    default: 0,
+    comment: '默认每日目标碳水(g)',
+    transformer: {
+      to: (value: number) => value,
+      from: (value: string) => parseFloat(value),
+    },
   })
-  targetCarbs?: string; // 默认每日目标碳水(g)
-
-  @Column({ name: 'status', length: 20, default: 'draft' })
-  status: string; // 计划状态
-
-  @Column({ name: 'is_active', type: 'boolean', default: false })
-  isActive: boolean; // 是否当前启用
+  targetCarbs: number;
 
   @CreateDateColumn({ name: 'created_at' })
-  createdAt: Date; // 创建时间
+  createdAt: Date;
 
   @UpdateDateColumn({ name: 'updated_at' })
-  updatedAt: Date; // 更新时间
+  updatedAt: Date;
 
-  @OneToMany(() => PlanDay, (day) => day.plan)
-  planDays: PlanDay[]; // 计划的每日设置
+  @DeleteDateColumn({ name: 'deleted_at' })
+  deletedAt: Date;
 
-  @OneToMany(() => PlanDetail, (detail) => detail.plan)
-  planDetails: PlanDetail[]; // 计划的详细食物安排
+  @OneToMany(() => PlanDay, (day) => day.plan, { cascade: true })
+  planDays: PlanDay[];
 
   @OneToMany(() => DietLog, (log) => log.plan)
-  dietLogs: DietLog[]; // 该计划关联的饮食记录
+  dietLogs: DietLog[];
 
   @OneToMany(() => DailyGoal, (goal) => goal.plan)
-  dailyGoals: DailyGoal[]; // 该计划生成的每日目标
+  dailyGoals: DailyGoal[];
 
   @OneToMany(() => PlanTemplate, (tpl) => tpl.originalPlan)
-  planTemplates: PlanTemplate[]; // 基于该计划生成的模板
+  planTemplates: PlanTemplate[];
 }

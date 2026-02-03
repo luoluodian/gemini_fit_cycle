@@ -15,7 +15,7 @@ import {
 @Index(['category', 'value'], { unique: true })
 @Entity({ name: 'data_dictionary' })
 export class DataDictionary {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn({ type: 'bigint', unsigned: true })
   id: number; // 字典条目主键
 
   @Column({ length: 100 })

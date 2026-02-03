@@ -19,8 +19,11 @@ import { PlanMealItem } from './plan-meal-item.entity';
  */
 @Entity({ name: 'diet_logs' })
 export class DietLog {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn({ type: 'bigint', unsigned: true })
   id: number; // 饮食记录ID
+
+  @Column({ name: 'user_id', type: 'bigint', unsigned: true })
+  userId: number;
 
   @ManyToOne(() => User, (user) => user.dietLogs)
   @JoinColumn({ name: 'user_id' })
@@ -40,30 +43,71 @@ export class DietLog {
   @Column({ name: 'custom_name', length: 255, nullable: true })
   customName?: string; // 自定义食物名称
 
-  @Column({ type: 'decimal', precision: 10, scale: 4 })
-  quantity: string; // 摄入量
+  @Column({
+    type: 'decimal',
+    precision: 10,
+    scale: 4,
+    transformer: { to: (v: number) => v, from: (v: string) => parseFloat(v) }
+  })
+  quantity: number; // 摄入量
 
   @Column({ length: 20 })
   unit: string; // 单位
 
-  @Column({ type: 'decimal', precision: 10, scale: 4, nullable: true })
-  calories?: string; // 能量(kcal)
+  @Column({
+    type: 'decimal',
+    precision: 10,
+    scale: 4,
+    nullable: true,
+    transformer: { to: (v: number) => v, from: (v: string) => parseFloat(v) }
+  })
+  calories?: number; // 能量(kcal)
 
-  @Column({ type: 'decimal', precision: 10, scale: 4, nullable: true })
-  protein?: string; // 蛋白质(g)
+  @Column({
+    type: 'decimal',
+    precision: 10,
+    scale: 4,
+    nullable: true,
+    transformer: { to: (v: number) => v, from: (v: string) => parseFloat(v) }
+  })
+  protein?: number; // 蛋白质(g)
 
-  @Column({ type: 'decimal', precision: 10, scale: 4, nullable: true })
-  fat?: string; // 脂肪(g)
+  @Column({
+    type: 'decimal',
+    precision: 10,
+    scale: 4,
+    nullable: true,
+    transformer: { to: (v: number) => v, from: (v: string) => parseFloat(v) }
+  })
+  fat?: number; // 脂肪(g)
 
-  @Column({ type: 'decimal', precision: 10, scale: 4, nullable: true })
-  carbs?: string; // 碳水(g)
+  @Column({
+    type: 'decimal',
+    precision: 10,
+    scale: 4,
+    nullable: true,
+    transformer: { to: (v: number) => v, from: (v: string) => parseFloat(v) }
+  })
+  carbs?: number; // 碳水(g)
 
-  @Column({ type: 'decimal', precision: 10, scale: 4, nullable: true })
-  fiber?: string; // 纤维(g)
+  @Column({
+    type: 'decimal',
+    precision: 10,
+    scale: 4,
+    nullable: true,
+    transformer: { to: (v: number) => v, from: (v: string) => parseFloat(v) }
+  })
+  fiber?: number; // 纤维(g)
+
+  @Column({ name: 'plan_id', type: 'bigint', unsigned: true, nullable: true })
+  planId?: number;
 
   @ManyToOne(() => DietPlan, (plan) => plan.dietLogs, { nullable: true })
   @JoinColumn({ name: 'plan_id' })
   plan?: DietPlan; // 关联计划
+
+  @Column({ name: 'plan_meal_item_id', type: 'bigint', unsigned: true, nullable: true })
+  planMealItemId?: number;
 
   @ManyToOne(() => PlanMealItem, { nullable: true })
   @JoinColumn({ name: 'plan_meal_item_id' })

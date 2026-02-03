@@ -16,8 +16,11 @@ import { User } from './user.entity';
 @Entity({ name: 'weight_records' })
 @Unique('uk_user_date', ['user', 'recordDate'])
 export class WeightRecord {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn({ type: 'bigint', unsigned: true })
   id: number; // 体重记录ID
+
+  @Column({ name: 'user_id', type: 'bigint', unsigned: true })
+  userId: number;
 
   @ManyToOne(() => User, (user) => user.weightRecords)
   @JoinColumn({ name: 'user_id' })
@@ -26,8 +29,14 @@ export class WeightRecord {
   @Column({ name: 'record_date', type: 'date' })
   recordDate: string; // 记录日期
 
-  @Column({ name: 'weight_kg', type: 'decimal', precision: 5, scale: 2 })
-  weightKg: string; // 体重(kg)
+  @Column({
+    name: 'weight_kg',
+    type: 'decimal',
+    precision: 5,
+    scale: 2,
+    transformer: { to: (v: number) => v, from: (v: string) => parseFloat(v) }
+  })
+  weightKg: number; // 体重(kg)
 
   @Column({
     name: 'body_fat_percentage',
@@ -35,8 +44,9 @@ export class WeightRecord {
     precision: 5,
     scale: 2,
     nullable: true,
+    transformer: { to: (v: number) => v, from: (v: string) => (v ? parseFloat(v) : undefined) }
   })
-  bodyFatPercentage?: string; // 体脂率(%)
+  bodyFatPercentage?: number; // 体脂率(%)
 
   @Column({ length: 255, nullable: true })
   note?: string; // 备注

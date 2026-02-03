@@ -1,50 +1,63 @@
-import { IsString, IsOptional, IsNumber, IsBoolean } from 'class-validator';
+import { IsString, IsOptional, IsNumber, IsEnum, IsDateString, IsObject, Max, Min } from 'class-validator';
+import { PlanType } from '@/database/entity/diet-plan.entity';
 
 /**
  * 创建饮食计划请求 DTO。
- * 包含计划的基本信息和默认目标，支持碳循环等高级配置。
  */
 export class CreateDietPlanDto {
   /** 计划名称 */
   @IsString()
-  readonly name!: string;
+  readonly name: string;
 
-  /** 计划描述，可选 */
+  /** 计划描述 */
   @IsOptional()
   @IsString()
-  description?: string;
+  readonly description?: string;
 
-  /** 目标类型字典 ID，例如减脂、增肌 */
-  @IsNumber()
-  readonly goalTypeId!: number;
+  /** 计划类型 */
+  @IsEnum(PlanType)
+  readonly type: PlanType;
 
-  /** 默认每日能量目标，单位：千卡 */
+  /** 一个循环的天数 (通常为 7) */
   @IsOptional()
   @IsNumber()
-  targetCalories?: number;
+  @Min(1)
+  @Max(31)
+  readonly cycleDays?: number;
 
-  /** 默认每日蛋白质目标，单位：克 */
+  /** 循环次数 (例如 4 次表示一个月) */
   @IsOptional()
   @IsNumber()
-  targetProtein?: number;
+  @Min(1)
+  readonly cycleCount?: number;
 
-  /** 默认每日脂肪目标，单位：克 */
+  /** 计划开始日期 */
+  @IsOptional()
+  @IsDateString()
+  readonly startDate?: string;
+
+  /** 碳循环高/中/低碳配置快照 (JSON) */
+  @IsOptional()
+  @IsObject()
+  readonly carbCycleConfig?: any;
+
+  /** 默认每日能量目标 (kcal) */
   @IsOptional()
   @IsNumber()
-  targetFat?: number;
+  readonly targetCalories?: number;
 
-  /** 默认每日碳水化合物目标，单位：克 */
+  /** 默认每日蛋白质目标 (g) */
   @IsOptional()
   @IsNumber()
-  targetCarbs?: number;
+  readonly targetProtein?: number;
 
-  /** 周期类型字典 ID，可用于碳循环等（非必填） */
+  /** 默认每日脂肪目标 (g) */
   @IsOptional()
   @IsNumber()
-  cycleTypeId?: number;
+  readonly targetFat?: number;
 
-  /** 是否立即启用该计划 */
+  /** 默认每日碳水化合物目标 (g) */
   @IsOptional()
-  @IsBoolean()
-  isActive?: boolean;
+  @IsNumber()
+  readonly targetCarbs?: number;
 }

@@ -23,7 +23,7 @@ import { HealthProfile } from './health-profile.entity';
 
 @Entity('users')
 export class User {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn({ type: 'bigint', unsigned: true })
   id: number;
 
   @Column({ name: 'open_id', unique: true })
