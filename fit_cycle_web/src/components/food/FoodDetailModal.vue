@@ -14,7 +14,7 @@
         class="p-1 text-gray-400 active:opacity-60 transition-all"
         @click="handleClose"
       >
-        <Close font-size="18"></Close>
+        <Left font-size="18"></Left>
       </view>
 
       <!-- Title -->
@@ -35,19 +35,23 @@
     <view v-if="food" class="pb-2 overflow-x-hidden">
       <!-- Hero: Icon + Category -->
       <view class="text-center mb-5">
-        <text class="text-5xl mb-3 block leading-none">{{ food.imageUrl || "🍎" }}</text>
+        <text class="text-5xl mb-3 block leading-none">{{
+          food.imageUrl || "🍎"
+        }}</text>
         <view class="inline-block px-3 py-1 bg-emerald-100 rounded-full">
-          <text class="text-[20rpx] font-medium text-emerald-600 leading-none">{{
-            getCategoryLabel(food.category)
-          }}</text>
+          <text
+            class="text-[20rpx] font-medium text-emerald-600 leading-none"
+            >{{ getCategoryLabel(food.category) }}</text
+          >
         </view>
       </view>
 
       <!-- Description -->
       <view class="mb-5 px-4">
-        <text class="text-[22rpx] text-gray-400 text-center leading-relaxed block break-all">{{
-          food.description || "暂无描述"
-        }}</text>
+        <text
+          class="text-[22rpx] text-gray-400 text-center leading-relaxed block break-all"
+          >{{ food.description || "暂无描述" }}</text
+        >
       </view>
 
       <!-- Nutrition Card -->
@@ -57,7 +61,9 @@
         <view class="flex items-center justify-center gap-2 mb-3">
           <text class="text-[18rpx] text-gray-400">营养成分</text>
           <text class="text-[18rpx] text-gray-300">|</text>
-          <text class="text-[18rpx] text-gray-500">每{{ food.baseCount || 100 }}{{ food.unit }}</text>
+          <text class="text-[18rpx] text-gray-500"
+            >每{{ food.baseCount || 100 }}{{ food.unit }}</text
+          >
         </view>
 
         <view class="grid grid-cols-4 gap-1">
@@ -90,15 +96,18 @@
       </view>
 
       <!-- Admin Actions (Only for own custom foods) -->
-      <view v-if="isOwnCustomFood" class="mt-2 flex items-center justify-center gap-6 py-2 border-t border-solid border-gray-100">
-        <view 
+      <view
+        v-if="isOwnCustomFood"
+        class="mt-2 flex items-center justify-center gap-6 py-2 border-t border-solid border-gray-100"
+      >
+        <view
           class="flex items-center gap-1.5 px-4 py-1 rounded-full bg-gray-50 active:bg-gray-100 transition-all"
           @click="handleEdit"
         >
           <Edit font-size="14" color="#4b5563"></Edit>
           <text class="text-xs text-gray-600">修改信息</text>
         </view>
-        <view 
+        <view
           class="flex items-center gap-1.5 px-4 py-1 rounded-full bg-red-50 active:bg-red-100 transition-all"
           @click="handleDelete"
         >
@@ -113,8 +122,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import BaseModal from "../common/BaseModal.vue";
-import { Heart, HeartFill, Close, Edit, Del } from "@nutui/icons-vue-taro";
-import { FoodCategory } from "@/services/modules/food";
+import { Heart, HeartFill, Edit, Del, Left } from "@nutui/icons-vue-taro";
 import type { FoodItem } from "@/services/modules/food";
 import { getFoodCategoryConfig } from "@/constants/food-categories";
 import { useUserStore } from "@/stores/user";
@@ -144,7 +152,11 @@ const userStore = useUserStore();
 const isOwnCustomFood = computed(() => {
   if (!props.food) return false;
   const currentUserId = userStore.userInfo?.user?.id;
-  return props.food.type === 'custom' && currentUserId && String(props.food.userId) === String(currentUserId);
+  return (
+    props.food.type === "custom" &&
+    currentUserId &&
+    String(props.food.userId) === String(currentUserId)
+  );
 });
 
 // Sync visible prop with BaseModal
