@@ -77,7 +77,7 @@ import SettingsMenu from "@/components/profile/SettingsMenu.vue";
 import ImportPlanCard from "@/components/profile/ImportPlanCard.vue";
 import BMRCalculatorModal from "@/components/profile/BMRCalculatorModal.vue";
 import AboutModal from "@/components/profile/AboutModal.vue";
-import ImportPlanModal from "@/components/profile/ImportPlanModal.vue";
+import ImportPlanModal from "@/components/profile/ProfileImportPlanModal.vue";
 import "./index.scss";
 
 const userStore = useUserStore();

@@ -25,3 +25,19 @@ body, view, text, button, input {
 .fixed.z-50 {
   z-index: 9999 !important;
 }
+
+/* 安全区域适配 */
+.pb-safe {
+  padding-bottom: constant(safe-area-inset-bottom);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.pt-safe {
+  padding-top: constant(safe-area-inset-top);
+  padding-top: env(safe-area-inset-top);
+}
+
+.mb-safe {
+  margin-bottom: constant(safe-area-inset-bottom);
+  margin-bottom: env(safe-area-inset-bottom);
+}

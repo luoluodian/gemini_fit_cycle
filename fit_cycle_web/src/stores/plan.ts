@@ -46,13 +46,28 @@ export const usePlanStore = defineStore('plan', () => {
     currentMealType.value = "";
   };
 
-  const initTemplates = () => {
+  const initTemplates = (sequence?: any[]) => {
     const list = [];
-    const defaultCals = draft.value.type === "carb-cycle" ? 1800 : 2000;
+    const isCarbCycle = draft.value.type === "carb-cycle";
+    const defaultCals = isCarbCycle ? 1800 : 2000;
     
-    // 如果是常规计划，只初始化第一天，让用户手动添加/复制到 cycleDays
-    // 如果是碳循环，通常需要完整初始化（后续由 P-8 算法覆盖）
-    const initialCount = draft.value.type === "carb-cycle" ? draft.value.cycleDays : 1;
+    // 如果有算法生成的序列，优先使用序列初始化
+    if (isCarbCycle && sequence && sequence.length > 0) {
+      draft.value.templates = sequence.map((item, i) => ({
+        tempId: "temp_" + Date.now() + i,
+        targetCalories: item.calories,
+        protein: item.protein,
+        fat: item.fat,
+        carbs: item.carbs,
+        isConfigured: true,
+        carbType: item.type,
+        meals: { breakfast: [], lunch: [], dinner: [], snacks: [] },
+      }));
+      return;
+    }
+
+    // 默认兜底初始化
+    const initialCount = isCarbCycle ? draft.value.cycleDays : 1;
 
     for (let i = 0; i < initialCount; i++) {
       list.push({
@@ -68,14 +83,7 @@ export const usePlanStore = defineStore('plan', () => {
           dinner: [],
           snacks: [],
         },
-        carbType:
-          draft.value.type === "carb-cycle"
-            ? i < 2
-              ? "high"
-              : i < 5
-                ? "medium"
-                : "low"
-            : "medium",
+        carbType: "medium",
       });
     }
     draft.value.templates = list;
@@ -127,5 +135,17 @@ export const usePlanStore = defineStore('plan', () => {
     draft.value.templates.splice(index, 1);
   };
 
-  return { draft, resetDraft, initTemplates, batchUpdateTargets, addTemplate, copyTemplate, deleteTemplate };
+  const updateTemplate = (index: number, data: any) => {
+    if (draft.value.templates[index]) {
+      draft.value.templates[index] = { ...draft.value.templates[index], ...data };
+    }
+  };
+
+  const reorderTemplate = (fromIndex: number, toIndex: number) => {
+    if (toIndex < 0 || toIndex >= draft.value.templates.length) return;
+    const item = draft.value.templates.splice(fromIndex, 1)[0];
+    draft.value.templates.splice(toIndex, 0, item);
+  };
+
+  return { draft, resetDraft, initTemplates, batchUpdateTargets, addTemplate, copyTemplate, deleteTemplate, updateTemplate, reorderTemplate };
 });

@@ -1,5 +1,5 @@
 <template>
-  <view class="min-h-screen flex flex-col overflow-hidden">
+  <view class="h-screen flex flex-col overflow-hidden">
     <!-- Header -->
     <BaseNavBar title="饮食计划" subtitle="管理你的健康目标">
       <template #left>
@@ -454,8 +454,46 @@ const handleCreatePlan = async (formData: any) => {
   // ... (existing handleCreatePlan code)
 };
 
-const handlePlanAction = (type: string, planId: string | number) => {
-  // ... (existing handlePlanAction code)
+const handlePlanAction = async (type: string, planId: string | number) => {
+  switch (type) {
+    case "view":
+      Taro.navigateTo({ url: `/pages/plan-detail/index?id=${planId}` });
+      break;
+    case "activate":
+      try {
+        showLoading("正在激活...");
+        await planService.activatePlan(Number(planId));
+        showSuccess("激活成功");
+        loadPlanData();
+      } catch (e) {
+        showError("激活失败");
+      }
+      break;
+    case "edit":
+      showError("编辑功能开发中");
+      break;
+    case "menu":
+      // 可以展示更多操作
+      Taro.showActionSheet({
+        itemList: ["编辑名称", "删除计划"],
+        success: async (res) => {
+          if (res.tapIndex === 1) {
+            Taro.showModal({
+              title: "确认删除",
+              content: "确定要删除此计划吗？",
+              success: async (mRes) => {
+                if (mRes.confirm) {
+                  await planService.deletePlan(Number(planId));
+                  showSuccess("已删除");
+                  loadPlanData();
+                }
+              },
+            });
+          }
+        },
+      });
+      break;
+  }
 };
 
 // ... (existing methods)

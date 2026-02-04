@@ -51,7 +51,7 @@ import { ref, computed, onMounted, watch } from "vue";
 import Taro, { useDidShow } from "@tarojs/taro";
 import DateNavigation from "@/components/home/DateNavigation.vue";
 import DailyGoalsOverview from "@/components/home/DailyGoalsOverview.vue";
-import MealCard from "@/components/home/MealCard.vue";
+import MealCard from "@/components/home/HomeMealCard.vue";
 import FoodSelectionModal from "@/components/common/FoodSelectionModal.vue";
 import QuantityInputModal from "@/components/common/QuantityInputModal.vue";
 import { type RecordInfoResponse, type MealFoodDetail } from "@/services";

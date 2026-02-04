@@ -43,6 +43,6 @@ export class PlanMeal {
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date; // 更新时间
 
-  @OneToMany(() => PlanMealItem, (item) => item.planMeal)
+  @OneToMany(() => PlanMealItem, (item) => item.planMeal, { cascade: true })
   mealItems: PlanMealItem[]; // 餐次包含的食材明细
 }

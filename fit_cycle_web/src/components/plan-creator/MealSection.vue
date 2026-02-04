@@ -1,0 +1,103 @@
+<template>
+  <view 
+    class="meal-section-item bg-white/80 rounded-2xl p-4 border-[2rpx] border-solid border-gray-200 active:scale-[0.98] transition-all mb-3 shadow-sm"
+  >
+    <!-- 头部：餐次汇总信息 -->
+    <view class="flex items-center justify-between mb-2">
+      <!-- 左侧点击区域：进入配置 -->
+      <view class="flex items-center flex-1 min-w-0" @tap="$emit('edit')">
+        <text class="text-xl mr-2">{{ icon }}</text>
+        <view>
+          <text class="text-sm font-black text-gray-800">{{ title }}</text>
+          <text 
+            :class="['text-[16rpx] font-bold block', foods.length > 0 ? 'text-emerald-600' : 'text-gray-400']"
+          >
+            {{ foods.length > 0 ? foods.length + ' 个食物' : '未配置' }}
+          </text>
+        </view>
+      </view>
+
+      <!-- 右侧操作区域 -->
+      <view class="flex items-center space-x-2">
+        <view class="text-right mr-1" @tap="$emit('edit')">
+          <view class="text-sm font-black text-gray-700">{{ Math.round(totalCalories || 0) }} kcal</view>
+          <view class="flex items-center space-x-2 text-[18rpx] text-gray-400 font-black mt-0.5">
+            <text>🍞 {{ Math.round(totalCarbs || 0) }}g</text>
+            <text>🥩 {{ Math.round(totalProtein || 0) }}g</text>
+            <text>🥑 {{ Math.round(totalFat || 0) }}g</text>
+          </view>
+        </view>
+        
+        <!-- 统一的更多操作按钮 (⋮) -->
+        <view 
+          class="w-8 h-8 flex items-center justify-center rounded-lg active:bg-black/5 transition-colors"
+          @tap.stop="$emit('show-menu')"
+        >
+          <view class="flex flex-col space-y-0.5 items-center">
+            <view class="w-1 h-1 rounded-full bg-gray-300"></view>
+            <view class="w-1 h-1 rounded-full bg-gray-300"></view>
+            <view class="w-1 h-1 rounded-full bg-gray-300"></view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 底部：详细食物列表 (保持单条删除，因为它属于细粒度操作) -->
+    <view v-if="foods.length > 0" class="space-y-2 mt-2 pt-2 border-t border-dashed border-gray-200">
+      <view 
+        v-for="(food, idx) in foods" 
+        :key="idx" 
+        class="flex justify-between items-center py-2 px-2 bg-white rounded-lg border-[1rpx] border-solid border-gray-100 shadow-sm"
+      >
+        <view class="flex-1 min-w-0 mr-3">
+          <text class="text-[22rpx] text-gray-700 truncate block font-black">{{ food.name }}</text>
+          <view class="flex items-center space-x-3 mt-0.5">
+            <text class="text-[14rpx] text-gray-400 font-bold uppercase">{{ food.quantity }}{{ food.unit }} · {{ Math.round(food.calories || 0) }}kcal</text>
+            <view class="flex items-center space-x-2 text-[14rpx] text-gray-400 font-black">
+              <text>碳水 {{ Math.round(food.carbs || 0) }}g</text>
+              <text>蛋白 {{ Math.round(food.protein || 0) }}g</text>
+              <text>脂肪 {{ Math.round(food.fat || 0) }}g</text>
+            </view>
+          </view>
+        </view>
+        
+        <view 
+          class="w-6 h-6 flex items-center justify-center bg-red-50 text-red-400 rounded-md active:bg-red-100 border border-solid border-red-100"
+          @tap.stop="$emit('delete-food', idx)"
+        >
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+          </svg>
+        </view>
+      </view>
+    </view>
+  </view>
+</template>
+
+<script setup lang="ts">
+import { computed } from "vue";
+
+interface Food {
+  name: string;
+  quantity: number;
+  unit: string;
+  calories: number;
+  protein: number;
+  fat: number;
+  carbs: number;
+}
+
+interface Props {
+  title: string;
+  icon: string;
+  foods: Food[];
+}
+
+const props = defineProps<Props>();
+defineEmits(["edit", "delete-food", "show-menu"]);
+
+const totalCalories = computed(() => props.foods.reduce((s, f) => s + (f.calories || 0), 0));
+const totalProtein = computed(() => props.foods.reduce((s, f) => s + (f.protein || 0), 0));
+const totalFat = computed(() => props.foods.reduce((s, f) => s + (f.fat || 0), 0));
+const totalCarbs = computed(() => props.foods.reduce((s, f) => s + (f.carbs || 0), 0));
+</script>

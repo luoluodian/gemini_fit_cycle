@@ -51,25 +51,23 @@ export const planService = {
     return http.delete(`/diet-plans/${id}`);
   },
 
-    /**
+  /**
+   * 分享计划 (生成分享码)
+   */
+  sharePlan(id: number) {
+    return http.post<{ code: string; expireAt: string }>(`/diet-plans/${id}/share`);
+  },
 
-     * 导入计划
+  /**
+   * 导入计划
+   */
+  importPlan(code: string) {
+    return http.post<{ id: number }>('/diet-plans/import', { code });
+  },
 
-     */
-
-    importPlan(shareCode: string) {
-
-      return http.post<{ id: number }>('/diet-plans/import', { shareCode });
-
-    },
-
-  
-
-    /**
-
-     * 批量保存计划模板
-
-     */
+  /**
+   * 批量保存计划模板
+   */
 
     savePlanTemplates(id: number, data: { templates: any[] }) {
 

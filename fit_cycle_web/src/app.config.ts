@@ -12,6 +12,7 @@ export default {
     "pages/daily-plan/index",
     "pages/food/index",
     "pages/profile/index",
+    "pages/plan-detail/index",
   ],
   window: {
     backgroundTextStyle: "light",

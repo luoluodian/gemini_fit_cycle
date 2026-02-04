@@ -3,94 +3,91 @@
     :visible="popupVisible"
     position="center"
     :show-header="false"
-    :content-class="'bg-white rounded-lg w-80'"
+    content-class="bg-white rounded-3xl w-[85vw] max-w-sm overflow-hidden"
     @close="handleClose"
     @update="(val) => (popupVisible = val)"
   >
-    <!-- 标题区域 -->
-    <view class="text-center mb-8">
-      <view class="flex items-center justify-center mb-4">
-        <text class="text-2xl font-semibold text-gray-800 flex-shrink-0">
-          {{ currentFood.foodName }}
-        </text>
+    <view class="p-6">
+      <!-- 标题区域 -->
+      <view class="text-center mb-6">
+        <text class="text-lg font-black text-gray-800 block mb-1">{{ foodName }}</text>
+        <text class="text-xs text-gray-400 font-black tracking-wider">设定摄入分量</text>
+      </view>
+
+      <!-- 数量输入 -->
+      <view class="bg-gray-50/80 rounded-2xl p-4 border border-solid border-gray-100 mb-6">
+        <view class="flex items-center justify-between mb-2">
+          <text class="text-xs font-black text-gray-500">输入数值</text>
+          <text class="text-xs font-bold text-emerald-600">{{ foodUnit }}</text>
+        </view>
+        <view class="flex items-center">
+          <input
+            type="digit"
+            v-model="quantity"
+            class="flex-1 text-3xl font-black text-gray-800 h-12"
+            placeholder="0"
+            @input="handleInput"
+          />
+          <view class="flex space-x-2 ml-4">
+            <view 
+              @tap="adjust(-10)" 
+              class="w-10 h-10 rounded-xl bg-white border border-solid border-gray-200 flex items-center justify-center active:bg-gray-100 transition-all shadow-sm"
+            >
+              <text class="text-gray-400 font-bold">-</text>
+            </view>
+            <view 
+              @tap="adjust(10)" 
+              class="w-10 h-10 rounded-xl bg-white border border-solid border-gray-200 flex items-center justify-center active:bg-gray-100 transition-all shadow-sm"
+            >
+              <text class="text-gray-400 font-bold">+</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 营养预览 -->
+      <view class="bg-white rounded-2xl p-4 border border-solid border-gray-100 shadow-sm mb-8">
+        <text class="text-[20rpx] font-black text-gray-400 block mb-3 tracking-widest text-center">营养成分预览</text>
+        <view class="grid grid-cols-4 gap-2 text-center">
+          <view>
+            <text class="block text-[18rpx] text-gray-400 font-bold mb-1">能量</text>
+            <text class="block text-sm font-black text-gray-700">{{ previewCalories }}</text>
+            <text class="block text-[14rpx] text-gray-300 font-bold">kcal</text>
+          </view>
+          <view>
+            <text class="block text-[18rpx] text-gray-400 font-bold mb-1">🍞碳水</text>
+            <text class="block text-sm font-black text-yellow-600">{{ previewCarbs }}</text>
+            <text class="block text-[14rpx] text-gray-300 font-bold">g</text>
+          </view>
+          <view>
+            <text class="block text-[18rpx] text-gray-400 font-bold mb-1">🥩蛋白</text>
+            <text class="block text-sm font-black text-blue-600">{{ previewProtein }}</text>
+            <text class="block text-[14rpx] text-gray-300 font-bold">g</text>
+          </view>
+          <view>
+            <text class="block text-[18rpx] text-gray-400 font-bold mb-1">🥑脂肪</text>
+            <text class="block text-sm font-black text-red-600">{{ previewFat }}</text>
+            <text class="block text-[14rpx] text-gray-300 font-bold">g</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 操作按钮 -->
+      <view class="flex space-x-3">
         <view
-          v-if="currentFood.tags && currentFood.tags.length > 0"
-          class="flex flex-wrap gap-2 ml-2"
-        >
-          <text
-            v-for="tag in currentFood.tags"
-            :key="tag"
-            class="text-sm bg-blue-100 text-blue-600 rounded-full px-2 py-1"
-          >
-            {{ tag }}
-          </text>
-        </view>
-      </view>
-    </view>
-
-    <!-- 数量输入 -->
-    <view class="mb-6">
-      <view class="flex items-center gap-4">
-        <text class="text-base font-medium text-gray-700 flex-shrink-0 ml-2">
-          数量 ({{ currentFood.baseUnit }})
-        </text>
-        <input
-          type="number"
-          v-model="quantity"
-          class="flex-1 px-4 py-2 border-solid border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-base"
-          placeholder="请输入数量"
-          @input="updatePreview"
-        />
-      </view>
-    </view>
-
-    <!-- 营养预览 -->
-    <view class="my-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-      <text class="text-lg font-medium text-gray-800 mb-3 block">营养预览</text>
-      <view class="grid grid-cols-2 gap-4">
-        <view class="flex items-center gap-2">
-          <text class="text-sm text-gray-600 font-medium">热量:</text>
-          <text class="text-base font-semibold text-emerald-600"
-            >{{ previewCalories }}kcal</text
-          >
-        </view>
-        <view class="flex items-center gap-2">
-          <text class="text-sm text-gray-600 font-medium">蛋白质:</text>
-          <text class="text-base font-semibold text-emerald-600"
-            >{{ previewProtein }}g</text
-          >
-        </view>
-        <view class="flex items-center gap-2">
-          <text class="text-sm text-gray-600 font-medium">脂肪:</text>
-          <text class="text-base font-semibold text-emerald-600"
-            >{{ previewFat }}g</text
-          >
-        </view>
-        <view class="flex items-center gap-2">
-          <text class="text-sm text-gray-600 font-medium">碳水:</text>
-          <text class="text-base font-semibold text-emerald-600"
-            >{{ previewCarbs }}g</text
-          >
-        </view>
-      </view>
-    </view>
-
-    <template #footer>
-      <view class="flex gap-5">
-        <view
-          class="flex-1 py-3 px-4 rounded-lg font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors text-center"
+          class="flex-1 py-3.5 rounded-xl font-black text-gray-500 bg-gray-100 active:bg-gray-200 transition-all text-center text-sm tracking-widest"
           @click="handleClose"
         >
           取消
         </view>
         <view
-          class="flex-1 py-3 px-4 rounded-lg font-semibold text-white bg-emerald-600 hover:bg-emerald-700 transition-colors text-center"
+          class="flex-1 py-3.5 rounded-xl font-black text-white bg-emerald-600 active:bg-emerald-700 transition-all text-center shadow-md shadow-emerald-100 text-sm tracking-widest"
           @click="handleConfirm"
         >
-          {{ confirmButtonText }}
+          {{ mode === 'edit' ? '确认修改' : '加入餐单' }}
         </view>
       </view>
-    </template>
+    </view>
   </BaseModal>
 </template>
 
@@ -98,180 +95,70 @@
 import { ref, computed, watch } from "vue";
 import BaseModal from "./BaseModal.vue";
 
-// 定义食物类型
-interface FoodItem {
-  id: number;
-  foodName: string;
-  category: string;
-  baseUnit: string;
-  calories: number;
-  protein: number;
-  fat: number;
-  carbs: number;
-  tags?: string[];
-  description?: string;
-}
-
 interface Props {
   visible: boolean;
-  food?: FoodItem;
+  foodName: string;
+  foodUnit: string;
+  calories?: number;
+  protein?: number;
+  fat?: number;
+  carbs?: number;
+  baseCount?: number;
   existingQuantity?: number;
   mode?: "add" | "edit";
 }
 
-interface Emits {
-  (e: "close"): void;
-  (e: "confirm", quantity: number, unit: string): void;
-}
-
 const props = withDefaults(defineProps<Props>(), {
   visible: false,
-  food: () => ({
-    id: 0,
-    foodName: "食物名称",
-    category: "",
-    baseUnit: "g",
-    calories: 100,
-    protein: 5,
-    fat: 2,
-    carbs: 15,
-    tags: [],
-  }),
+  foodName: "未知食物",
+  foodUnit: "g",
+  calories: 0,
+  protein: 0,
+  fat: 0,
+  carbs: 0,
+  baseCount: 100,
   existingQuantity: 100,
-  mode: "add",
+  mode: "add"
 });
 
-const emit = defineEmits<Emits>();
+const emit = defineEmits<{
+  (e: "close"): void;
+  (e: "confirm", quantity: number, unit: string): void;
+}>();
 
-// 状态
-const currentFood = ref<FoodItem>(props.food);
 const quantity = ref(props.existingQuantity);
-const currentMode = ref(props.mode);
-watch(
-  () => props.mode,
-  (newMode) => {
-    console.log("模式已更新为:", newMode);
-  }
-);
-
-// 计算属性 - 用于输入验证
-const minQuantity = computed(() => 1);
-const maxQuantity = computed(() => 1000);
-
-const confirmButtonText = computed(() => {
-  return currentMode.value === "edit" ? "编辑" : "添加";
-});
-
-const previewCalories = computed(() => {
-  const ratio = getRatio();
-  return Math.round(currentFood.value.calories * ratio);
-});
-
-const previewProtein = computed(() => {
-  const ratio = getRatio();
-  return (currentFood.value.protein * ratio).toFixed(1);
-});
-
-const previewFat = computed(() => {
-  const ratio = getRatio();
-  return (currentFood.value.fat * ratio).toFixed(1);
-});
-
-const previewCarbs = computed(() => {
-  const ratio = getRatio();
-  return (currentFood.value.carbs * ratio).toFixed(1);
-});
-
-// 弹窗可见性管理
 const popupVisible = ref(props.visible);
 
-// 监听 props 变化
-watch(
-  () => props.visible,
-  (newVal) => {
-    popupVisible.value = newVal;
-  }
-);
+watch(() => props.visible, (val) => popupVisible.value = val);
+watch(() => props.existingQuantity, (val) => quantity.value = val);
 
-watch(
-  () => props.food,
-  (newFood) => {
-    currentFood.value = newFood;
-  },
-  { immediate: true }
-);
-
-watch(
-  () => props.existingQuantity,
-  (newQuantity) => {
-    if (newQuantity > 0) {
-      quantity.value = newQuantity;
-    } else {
-      quantity.value = currentFood.value.baseUnit === "个" ? 1 : 100;
-    }
-  },
-  { immediate: true }
-);
-
-watch(
-  () => props.mode,
-  (newMode) => {
-    currentMode.value = newMode;
-  }
-);
-
-watch(popupVisible, (newVal) => {
-  if (!newVal) {
-    emit("close");
-  }
+const ratio = computed(() => {
+  const q = Number(quantity.value) || 0;
+  return q / (props.baseCount || 100);
 });
 
-// 方法
-const handleClose = () => {
-  emit("close");
+const previewCalories = computed(() => Math.round((props.calories || 0) * ratio.value));
+const previewProtein = computed(() => ((props.protein || 0) * ratio.value).toFixed(1));
+const previewFat = computed(() => ((props.fat || 0) * ratio.value).toFixed(1));
+const previewCarbs = computed(() => ((props.carbs || 0) * ratio.value).toFixed(1));
+
+const handleInput = (e: any) => {
+  const val = e.detail.value;
+  quantity.value = parseFloat(val) || 0;
 };
+
+const adjust = (offset: number) => {
+  const current = Number(quantity.value) || 0;
+  quantity.value = Math.max(0, current + offset);
+};
+
+const handleClose = () => emit("close");
 
 const handleConfirm = () => {
-  const qty = parseFloat(quantity.value.toString());
-  if (qty <= 0) {
-    // 使用 Taro 的 toast 方法
-    // @ts-ignore
-    if (typeof uni !== "undefined") {
-      // @ts-ignore
-      uni.showToast({
-        title: "请输入有效的数量",
-        icon: "none",
-      });
-    }
-    return;
-  }
-
-  emit("confirm", qty, currentFood.value.baseUnit);
-  handleClose();
-};
-
-const updatePreview = () => {
-  // 验证并限制输入值范围
-  const qty = parseFloat(quantity.value.toString()) || 0;
-  if (qty < minQuantity.value) {
-    quantity.value = minQuantity.value;
-  } else if (qty > maxQuantity.value) {
-    quantity.value = maxQuantity.value;
-  }
-  // 预览值会通过计算属性自动更新
-};
-
-const getRatio = () => {
-  const qty = parseFloat(quantity.value.toString()) || 0;
-  if (currentFood.value.baseUnit === "个") {
-    return qty;
-  } else {
-    return qty / 100;
+  const q = Number(quantity.value);
+  if (q > 0) {
+    emit("confirm", q, props.foodUnit);
+    handleClose();
   }
 };
 </script>
-
-<style scoped>
-/* Tailwind CSS 类名已经覆盖了大部分样式需求 */
-/* 这里只保留必要的自定义样式 */
-</style>

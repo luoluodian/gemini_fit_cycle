@@ -30,6 +30,7 @@ import { PlanDetail } from './entity/plan-detail.entity';
 import { DailyGoal } from './entity/daily-goal.entity';
 import { UserFavoriteFood } from './entity/user-favorite-food.entity';
 import { HealthProfile } from './entity/health-profile.entity';
+import { PlanShare } from './entity/plan-share.entity';
 
 /**
  * 统一实体模块：
@@ -67,6 +68,7 @@ import { HealthProfile } from './entity/health-profile.entity';
       PlanDetail,
       DailyGoal,
       UserFavoriteFood,
+      PlanShare,
     ]),
   ],
   exports: [TypeOrmModule],

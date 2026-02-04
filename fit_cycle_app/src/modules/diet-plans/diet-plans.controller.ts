@@ -33,9 +33,14 @@ export class DietPlansController {
 
   /** 列出用户的所有饮食计划 */
   @Get()
-  async listPlans(@Req() req: any, @Query('status') status?: PlanStatus) {
+  async listPlans(
+    @Req() req: any,
+    @Query('status') status?: PlanStatus,
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 20,
+  ) {
     const userId = req.user.userId;
-    return this.dietPlansService.findAllByUser(userId, status);
+    return this.dietPlansService.findAllByUser(userId, status, page, limit);
   }
 
   /** 创建新的饮食计划 */
@@ -99,6 +104,20 @@ export class DietPlansController {
   async pause(@Req() req: any, @Param('id') id: string) {
     const userId = req.user.userId;
     return this.dietPlansService.pausePlan(userId, Number(id));
+  }
+
+  /** 生成分享码 */
+  @Post(':id/share')
+  async share(@Req() req: any, @Param('id') id: string) {
+    const userId = req.user.userId;
+    return this.dietPlansService.sharePlan(Number(id), userId);
+  }
+
+  /** 通过分享码导入计划 */
+  @Post('import')
+  async import(@Req() req: any, @Body('code') code: string) {
+    const userId = req.user.userId;
+    return this.dietPlansService.importPlan(userId, code);
   }
 
   // --- Sub-resources (Optional individual CRUD) ---

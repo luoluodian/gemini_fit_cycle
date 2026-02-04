@@ -74,6 +74,8 @@ interface Props {
   enhanced?: boolean;
   /** 是否显示滚动条 */
   showScrollbar?: boolean;
+  /** 是否在 flex 布局中自动填满剩余空间 */
+  flex?: boolean;
   
   // 空状态相关
   /** 是否为空状态 */
@@ -111,6 +113,7 @@ const props = withDefaults(defineProps<Props>(), {
   contentClass: "",
   enhanced: false,
   showScrollbar: false,
+  flex: false,
   isEmpty: false,
   emptyText: "暂无数据",
   loading: false,
@@ -134,15 +137,32 @@ const emit = defineEmits<{
 }>();
 
 const formatSize = (size?: string | number) => {
-  if (size === undefined || size === null) return undefined;
-  return typeof size === "number" ? `${size}rpx` : size;
+  if (size === undefined || size === null || size === '') return undefined;
+  if (typeof size === 'number') {
+    if (isNaN(size)) return undefined;
+    return `${size}rpx`;
+  }
+  return size;
 };
 
-const scrollStyle = computed<CSSProperties>(() => ({
-  height: formatSize(props.height),
-  width: formatSize(props.width),
-  whiteSpace: props.scrollX ? 'nowrap' : 'normal'
-}));
+const scrollStyle = computed<CSSProperties>(() => {
+  const style: CSSProperties = {
+    width: formatSize(props.width),
+    whiteSpace: props.scrollX ? 'nowrap' : 'normal',
+    boxSizing: 'border-box'
+  };
+
+  if (props.flex) {
+    style.flex = '1';
+    style.height = '0';
+    style.minHeight = '0'; // 强制设为 0 以支持 flex 内部滚动
+  } else {
+    style.height = formatSize(props.height);
+    style.minHeight = undefined;
+  }
+
+  return style;
+});
 
 const showFooter = computed(() => props.loading || props.finished);
 

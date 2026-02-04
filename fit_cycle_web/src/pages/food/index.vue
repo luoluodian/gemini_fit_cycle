@@ -1,5 +1,5 @@
 <template>
-  <view class="min-h-screen flex flex-col overflow-hidden">
+  <view class="h-screen flex flex-col overflow-hidden">
     <BaseNavBar title="食材库">
       <template #left>
         <view

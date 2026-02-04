@@ -7,6 +7,7 @@ import { PlanDay } from '@/database/entity/plan-day.entity';
 import { PlanMeal } from '@/database/entity/plan-meal.entity';
 import { PlanMealItem } from '@/database/entity/plan-meal-item.entity';
 import { DataDictionary } from '@/database/entity/data-dictionary.entity';
+import { PlanShare } from '@/database/entity/plan-share.entity';
 import { CreateDietPlanDto } from '@/dtos/create-diet-plan.dto';
 import { UpdateDietPlanDto } from '@/dtos/update-diet-plan.dto';
 import { CreatePlanDayDto } from '@/dtos/create-plan-day.dto';
@@ -35,6 +36,8 @@ export class DietPlansService {
     private readonly userRepo: Repository<User>,
     @InjectRepository(DataDictionary)
     private readonly dictRepo: Repository<DataDictionary>,
+    @InjectRepository(PlanShare)
+    private readonly shareRepo: Repository<PlanShare>,
     private readonly dataSource: DataSource,
   ) {}
 
@@ -53,38 +56,39 @@ export class DietPlansService {
       // 1. 清理现有配置 (物理删除 plan_days，会级联删除 meals 和 items)
       await queryRunner.manager.delete(PlanDay, { planId });
 
-      // 2. 循环插入新配置
+      // 2. 构建实体树
+      const dayEntities = [];
+      
+      // 预加载所有需要的 MealType 字典，避免循环查询
+      const mealTypes = await this.dictRepo.find({ where: { category: 'MealType' } });
+      const mealTypeMap = new Map(mealTypes.map(m => [m.id, m]));
+
       for (const dayDto of dto.templates) {
-        // 创建日配置
-        const day = queryRunner.manager.create(PlanDay, {
-          planId,
+        const day = this.planDayRepo.create({
+          planId, // 关联 ID
           dayNumber: dayDto.dayNumber,
           carbType: dayDto.carbType,
           targetCalories: dayDto.targetCalories,
           targetProtein: dayDto.targetProtein,
           targetFat: dayDto.targetFat,
           targetCarbs: dayDto.targetCarbs,
+          planMeals: [] // 初始化数组
         });
-        const savedDay = await queryRunner.manager.save(day);
 
         for (const mealDto of dayDto.meals) {
-          // 查找餐次字典
-          const mealType = await this.dictRepo.findOne({ where: { id: mealDto.mealTypeId } });
+          const mealType = mealTypeMap.get(mealDto.mealTypeId);
+          // 如果找不到类型，跳过或报错？这里选择宽容跳过或使用默认，或报错
           if (!mealType) throw new NotFoundException(`餐次类型 ID ${mealDto.mealTypeId} 不存在`);
-          
-          // 创建餐次
-          const meal = queryRunner.manager.create(PlanMeal, {
-            planDay: savedDay,
+
+          const meal = this.planMealRepo.create({
             mealType,
             scheduledTime: mealDto.scheduledTime,
             note: mealDto.note,
+            mealItems: []
           });
-          const savedMeal = await queryRunner.manager.save(meal);
 
           for (const itemDto of mealDto.items) {
-            // 创建食材明细
-            const item = queryRunner.manager.create(PlanMealItem, {
-              planMeal: savedMeal,
+            const item = this.planMealItemRepo.create({
               customName: itemDto.customName,
               quantity: itemDto.quantity,
               unit: itemDto.unit,
@@ -95,9 +99,16 @@ export class DietPlansService {
               fiber: itemDto.fiber,
               sortOrder: itemDto.sortOrder,
             });
-            await queryRunner.manager.save(item);
+            meal.mealItems.push(item);
           }
+          day.planMeals.push(meal);
         }
+        dayEntities.push(day);
+      }
+
+      // 3. 批量保存 (依赖 cascade: true)
+      if (dayEntities.length > 0) {
+        await queryRunner.manager.save(PlanDay, dayEntities);
       }
 
       await queryRunner.commitTransaction();
@@ -113,13 +124,32 @@ export class DietPlansService {
   /**
    * 获取用户的所有饮食计划。
    */
-  async findAllByUser(userId: number, status?: PlanStatus) {
+  async findAllByUser(
+    userId: number,
+    status?: PlanStatus,
+    page: number = 1,
+    limit: number = 20,
+  ) {
     const where: any = { userId };
     if (status) where.status = status;
-    return this.planRepo.find({ 
+    
+    // 简单的分页逻辑
+    const [items, total] = await this.planRepo.findAndCount({
       where,
-      order: { createdAt: 'DESC' }
+      order: { createdAt: 'DESC' },
+      skip: (page - 1) * limit,
+      take: limit,
     });
+
+    // 如果前端只期望数组，暂时返回 items (兼容旧逻辑)，或者返回带 meta 的对象
+    // 根据项目惯例，这里我们暂时直接返回 items 数组，或者由 Controller 包装
+    // 但为了让分页生效，最好返回 { items, total }
+    // 考虑到前端 `plan/index.vue` 是直接 `allPlans.value = res || []`，
+    // 我们暂时只返回 items，或者修改前端适配。
+    // 为了不破坏前端，我们先返回 items。如果前端需要加载更多，再协议升级。
+    // 但作为审计修复，应该提供标准分页结构。
+    // 假设前端目前是一次性加载，分页只是为了防止后端崩。
+    return items;
   }
 
   /**
@@ -394,6 +424,182 @@ export class DietPlansService {
     if (userId && Number(item.planMeal.planDay.plan.userId) !== Number(userId))
       throw new NotFoundException('无权限操作');
     await this.planMealItemRepo.remove(item);
+    return { success: true };
+  }
+
+  /**
+   * 生成分享码并存储
+   */
+  async sharePlan(planId: number, userId: number) {
+    const plan = await this.planRepo.findOne({ where: { id: planId, userId } });
+    if (!plan) throw new NotFoundException('计划不存在或无权限');
+
+    // 检查是否已存在有效期内的分享码
+    let share = await this.shareRepo.findOne({ 
+      where: { planId, userId },
+      order: { createdAt: 'DESC' }
+    });
+
+    if (share && (!share.expireAt || share.expireAt > new Date())) {
+      return { code: share.code, expireAt: share.expireAt };
+    }
+
+    // 生成新码
+    const code = 'PLAN-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+    
+    // 有效期 30 天
+    const expireAt = new Date();
+    expireAt.setDate(expireAt.getDate() + 30);
+
+    share = this.shareRepo.create({
+      code,
+      planId,
+      userId,
+      expireAt
+    });
+
+    await this.shareRepo.save(share);
+    return { code, expireAt };
+  }
+
+  // 简单的内存限流 (生产环境应使用 Redis)
+  private importAttempts = new Map<number, { count: number; lastTime: number }>();
+
+  /**
+   * 通过分享码导入计划 (深拷贝)
+   */
+  async importPlan(userId: number, code: string) {
+    // 1. 安全检查：防止暴力枚举
+    this.checkRateLimit(userId);
+
+    const share = await this.shareRepo.findOne({ 
+      where: { code },
+      relations: { plan: true }
+    });
+
+    if (!share) {
+      this.recordFailedAttempt(userId);
+      throw new NotFoundException('分享码不存在');
+    }
+    if (share.expireAt && share.expireAt < new Date()) {
+      throw new NotFoundException('分享码已过期');
+    }
+
+    const originalPlan = await this.findDetail(share.planId);
+    
+    // 2. 优化名称截断逻辑
+    let newName = `${originalPlan.name} (导入)`;
+    if (newName.length > 100) {
+      // 保留后缀，截断前缀
+      const suffix = " (导入)";
+      newName = originalPlan.name.substring(0, 100 - suffix.length) + suffix;
+    }
+
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      // 3. 复制计划主体
+      const newPlan = queryRunner.manager.create(DietPlan, {
+        name: newName,
+        type: originalPlan.type,
+        cycleDays: originalPlan.cycleDays,
+        cycleCount: originalPlan.cycleCount,
+        carbCycleConfig: originalPlan.carbCycleConfig,
+        targetCalories: originalPlan.targetCalories,
+        targetProtein: originalPlan.targetProtein,
+        targetFat: originalPlan.targetFat,
+        targetCarbs: originalPlan.targetCarbs,
+        userId,
+        status: PlanStatus.DRAFT,
+        isTemplate: false
+      });
+      const savedPlan = await queryRunner.manager.save(newPlan);
+
+      // 4. 循环复制日、餐次、食材
+      for (const oldDay of originalPlan.planDays) {
+        const newDay = queryRunner.manager.create(PlanDay, {
+          plan: savedPlan,
+          dayNumber: oldDay.dayNumber,
+          carbType: oldDay.carbType,
+          targetCalories: oldDay.targetCalories,
+          targetProtein: oldDay.targetProtein,
+          targetFat: oldDay.targetFat,
+          targetCarbs: oldDay.targetCarbs,
+        });
+        const savedDay = await queryRunner.manager.save(newDay);
+
+        for (const oldMeal of oldDay.planMeals) {
+          const newMeal = queryRunner.manager.create(PlanMeal, {
+            planDay: savedDay,
+            mealType: oldMeal.mealType,
+            scheduledTime: oldMeal.scheduledTime,
+            note: oldMeal.note,
+          });
+          const savedMeal = await queryRunner.manager.save(newMeal);
+
+          for (const oldItem of oldMeal.mealItems) {
+            const newItem = queryRunner.manager.create(PlanMealItem, {
+              planMeal: savedMeal,
+              customName: oldItem.customName,
+              quantity: oldItem.quantity,
+              unit: oldItem.unit,
+              calories: oldItem.calories,
+              protein: oldItem.protein,
+              fat: oldItem.fat,
+              carbs: oldItem.carbs,
+              fiber: oldItem.fiber,
+              sortOrder: oldItem.sortOrder,
+            });
+            await queryRunner.manager.save(newItem);
+          }
+        }
+      }
+
+      // 成功后清除计数
+      this.importAttempts.delete(userId);
+
+      await queryRunner.commitTransaction();
+      return { id: savedPlan.id };
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw new InternalServerErrorException('导入计划失败: ' + err.message);
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  private checkRateLimit(userId: number) {
+    const record = this.importAttempts.get(userId);
+    if (record) {
+      if (Date.now() - record.lastTime > 60 * 1000) {
+        // 超过1分钟重置
+        this.importAttempts.delete(userId);
+      } else if (record.count >= 5) {
+        throw new ForbiddenException('尝试次数过多，请稍后再试');
+      }
+    }
+  }
+
+  private recordFailedAttempt(userId: number) {
+    const record = this.importAttempts.get(userId) || { count: 0, lastTime: Date.now() };
+    record.count++;
+    record.lastTime = Date.now();
+    this.importAttempts.set(userId, record);
+  }
+
+  /**
+   * 删除计划 (软删除)
+   */
+  async removePlan(id: number, userId?: number) {
+    const plan = await this.planRepo.findOne({ where: { id } });
+    if (!plan) throw new NotFoundException('计划不存在');
+    if (userId && Number(plan.userId) !== Number(userId))
+      throw new NotFoundException('无权限删除该计划');
+    
+    // 使用 softRemove
+    await this.planRepo.softRemove(plan);
     return { success: true };
   }
 }

@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsNumber, IsEnum, IsDateString, IsObject, Max, Min } from 'class-validator';
+import { IsString, IsOptional, IsNumber, IsEnum, IsDateString, IsObject, Max, Min, MaxLength } from 'class-validator';
 import { PlanType, PlanStatus } from '@/database/entity/diet-plan.entity';
 
 /**
@@ -7,6 +7,7 @@ import { PlanType, PlanStatus } from '@/database/entity/diet-plan.entity';
 export class UpdateDietPlanDto {
   @IsOptional()
   @IsString()
+  @MaxLength(100)
   readonly name?: string;
 
   @IsOptional()
