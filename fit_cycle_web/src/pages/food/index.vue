@@ -32,30 +32,28 @@
     <view class="flex-1 flex flex-col min-h-0 py-4 px-4 overflow-hidden">
       <!-- Horizontal Categories -->
       <view class="flex-shrink-0">
-        <scroll-view
+        <BaseScrollView
           :scroll-x="true"
-          :enable-flex="true"
-          :enhanced="true"
-          :show-scrollbar="false"
-          class="whitespace-nowrap pb-3 -mx-4 px-4 scrollbar-hide animate-fade-in-up delay-100 w-full"
+          :scroll-y="false"
+          width="100%"
+          scroll-view-class="pb-3 -mx-4 px-4 animate-fade-in-up delay-100"
+          content-class="flex space-x-2 pr-4"
         >
-          <view class="flex space-x-2 pr-4">
-            <view
-              v-for="cat in categoryOptions"
-              :key="cat.key"
-              class="px-4 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center space-x-1.5 border border-solid flex-shrink-0"
-              :class="
-                selectedCategory === cat.key
-                  ? 'bg-emerald-600 text-white shadow-sm border-emerald-600 scale-[1.02]'
-                  : 'bg-white/80 text-gray-400 border-gray-100'
-              "
-              @click="handleCategoryChange(cat.key)"
-            >
-              <text v-if="cat.emoji" class="text-sm">{{ cat.emoji }}</text>
-              <text>{{ cat.label }}</text>
-            </view>
+          <view
+            v-for="cat in categoryOptions"
+            :key="cat.key"
+            class="px-4 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center space-x-1.5 border border-solid flex-shrink-0"
+            :class="
+              selectedCategory === cat.key
+                ? 'bg-emerald-600 text-white shadow-sm border-emerald-600 scale-[1.02]'
+                : 'bg-white/80 text-gray-400 border-gray-100'
+            "
+            @click="handleCategoryChange(cat.key)"
+          >
+            <text v-if="cat.emoji" class="text-sm">{{ cat.emoji }}</text>
+            <text>{{ cat.label }}</text>
           </view>
-        </scroll-view>
+        </BaseScrollView>
       </view>
 
       <!-- Popular Foods -->
@@ -72,53 +70,49 @@
         </view>
 
         <view style="height: 200rpx">
-          <!-- Empty State -->
-          <view
-            v-if="popularFoods.length === 0"
-            class="h-full flex flex-col items-center justify-center"
-          >
-            <svg
-              class="w-8 h-8 text-gray-100 mb-2"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="1"
-                d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-              />
-            </svg>
-            <text class="text-[20rpx] text-gray-300">暂无热门食材</text>
-          </view>
-
-          <scroll-view
-            v-else
+          <BaseScrollView
             :scroll-x="true"
-            :enable-flex="true"
-            :enhanced="true"
-            :show-scrollbar="false"
-            class="h-full w-full"
+            :scroll-y="false"
+            width="100%"
+            height="100%"
+            :is-empty="popularFoods.length === 0"
+            content-class="flex space-x-3 pr-4 h-full items-center"
           >
-            <view class="flex space-x-3 pr-4 h-full items-center">
-              <view
-                v-for="food in popularFoods"
-                :key="food.id"
-                class="flex-shrink-0 bg-white rounded-lg w-20 h-[150rpx] text-center shadow-sm active:scale-95 transition-all flex flex-col justify-between py-2 px-1"
-                style="border: 1rpx solid #f3f4f6"
-                @click="handleViewDetail(food)"
-              >
-                <view class="text-2xl">{{ food.imageUrl || "🥗" }}</view>
-                <view class="flex flex-col items-center">
-                  <text
-                    class="text-[20rpx] font-bold text-gray-800 block truncate w-full"
-                    >{{ food.name }}</text
-                  >
-                </view>
+            <template #empty>
+              <view class="h-full flex flex-col items-center justify-center">
+                <svg
+                  class="w-8 h-8 text-gray-100 mb-2"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="1"
+                    d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                  />
+                </svg>
+                <text class="text-[20rpx] text-gray-300">暂无热门食材</text>
+              </view>
+            </template>
+
+            <view
+              v-for="food in popularFoods"
+              :key="food.id"
+              class="flex-shrink-0 bg-white rounded-lg w-20 h-[150rpx] text-center shadow-sm active:scale-95 transition-all flex flex-col justify-between py-2 px-1"
+              style="border: 1rpx solid #f3f4f6"
+              @click="handleViewDetail(food)"
+            >
+              <view class="text-2xl">{{ food.imageUrl || "🥗" }}</view>
+              <view class="flex flex-col items-center">
+                <text
+                  class="text-[20rpx] font-bold text-gray-800 block truncate w-full"
+                  >{{ food.name }}</text
+                >
               </view>
             </view>
-          </scroll-view>
+          </BaseScrollView>
         </view>
       </GlassCard>
 
@@ -142,67 +136,65 @@
           <text class="text-sm text-gray-400">正在获取食材数据...</text>
         </view>
 
-        <scroll-view
+        <BaseScrollView
           v-else
-          :scroll-y="true"
-          :enhanced="true"
-          :show-scrollbar="false"
-          style="height: 640rpx; -webkit-overflow-scrolling: touch"
-          class="w-full"
+          height="640rpx"
+          :is-empty="!isLoading && allFoods.length === 0"
+          :finished="!isLoading && allFoods.length > 0"
+          content-class="pr-2 space-y-2 pb-10"
         >
-          <view class="pr-2 space-y-2 pb-10">
+          <template #empty>
+            <view class="py-10 text-center">
+              <text class="text-sm text-gray-400">未找到相关食材</text>
+            </view>
+          </template>
+
+          <view
+            v-for="item in allFoods"
+            :key="item.id"
+            class="flex items-center p-3 bg-white rounded-lg active:bg-gray-50 transition-all"
+            style="border: 2rpx solid #d1d5db"
+            @click="handleViewDetail(item)"
+          >
             <view
-              v-for="item in allFoods"
-              :key="item.id"
-              class="flex items-center p-3 bg-white rounded-lg active:bg-gray-50 transition-all"
-              style="border: 2rpx solid #d1d5db"
-              @click="handleViewDetail(item)"
+              class="w-10 h-10 rounded-lg flex items-center justify-center mr-3 flex-shrink-0"
+              :class="getCategoryBg(item.category)"
             >
-              <view
-                class="w-10 h-10 rounded-lg flex items-center justify-center mr-3 flex-shrink-0"
-                :class="getCategoryBg(item.category)"
-              >
-                <text class="text-lg">{{ item.imageUrl || "🥗" }}</text>
-              </view>
-              <view class="flex-1 min-w-0">
-                <view class="flex items-center space-x-2">
-                  <text
-                    class="font-medium text-gray-800 block text-xs truncate"
-                    >{{ item.name }}</text
-                  >
-                  <text
-                    class="px-1.5 py-0.5 text-[18rpx] rounded"
-                    :class="
-                      item.type === 'system'
-                        ? 'bg-gray-100 text-gray-500'
-                        : 'bg-purple-50 text-purple-600'
-                    "
-                  >
-                    {{ item.type === "system" ? "系统" : "我的" }}
-                  </text>
-                </view>
-                <view
-                  class="flex items-center text-[18rpx] text-gray-400 mt-0.5 space-x-2"
+              <text class="text-lg">{{ item.imageUrl || "🥗" }}</text>
+            </view>
+            <view class="flex-1 min-w-0">
+              <view class="flex items-center space-x-2">
+                <text
+                  class="font-medium text-gray-800 block text-xs truncate"
+                  >{{ item.name }}</text
                 >
-                  <text>🔹 蛋白 {{ item.protein }}g</text>
-                  <text>🔸 脂肪 {{ item.fat }}g</text>
-                  <text>🔹 碳水 {{ item.carbs }}g</text>
-                </view>
+                <text
+                  class="px-1.5 py-0.5 text-[18rpx] rounded"
+                  :class="
+                    item.type === 'system'
+                      ? 'bg-gray-100 text-gray-500'
+                      : 'bg-purple-50 text-purple-600'
+                  "
+                >
+                  {{ item.type === "system" ? "系统" : "我的" }}
+                </text>
               </view>
-              <view class="text-right ml-2">
-                <text class="text-xs font-semibold text-gray-800 block">{{
-                  item.calories
-                }}</text>
-                <text class="text-[18rpx] text-gray-400 block">kcal</text>
+              <view
+                class="flex items-center text-[18rpx] text-gray-400 mt-0.5 space-x-2"
+              >
+                <text>🔹 蛋白 {{ item.protein }}g</text>
+                <text>🔸 脂肪 {{ item.fat }}g</text>
+                <text>🔹 碳水 {{ item.carbs }}g</text>
               </view>
             </view>
-
-            <!-- No More Data Footer -->
-            <view class="py-1 text-center">
-              <text class="text-[20rpx] text-gray-300">—— 已经到底啦 ——</text>
+            <view class="text-right ml-2">
+              <text class="text-xs font-semibold text-gray-800 block">{{
+                item.calories
+              }}</text>
+              <text class="text-[18rpx] text-gray-400 block">kcal</text>
             </view>
           </view>
-        </scroll-view>
+        </BaseScrollView>
       </GlassCard>
     </view>
 

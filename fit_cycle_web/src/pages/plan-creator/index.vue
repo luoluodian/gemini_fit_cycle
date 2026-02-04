@@ -60,8 +60,15 @@ const handleNext = () => {
     showError("请输入计划名称");
     return;
   }
-  planStore.initTemplates();
-  Taro.navigateTo({ url: "/pages/plan-templates/index" });
+
+  if (planStore.draft.type === "carb-cycle") {
+    // 碳循环流程：跳转到 Step 1.5 核心参数配置
+    Taro.navigateTo({ url: "/pages/carb-cycle-setup/index" });
+  } else {
+    // 常规流程：直接初始化模板并跳转到 Step 2 周期列表
+    planStore.initTemplates();
+    Taro.navigateTo({ url: "/pages/plan-templates/index" });
+  }
 };
 
 const handleGoBack = () => Taro.navigateBack();

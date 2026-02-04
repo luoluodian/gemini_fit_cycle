@@ -15,6 +15,8 @@
         @edit="handleEditTemplate"
         @add="handleAddTemplate"
         @auto-fill="handleAutoFill"
+        @copy="handleCopyTemplate"
+        @delete="handleDeleteTemplate"
       />
       <!-- Placeholder -->
       <view class="h-10 w-full"></view>
@@ -61,19 +63,36 @@ const handleEditTemplate = (index: number) => {
 };
 
 const handleAddTemplate = () => {
-  planStore.draft.templates.push({
-    tempId: "temp_" + Date.now(),
-    targetCalories: 2000,
-    protein: 120,
-    fat: 50,
-    carbs: 180,
-    isConfigured: false,
-    meals: { breakfast: [], lunch: [], dinner: [], snacks: [] },
-    carbType: "medium",
-  });
+  if (planStore.draft.templates.length >= planStore.draft.cycleDays) {
+    Taro.showToast({ title: "已达到周期天数上限", icon: "none" });
+    return;
+  }
+  planStore.addTemplate();
 };
 
-const handleAutoFill = () => showSuccess("自动填充成功");
+const handleCopyTemplate = (index: number) => {
+  if (planStore.draft.templates.length >= planStore.draft.cycleDays) {
+    Taro.showToast({ title: "已达到周期天数上限", icon: "none" });
+    return;
+  }
+  planStore.copyTemplate(index);
+  Taro.showToast({ title: "已复制", icon: "none" });
+};
+
+const handleDeleteTemplate = (index: number) => {
+  if (planStore.draft.templates.length <= 1) {
+    Taro.showToast({ title: "至少保留一天", icon: "none" });
+    return;
+  }
+  planStore.deleteTemplate(index);
+};
+
+const handleAutoFill = () => {
+  if (planStore.draft.type === "carb-cycle") {
+    showSuccess("正在根据算法重新计算...");
+    // 碳循环流程的自动填充逻辑 (P-8/P-16 整合)
+  }
+};
 
 const handleSave = async () => {
   try {

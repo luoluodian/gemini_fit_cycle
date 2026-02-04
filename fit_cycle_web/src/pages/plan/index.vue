@@ -17,83 +17,64 @@
       <!-- Plan Categories -->
       <PlanTabs :active-tab="currentTab" @change="handleTabChange">
         <template #active>
-          <scroll-view
-            :scroll-y="true"
-            :enhanced="true"
-            :show-scrollbar="false"
-            style="height: 1000rpx; -webkit-overflow-scrolling: touch"
-            class="w-full scrollbar-hide"
+          <BaseScrollView
+            height="1000rpx"
+            :is-empty="activePlans.length === 0"
+            :finished="activePlans.length > 0"
+            content-class="space-y-3 pr-2 pt-2 pb-10 animate-fade-in"
           >
-            <view class="space-y-3 pr-2 pt-2 pb-10 animate-fade-in">
-              <block v-if="activePlans.length > 0">
-                <PlanCard
-                  v-for="plan in activePlans"
-                  :key="plan.id"
-                  :plan="plan"
-                  @action="handlePlanAction"
-                />
-                <view class="py-6 text-center">
-                  <text class="text-xs text-gray-400">—— 没有更多了 ——</text>
-                </view>
-              </block>
+            <template #empty>
               <EmptyPlanState
-                v-else
                 text="暂无进行中的计划"
                 action-text="创建新计划"
                 @action="createNewPlan"
               />
-            </view>
-          </scroll-view>
+            </template>
+            <PlanCard
+              v-for="plan in activePlans"
+              :key="plan.id"
+              :plan="plan"
+              @action="handlePlanAction"
+            />
+          </BaseScrollView>
         </template>
 
         <template #completed>
-          <scroll-view
-            :scroll-y="true"
-            :enhanced="true"
-            :show-scrollbar="false"
-            style="height: 1000rpx; -webkit-overflow-scrolling: touch"
-            class="w-full scrollbar-hide"
+          <BaseScrollView
+            height="1000rpx"
+            :is-empty="completedPlans.length === 0"
+            :finished="completedPlans.length > 0"
+            content-class="space-y-3 pr-2 pt-2 pb-10 animate-fade-in"
           >
-            <view class="space-y-3 pr-2 pt-2 pb-10 animate-fade-in">
-              <block v-if="completedPlans.length > 0">
-                <PlanCard
-                  v-for="plan in completedPlans"
-                  :key="plan.id"
-                  :plan="plan"
-                  @action="handlePlanAction"
-                />
-                <view class="py-6 text-center">
-                  <text class="text-xs text-gray-400">—— 没有更多了 ——</text>
-                </view>
-              </block>
-              <EmptyPlanState v-else text="暂无已完成的计划" />
-            </view>
-          </scroll-view>
+            <template #empty>
+              <EmptyPlanState text="暂无已完成的计划" />
+            </template>
+            <PlanCard
+              v-for="plan in completedPlans"
+              :key="plan.id"
+              :plan="plan"
+              @action="handlePlanAction"
+            />
+          </BaseScrollView>
         </template>
 
         <template #archived>
-          <scroll-view
-            :scroll-y="true"
-            :enhanced="true"
-            :show-scrollbar="false"
-            style="height: 1000rpx; -webkit-overflow-scrolling: touch"
-            class="w-full scrollbar-hide"
+          <BaseScrollView
+            height="1000rpx"
+            :is-empty="archivedPlans.length === 0"
+            :finished="archivedPlans.length > 0"
+            content-class="space-y-3 pr-2 pt-2 pb-10 animate-fade-in"
           >
-            <view class="space-y-3 pr-2 pt-2 pb-10 animate-fade-in">
-              <block v-if="archivedPlans.length > 0">
-                <PlanCard
-                  v-for="plan in archivedPlans"
-                  :key="plan.id"
-                  :plan="plan"
-                  @action="handlePlanAction"
-                />
-                <view class="py-6 text-center">
-                  <text class="text-xs text-gray-400">—— 没有更多了 ——</text>
-                </view>
-              </block>
-              <EmptyPlanState v-else text="暂无归档计划" />
-            </view>
-          </scroll-view>
+            <template #empty>
+              <EmptyPlanState text="暂无归档计划" />
+            </template>
+            <PlanCard
+              v-for="plan in archivedPlans"
+              :key="plan.id"
+              :plan="plan"
+              @action="handlePlanAction"
+            />
+          </BaseScrollView>
         </template>
       </PlanTabs>
 
@@ -152,18 +133,11 @@ import { ref, onMounted, computed } from "vue";
 import Taro, { useDidShow } from "@tarojs/taro";
 import PlanTabs from "@/components/plan/PlanTabs.vue";
 import PlanCard from "@/components/plan/PlanCard.vue";
-import RecommendedPlans from "@/components/plan/RecommendedPlans.vue";
 import NewPlanModal from "@/components/plan/NewPlanModal.vue";
 import ImportPlanModal from "@/components/plan/ImportPlanModal.vue";
 import CreateOptionsModal from "@/components/plan/CreateOptionsModal.vue";
 import EmptyPlanState from "@/components/plan/EmptyPlanState.vue";
-import {
-  showSuccess,
-  showError,
-  showLoading,
-  hideToast,
-  showModal,
-} from "@/utils/toast";
+import { showSuccess, showError, showLoading, hideToast } from "@/utils/toast";
 import { useNavigationStore } from "@/stores/navigation";
 import { usePlanStore } from "@/stores/plan";
 import { planService } from "@/services";
@@ -491,15 +465,15 @@ const handleCreateRecommendedPlan = (type: string) => {
   planStore.resetDraft();
   // 模拟原型：根据类型预设部分数据
   const presets: any = {
-    'fat-loss': { name: '30天减脂挑战', type: 'carb-cycle', cycleDays: 7 },
-    'muscle-gain': { name: '增肌训练计划', type: 'custom', cycleDays: 7 },
-    'balanced': { name: '均衡营养计划', type: 'custom', cycleDays: 1 }
+    "fat-loss": { name: "30天减脂挑战", type: "carb-cycle", cycleDays: 7 },
+    "muscle-gain": { name: "增肌训练计划", type: "custom", cycleDays: 7 },
+    balanced: { name: "均衡营养计划", type: "custom", cycleDays: 1 },
   };
-  
+
   if (presets[type]) {
     Object.assign(planStore.draft, presets[type]);
   }
-  
+
   Taro.navigateTo({ url: `/pages/plan-creator/index?type=${type}` });
 };
 

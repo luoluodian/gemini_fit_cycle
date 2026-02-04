@@ -4,6 +4,7 @@ export default {
     "pages/login/index",
     "pages/plan/index",
     "pages/plan-creator/index",
+    "pages/carb-cycle-setup/index",
     "pages/plan-templates/index",
     "pages/edit-template/index",
     "pages/meal-config/index",

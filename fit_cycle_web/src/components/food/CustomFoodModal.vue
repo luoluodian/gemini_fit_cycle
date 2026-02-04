@@ -82,36 +82,34 @@
             >标签</text
           >
 
-          <scroll-view
+          <BaseScrollView
             :scroll-x="true"
-            :enable-flex="true"
-            :enhanced="true"
-            :show-scrollbar="false"
-            class="flex-1 whitespace-nowrap scrollbar-hide"
-            style="width: 0; min-height: 60rpx"
+            :scroll-y="false"
+            scroll-view-class="flex-1"
+            style="width: 0"
+            height="60rpx"
+            content-class="flex gap-2 pr-4"
           >
-            <view class="flex gap-2 pr-4">
-              <view
-                v-for="cat in categoryOptions"
-                :key="cat.key"
-                class="px-3 py-1 text-[22rpx] rounded-lg border border-solid transition-all whitespace-nowrap inline-flex items-center flex-shrink-0"
-                :style="
-                  formData.category === cat.key
-                    ? 'background-color: #10b981; color: #fff; border-color: #10b981;'
-                    : 'background-color: #fff; color: #6b7280; border-color: #e5e7eb;'
-                "
-                @click="
-                  formData.category = cat.key;
+            <view
+              v-for="cat in categoryOptions"
+              :key="cat.key"
+              class="px-3 py-1 text-[22rpx] rounded-lg border border-solid transition-all whitespace-nowrap inline-flex items-center flex-shrink-0"
+              :style="
+                formData.category === cat.key
+                  ? 'background-color: #10b981; color: #fff; border-color: #10b981;'
+                  : 'background-color: #fff; color: #6b7280; border-color: #e5e7eb;'
+              "
+              @click="
+                formData.category = cat.key;
 
-                  formData.imageUrl = cat.emoji;
-                "
-              >
-                <text class="mr-1">{{ cat.emoji }}</text>
+                formData.imageUrl = cat.emoji;
+              "
+            >
+              <text class="mr-1">{{ cat.emoji }}</text>
 
-                <text>{{ cat.label }}</text>
-              </view>
+              <text>{{ cat.label }}</text>
             </view>
-          </scroll-view>
+          </BaseScrollView>
         </view>
 
         <!-- 营养成分输入 -->

@@ -4,7 +4,7 @@
     <GlassCard
       background="#ffffff"
       card-class="p-6 border-[1rpx] border-solid border-gray-200"
-      radius="lg"
+      radius="xl"
       :border="false"
     >
       <view class="flex items-center justify-between">
@@ -84,6 +84,7 @@
           日模板列表
         </h3>
         <view
+          v-if="isCarbCycle"
           class="px-3 py-1 bg-emerald-50 text-emerald-600 text-[20rpx] font-black rounded-lg border border-solid border-emerald-100 active:scale-95 transition-all"
           @tap="handleAutoFill"
         >
@@ -113,19 +114,7 @@
 
           <!-- 拖拽手柄 -->
           <view class="drag-handle p-2 -ml-1 text-gray-300" @tap.stop>
-            <svg
-              class="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M4 8h16M4 16h16"
-              ></path>
-            </svg>
+            <Horizontal font-size="18"></Horizontal>
           </view>
 
           <!-- 内容 -->
@@ -159,6 +148,11 @@
                 class="text-sm text-emerald-600 font-black bg-emerald-50 px-2 py-0.5 rounded border border-solid border-emerald-100"
                 >{{ template.name }}</text
               >
+              <text
+                v-else-if="!template.isConfigured && !isCarbCycle"
+                class="text-sm text-gray-400 font-medium"
+                >未配置</text
+              >
               <view
                 v-else
                 class="flex items-center space-x-3 text-[20rpx] text-gray-400 font-bold"
@@ -177,42 +171,19 @@
           </view>
 
           <!-- 操作 -->
-          <view class="flex items-center space-x-1 ml-2">
-            <view
-              class="p-2 active:bg-emerald-50 rounded-xl transition-colors border border-solid border-transparent"
-              @tap.stop="handleCopy(index)"
-            >
-              <svg
-                class="w-4 h-4 text-gray-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-                ></path>
-              </svg>
-            </view>
+          <view class="flex items-center space-x-4 ml-2">
             <view
               class="p-2 active:bg-red-50 rounded-xl transition-colors border border-solid border-transparent"
               @tap.stop="handleDelete(index)"
             >
-              <svg
-                class="w-4 h-4 text-red-300"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                ></path>
-              </svg>
+              <Del font-size="18" color="#ef4444"></Del>
+            </view>
+            <view
+              v-if="templates.length < cycleDays"
+              class="p-2 active:bg-emerald-50 rounded-xl transition-colors border border-solid border-transparent"
+              @tap.stop="handleCopy(index)"
+            >
+              <Order font-size="18"></Order>
             </view>
           </view>
         </view>
@@ -267,6 +238,7 @@
 import { computed } from "vue";
 import Taro from "@tarojs/taro";
 import GlassCard from "../common/GlassCard.vue";
+import { Del, Order, Horizontal } from "@nutui/icons-vue-taro";
 
 interface Template {
   tempId: string;
@@ -286,7 +258,14 @@ interface Props {
 }
 
 const props = defineProps<Props>();
-const emit = defineEmits(["update:templates", "edit", "add", "auto-fill"]);
+const emit = defineEmits([
+  "update:templates",
+  "edit",
+  "add",
+  "auto-fill",
+  "copy",
+  "delete",
+]);
 
 const totalDays = computed(
   () => (props.cycleInfo.cycleDays || 0) * (props.cycleInfo.cycleCount || 0),
@@ -365,13 +344,7 @@ const handleAddTemplate = () => emit("add");
 const handleAutoFill = () => emit("auto-fill");
 
 const handleCopy = (index: number) => {
-  const newList = [...props.templates];
-  const source = JSON.parse(JSON.stringify(newList[index]));
-  source.tempId = "temp_" + Date.now();
-  source.name = (source.name || `Day ${index + 1}`) + " (复制)";
-  newList.push(source);
-  emit("update:templates", newList);
-  Taro.showToast({ title: "已复制", icon: "none" });
+  emit("copy", index);
 };
 
 const handleDelete = (index: number) => {
@@ -380,9 +353,7 @@ const handleDelete = (index: number) => {
     content: `确定要删除 Day ${index + 1} 吗？`,
     success: (res) => {
       if (res.confirm) {
-        const newList = [...props.templates];
-        newList.splice(index, 1);
-        emit("update:templates", newList);
+        emit("delete", index);
       }
     },
   });
