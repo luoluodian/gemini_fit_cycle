@@ -1,68 +1,50 @@
 <template>
   <view
     :class="[
-      'plan-card bg-white rounded-lg p-4 shadow-sm',
-      plan.isActive ? 'active' : '',
+      'plan-card bg-white rounded-xl p-4 shadow-sm border-[1rpx] border-solid transition-all duration-300',
+      plan.isActive 
+        ? 'border-emerald-500 ring-1 ring-emerald-100' 
+        : 'border-gray-100'
     ]"
   >
     <view class="flex items-start justify-between mb-3">
       <view class="flex-1">
-        <view class="flex items-center mb-2">
+        <view class="flex items-center justify-between mb-2">
           <h3 class="font-semibold text-gray-800 text-lg">
             {{ plan.name }}
           </h3>
-          <span
-            v-for="tag in plan.tags"
-            :key="tag"
-            :class="['ml-2 px-2 py-1 text-xs rounded-full', getTagClass(tag)]"
-          >
-            {{ tag }}
-          </span>
+          <view class="flex">
+            <span
+              v-for="tag in plan.tags"
+              :key="tag"
+              :class="['ml-2 px-2 py-0.5 text-xs rounded-full', getTagClass(tag)]"
+            >
+              {{ tag }}
+            </span>
+          </view>
         </view>
-        <p class="text-sm text-gray-600 mb-2">
+        <p class="text-sm text-gray-500 mb-3 flex items-center">
           {{ plan.description }}
-        </p>
-        <p class="text-sm text-gray-500">
+          <span class="mx-2">·</span>
           {{ plan.targets }}
         </p>
-      </view>
-      <view v-if="plan.progress !== undefined" class="relative w-16 h-16">
-        <svg class="progress-ring w-16 h-16" viewBox="0 0 120 120">
-          <circle
-            class="progress-ring-circle"
-            stroke="#e5e7eb"
-            stroke-width="8"
-            fill="transparent"
-            r="52"
-            cx="60"
-            cy="60"
-          />
-          <circle
-            class="progress-ring-circle"
-            :stroke="plan.progressColor || '#10b981'"
-            stroke-width="8"
-            fill="transparent"
-            r="52"
-            cx="60"
-            cy="60"
-            :stroke-dasharray="327"
-            :stroke-dashoffset="327 - (327 * plan.progress) / 100"
-          />
-        </svg>
-        <view class="absolute inset-0 flex items-center justify-center ml-5">
-          <span class="text-sm font-semibold text-gray-800"
-            >{{ plan.progress }}%</span
-          >
+        
+        <!-- Linear Progress Bar -->
+        <view v-if="plan.progress !== undefined" class="flex items-center">
+          <view class="flex-1 bg-gray-100 rounded-full h-2 mr-3">
+            <view 
+              class="h-2 rounded-full" 
+              :style="{ width: plan.progress + '%', backgroundColor: plan.progressColor || '#10b981' }"
+            ></view>
+          </view>
+          <span class="text-sm font-medium text-gray-600">{{ plan.progress }}%</span>
         </view>
-      </view>
-      <view v-else class="text-center">
-        <view :class="['text-2xl font-bold', plan.statusIconClass]">
-          {{ plan.statusIcon }}
-        </view>
-        <view class="text-xs text-gray-500">{{ plan.progressText }}</view>
+        <view v-else class="text-xs text-gray-500">{{ plan.progressText }}</view>
       </view>
     </view>
-    <view class="flex space-x-2">
+    
+    <!-- Actions (Hidden for UI match) -->
+    <view class="flex space-x-2 mt-3" v-if="false">
       <view
         v-for="action in plan.actions"
         :key="action.label"

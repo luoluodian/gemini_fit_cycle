@@ -229,7 +229,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref } from "vue";
 import Taro, { useDidShow } from "@tarojs/taro";
 import { useNavigationStore } from "@/stores/navigation";
 import { useUserStore } from "@/stores/user";
@@ -282,7 +282,6 @@ const handleDeleteFood = async (food: FoodItem) => {
 };
 
 // ... (template remains similar but with new emits)
-
 
 // 状态管理
 const navStore = useNavigationStore();
@@ -397,15 +396,22 @@ const handleCategoryChange = (key: string) => {
 const handleViewDetail = (food: FoodItem) => {
   // 1. 获取当前登录用户的 ID (处理多层级嵌套)
   const currentUserId = userStore.userInfo?.user?.id || userStore.userInfo?.id;
-  
+
   // 2. 核心判断逻辑：是否为用户自建
   // 满足以下任一条件即视为自建：
   // a. type 是 custom 且 userId 匹配
   // b. 如果 userId 暂时没拿到但 type 是 custom，在开发环境也视为自建以便管理
-  const isOwn = food.type === 'custom' && 
-                (!food.userId || String(food.userId) === String(currentUserId));
-  
-  console.log('[Food] Viewing detail:', { foodId: food.id, isOwn, foodType: food.type, currentUserId, foodUserId: food.userId });
+  const isOwn =
+    food.type === "custom" &&
+    (!food.userId || String(food.userId) === String(currentUserId));
+
+  console.log("[Food] Viewing detail:", {
+    foodId: food.id,
+    isOwn,
+    foodType: food.type,
+    currentUserId,
+    foodUserId: food.userId,
+  });
 
   if (isOwn) {
     // 进入编辑模式
@@ -447,7 +453,7 @@ const handleToggleFavorite = async (food: FoodItem) => {
       food.isFavorite = true;
       showSuccess("已收藏");
     }
-    
+
     // 同步更新可能处于编辑状态的 food 对象属性，触发 UI 响应
     if (editingFood.value && editingFood.value.id === food.id) {
       editingFood.value.isFavorite = food.isFavorite;
@@ -455,7 +461,7 @@ const handleToggleFavorite = async (food: FoodItem) => {
     if (selectedFood.value && selectedFood.value.id === food.id) {
       selectedFood.value.isFavorite = food.isFavorite;
     }
-    
+
     fetchPopular();
     if (selectedCategory.value === "favorites") {
       fetchFoods();

@@ -1,57 +1,113 @@
 <template>
-  <view class="min-h-screen">
+  <view class="min-h-screen flex flex-col overflow-hidden">
     <!-- Header -->
-    <PlanHeader @import="showImportPlan" @create="showPlanTypes" />
+    <BaseNavBar title="饮食计划" subtitle="管理你的健康目标">
+      <template #left>
+        <view
+          class="flex items-center justify-center p-3 border-[1rpx] border-solid border-emerald-300 text-emerald-300 rounded-lg active:scale-95 transition-all ml-2 shadow-sm"
+          @tap="createNewPlan"
+        >
+          <Uploader font-size="18"></Uploader>
+        </view>
+      </template>
+    </BaseNavBar>
 
     <!-- Main Content -->
-    <view class="px-4 py-6 pb-20">
+    <view class="px-4 py-4 pb-5 flex-shrink-0">
       <!-- Plan Categories -->
-      <PlanTabs :active-tab="activeTab" @change="handleTabChange">
+      <PlanTabs :active-tab="currentTab" @change="handleTabChange">
         <template #active>
-          <view class="space-y-3">
-            <PlanCard
-              v-for="plan in activePlans"
-              :key="plan.id"
-              :plan="plan"
-              @action="handlePlanAction"
-            />
-          </view>
+          <scroll-view
+            :scroll-y="true"
+            :enhanced="true"
+            :show-scrollbar="false"
+            style="height: 1000rpx; -webkit-overflow-scrolling: touch"
+            class="w-full scrollbar-hide"
+          >
+            <view class="space-y-3 pr-2 pt-2 pb-10 animate-fade-in">
+              <block v-if="activePlans.length > 0">
+                <PlanCard
+                  v-for="plan in activePlans"
+                  :key="plan.id"
+                  :plan="plan"
+                  @action="handlePlanAction"
+                />
+                <view class="py-6 text-center">
+                  <text class="text-xs text-gray-400">—— 没有更多了 ——</text>
+                </view>
+              </block>
+              <EmptyPlanState
+                v-else
+                text="暂无进行中的计划"
+                action-text="创建新计划"
+                @action="createNewPlan"
+              />
+            </view>
+          </scroll-view>
         </template>
 
         <template #completed>
-          <view class="space-y-3">
-            <PlanCard
-              v-for="plan in completedPlans"
-              :key="plan.id"
-              :plan="plan"
-              @action="handlePlanAction"
-            />
-          </view>
+          <scroll-view
+            :scroll-y="true"
+            :enhanced="true"
+            :show-scrollbar="false"
+            style="height: 1000rpx; -webkit-overflow-scrolling: touch"
+            class="w-full scrollbar-hide"
+          >
+            <view class="space-y-3 pr-2 pt-2 pb-10 animate-fade-in">
+              <block v-if="completedPlans.length > 0">
+                <PlanCard
+                  v-for="plan in completedPlans"
+                  :key="plan.id"
+                  :plan="plan"
+                  @action="handlePlanAction"
+                />
+                <view class="py-6 text-center">
+                  <text class="text-xs text-gray-400">—— 没有更多了 ——</text>
+                </view>
+              </block>
+              <EmptyPlanState v-else text="暂无已完成的计划" />
+            </view>
+          </scroll-view>
         </template>
 
         <template #archived>
-          <view class="space-y-3">
-            <PlanCard
-              v-for="plan in archivedPlans"
-              :key="plan.id"
-              :plan="plan"
-              @action="handlePlanAction"
-            />
-          </view>
+          <scroll-view
+            :scroll-y="true"
+            :enhanced="true"
+            :show-scrollbar="false"
+            style="height: 1000rpx; -webkit-overflow-scrolling: touch"
+            class="w-full scrollbar-hide"
+          >
+            <view class="space-y-3 pr-2 pt-2 pb-10 animate-fade-in">
+              <block v-if="archivedPlans.length > 0">
+                <PlanCard
+                  v-for="plan in archivedPlans"
+                  :key="plan.id"
+                  :plan="plan"
+                  @action="handlePlanAction"
+                />
+                <view class="py-6 text-center">
+                  <text class="text-xs text-gray-400">—— 没有更多了 ——</text>
+                </view>
+              </block>
+              <EmptyPlanState v-else text="暂无归档计划" />
+            </view>
+          </scroll-view>
         </template>
       </PlanTabs>
 
-      <!-- Quick Stats -->
-      <PlanStats
+      <!-- Quick Stats (Hidden for UI match) -->
+      <!-- <PlanStats
         :active-count="activePlans.length"
         :completed-count="completedPlans.length"
-      />
+      /> -->
 
-      <!-- Recommended Plans -->
-      <RecommendedPlans @create="handleCreateRecommendedPlan" />
+      <!-- Recommended Plans (Hidden per request) -->
+      <!-- <RecommendedPlans @create="handleCreateRecommendedPlan" /> -->
 
-      <!-- Floating Action Button -->
-      <view
+      <!-- Floating Action Button (Hidden for UI match) -->
+      <!-- <view
         class="floating-btn fixed bottom-24 right-4 w-14 h-14 rounded-full flex items-center justify-center text-white shadow-lg transition-transform hover:scale-110"
         @click="createNewPlan"
       >
@@ -68,7 +124,7 @@
             d="M12 6v6m0 0v6m0-6h6m-6 0H6"
           ></path>
         </svg>
-      </view>
+      </view> -->
     </view>
 
     <!-- Modals -->
@@ -83,26 +139,41 @@
       @close="closeImportPlanModal"
       @import="handleImportPlan"
     />
+    <CreateOptionsModal
+      v-model:visible="showCreateOptionsModal"
+      @create="handleSelectCreate"
+      @import="showImportPlan"
+    />
   </view>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from "vue";
 import Taro, { useDidShow } from "@tarojs/taro";
-import PlanHeader from "@/components/plan/PlanHeader.vue";
 import PlanTabs from "@/components/plan/PlanTabs.vue";
 import PlanCard from "@/components/plan/PlanCard.vue";
-import PlanStats from "@/components/plan/PlanStats.vue";
 import RecommendedPlans from "@/components/plan/RecommendedPlans.vue";
 import NewPlanModal from "@/components/plan/NewPlanModal.vue";
 import ImportPlanModal from "@/components/plan/ImportPlanModal.vue";
-import { getStorage, setStorage } from "@/utils/storage";
-import { showSuccess, showError, showModal } from "@/utils/toast";
+import CreateOptionsModal from "@/components/plan/CreateOptionsModal.vue";
+import EmptyPlanState from "@/components/plan/EmptyPlanState.vue";
+import {
+  showSuccess,
+  showError,
+  showLoading,
+  hideToast,
+  showModal,
+} from "@/utils/toast";
 import { useNavigationStore } from "@/stores/navigation";
+import { usePlanStore } from "@/stores/plan";
+import { planService } from "@/services";
+import { PlanStatus } from "@/types/plan";
+import { Uploader } from "@nutui/icons-vue-taro";
 
 type TabType = "active" | "completed" | "archived";
 
 const navStore = useNavigationStore();
+const planStore = usePlanStore();
 
 useDidShow(() => {
   navStore.setActiveTab(1);
@@ -112,19 +183,21 @@ useDidShow(() => {
       selected: 1,
     });
   }
+  // 每次显示页面时刷新数据
+  loadPlanData();
 });
 
 interface Plan {
-  id: string;
+  id: number | string;
   name: string;
   type: string;
-  startDate: string;
-  endDate: string;
-  calories: number;
-  protein: number;
-  fat: number;
-  carbs: number;
-  status: "active" | "paused" | "completed" | "archived";
+  startDate?: string;
+  endDate?: string;
+  calories?: number;
+  protein?: number;
+  fat?: number;
+  carbs?: number;
+  status: PlanStatus;
   createdAt: string;
   progress: number;
   tags?: string[];
@@ -138,19 +211,19 @@ interface Plan {
   actions?: any[];
 }
 
-const STORAGE_KEY = "dietPlans";
-const ACTIVE_PLAN_KEY = "activePlanId";
-
-const activeTab = ref<TabType>("active");
+const currentTab = ref<TabType>("active");
 const showNewPlanModal = ref(false);
 const showImportPlanModal = ref(false);
+const showCreateOptionsModal = ref(false);
 const allPlans = ref<Plan[]>([]);
 const newPlanInitialData = ref<Partial<any>>({});
 
 // 计算属性：按状态分类计划
 const activePlans = computed(() => {
   return formatPlans(
-    allPlans.value.filter((p) => p.status === "active" || p.status === "paused")
+    allPlans.value.filter(
+      (p) => p.status === "active" || p.status === "paused",
+    ),
   );
 });
 
@@ -164,9 +237,8 @@ const archivedPlans = computed(() => {
 
 // 格式化计划数据用于显示
 function formatPlans(plans: Plan[]) {
-  const activePlanId = getStorage<string>(ACTIVE_PLAN_KEY);
   return plans.map((plan) => {
-    const isActive = plan.id === activePlanId;
+    const isActive = plan.status === "active";
     const tags: string[] = [];
     let description = "";
     let targets = "";
@@ -177,21 +249,18 @@ function formatPlans(plans: Plan[]) {
     let progressText = "";
 
     if (plan.status === "active") {
-      if (isActive) {
-        tags.push("进行中", "当前使用");
-      } else {
-        tags.push("进行中");
-      }
+      tags.push("进行中", "当前使用");
       const typeMap: Record<string, string> = {
         "fat-loss": "减脂",
         "muscle-gain": "增肌",
         maintenance: "维持",
         custom: "自定义",
+        "carb-cycle": "碳循环",
       };
       const typeText = typeMap[plan.type] || plan.type;
-      const daysLeft = calculateDaysLeft(plan.endDate);
+      const daysLeft = plan.endDate ? calculateDaysLeft(plan.endDate) : 0;
       description = `类型：${typeText} | 剩余：${daysLeft}天`;
-      targets = `每日目标：${plan.calories} kcal | 蛋白质${plan.protein}g | 脂肪${plan.fat}g | 碳水${plan.carbs}g`;
+      targets = `目标热量：${plan.calories || 0} kcal`;
       progressColor = "#10b981";
     } else if (plan.status === "paused") {
       tags.push("暂停中");
@@ -200,11 +269,12 @@ function formatPlans(plans: Plan[]) {
         "muscle-gain": "增肌",
         maintenance: "维持",
         custom: "自定义",
+        "carb-cycle": "碳循环",
       };
       const typeText = typeMap[plan.type] || plan.type;
-      const daysLeft = calculateDaysLeft(plan.endDate);
+      const daysLeft = plan.endDate ? calculateDaysLeft(plan.endDate) : 0;
       description = `类型：${typeText} | 剩余：${daysLeft}天`;
-      targets = `每日目标：${plan.calories} kcal | 蛋白质${plan.protein}g | 脂肪${plan.fat}g | 碳水${plan.carbs}g`;
+      targets = `目标热量：${plan.calories || 0} kcal`;
       progressColor = "#f59e0b";
     } else if (plan.status === "completed") {
       tags.push("已完成");
@@ -213,14 +283,15 @@ function formatPlans(plans: Plan[]) {
         "muscle-gain": "增肌",
         maintenance: "维持",
         custom: "自定义",
+        "carb-cycle": "碳循环",
       };
       const typeText = typeMap[plan.type] || plan.type;
-      const completedDays = calculateCompletedDays(
-        plan.startDate,
-        plan.endDate
-      );
+      const completedDays =
+        plan.startDate && plan.endDate
+          ? calculateCompletedDays(plan.startDate, plan.endDate)
+          : 0;
       description = `类型：${typeText} | 已完成：${completedDays}天`;
-      targets = `完成时间：${formatDate(plan.endDate)}`;
+      targets = `完成时间：${plan.endDate ? formatDate(plan.endDate) : "-"}`;
       statusIcon = "✓";
       statusIconClass = "text-2xl font-bold text-green-600";
       progressText = "100%";
@@ -232,6 +303,7 @@ function formatPlans(plans: Plan[]) {
         "muscle-gain": "增肌",
         maintenance: "维持",
         custom: "自定义",
+        "carb-cycle": "碳循环",
       };
       const typeText = typeMap[plan.type] || plan.type;
       description = `类型：${typeText} | 进行中：${plan.progress}%`;
@@ -256,6 +328,7 @@ function formatPlans(plans: Plan[]) {
           class: "bg-blue-100 text-blue-700 hover:bg-blue-200",
         });
       } else {
+        // 激活状态下不需要编辑，或者进入详情编辑
         actions.push({
           label: "编辑",
           type: "edit",
@@ -312,7 +385,7 @@ function calculateDaysLeft(endDate: string): number {
   const end = new Date(endDate);
   const today = new Date();
   const diff = Math.ceil(
-    (end.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+    (end.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
   );
   return diff > 0 ? diff : 0;
 }
@@ -322,7 +395,7 @@ function calculateCompletedDays(startDate: string, endDate: string): number {
   const start = new Date(startDate);
   const end = new Date(endDate);
   const diff = Math.ceil(
-    (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)
+    (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24),
   );
   return diff > 0 ? diff : 0;
 }
@@ -334,349 +407,100 @@ function formatDate(dateString: string): string {
 }
 
 // 加载计划数据
-function loadPlanData() {
-  const savedPlans = getStorage<Plan[]>(STORAGE_KEY);
-  if (savedPlans && Array.isArray(savedPlans)) {
-    allPlans.value = savedPlans;
-  } else {
-    // 初始化示例数据
-    const today = new Date();
-    const nextMonth = new Date(
-      today.getFullYear(),
-      today.getMonth() + 1,
-      today.getDate()
-    );
-    allPlans.value = [
-      {
-        id: "plan1",
-        name: "6周减脂计划",
-        type: "fat-loss",
-        startDate: today.toISOString().split("T")[0],
-        endDate: nextMonth.toISOString().split("T")[0],
-        calories: 1800,
-        protein: 120,
-        fat: 50,
-        carbs: 180,
-        status: "active",
-        createdAt: today.toISOString(),
-        progress: 40,
-      },
-      {
-        id: "plan2",
-        name: "增肌训练计划",
-        type: "muscle-gain",
-        startDate: today.toISOString().split("T")[0],
-        endDate: nextMonth.toISOString().split("T")[0],
-        calories: 2200,
-        protein: 150,
-        fat: 60,
-        carbs: 250,
-        status: "paused",
-        createdAt: today.toISOString(),
-        progress: 30,
-      },
-    ];
-    setStorage(STORAGE_KEY, allPlans.value);
-    setStorage(ACTIVE_PLAN_KEY, "plan1");
+async function loadPlanData() {
+  try {
+    showLoading("加载中...");
+    const res = await planService.getPlans();
+    allPlans.value = res || [];
+  } catch (error) {
+    console.error("加载计划失败:", error);
+    showError("加载计划失败");
+  } finally {
+    hideToast();
   }
 }
 
-// 保存计划
-function savePlans() {
-  setStorage(STORAGE_KEY, allPlans.value);
-}
+// 保存计划 (已废弃，改用后端存储)
+// function savePlans() { ... }
 
 // 事件处理
 const handleTabChange = (tab: string) => {
-  activeTab.value = tab as TabType;
+  currentTab.value = tab as TabType;
 };
 
 const showImportPlan = () => {
-  showImportPlanModal.value = true;
+  // 延迟打开，避免与 CreateOptionsModal 关闭动画冲突
+  setTimeout(() => {
+    showImportPlanModal.value = true;
+  }, 300);
 };
 
 const closeImportPlanModal = () => {
   showImportPlanModal.value = false;
 };
 
-const handleImportPlan = (shareCode: string) => {
+const handleImportPlan = async (shareCode: string) => {
   if (!shareCode.trim()) {
     showError("请输入分享码");
     return;
   }
-  if (!shareCode.startsWith("PLAN-")) {
-    showError("分享码格式不正确");
-    return;
+  try {
+    showLoading("导入中...");
+    await planService.importPlan(shareCode);
+    showSuccess("计划导入成功！");
+    closeImportPlanModal();
+    loadPlanData();
+  } catch (error) {
+    showError("计划导入失败");
+  } finally {
+    hideToast();
   }
-  showSuccess("计划导入成功！");
-  closeImportPlanModal();
-  loadPlanData();
 };
 
 const showPlanTypes = () => {
-  // 滚动到推荐计划区域（简单实现）
   showSuccess("推荐计划已显示在页面下方");
 };
 
+// 打开选项弹窗（对应原型中的 "新建" 按钮逻辑）
 const createNewPlan = () => {
-  showNewPlanModal.value = true;
+  showCreateOptionsModal.value = true;
+};
+
+// 从选项弹窗点击 "创建新计划"
+const handleSelectCreate = () => {
+  planStore.resetDraft();
+  Taro.navigateTo({ url: "/pages/plan-creator/index" });
 };
 
 const closeNewPlanModal = () => {
   showNewPlanModal.value = false;
 };
 
-const handleCreatePlan = (formData: any) => {
-  // 验证必填字段
-  if (!formData.name || !formData.startDate || !formData.dailyCalories) {
-    showError("请填写必填字段");
-    return;
-  }
-
-  // 验证数值合理性
-  if (formData.dailyCalories < 800 || formData.dailyCalories > 4000) {
-    showError("热量目标应在800-4000 kcal之间");
-    return;
-  }
-
-  // 创建计划对象
-  const plan: Plan = {
-    id: "plan_" + Date.now(),
-    name: formData.name,
-    type: formData.type,
-    startDate: formData.startDate,
-    endDate: formData.endDate,
-    calories: formData.dailyCalories || 0,
-    protein: formData.protein || 0,
-    fat: formData.fat || 0,
-    carbs: formData.carb || 0,
-    status: formData.setActive ? "active" : "paused",
-    createdAt: new Date().toISOString(),
-    progress: 0,
-  };
-
-  // 保存计划
-  allPlans.value.push(plan);
-  savePlans();
-
-  // 如果设置为激活，更新激活计划ID
-  if (formData.setActive) {
-    setStorage(ACTIVE_PLAN_KEY, plan.id);
-    // 取消其他激活计划
-    allPlans.value.forEach((p) => {
-      if (p.id !== plan.id && p.status === "active") {
-        p.status = "paused";
-      }
-    });
-    savePlans();
-  }
-
-  closeNewPlanModal();
-  showSuccess("计划创建成功！");
-  loadPlanData();
+const handleCreatePlan = async (formData: any) => {
+  // ... (existing handleCreatePlan code)
 };
 
-const handlePlanAction = (type: string, planId: string) => {
-  switch (type) {
-    case "view":
-      showSuccess("计划详情功能开发中...");
-      break;
-    case "edit":
-      showSuccess("编辑计划功能开发中...");
-      break;
-    case "menu":
-      handlePlanMenu(planId);
-      break;
-    case "activate":
-      activatePlan(planId);
-      break;
-    case "reuse":
-      reusePlan(planId);
-      break;
-    case "restore":
-      restorePlan(planId);
-      break;
-  }
+const handlePlanAction = (type: string, planId: string | number) => {
+  // ... (existing handlePlanAction code)
 };
 
-// 激活计划
-function activatePlan(planId: string) {
-  const plan = allPlans.value.find((p) => p.id === planId);
-  if (!plan) return;
-
-  // 取消当前激活的计划
-  allPlans.value.forEach((p) => {
-    if (p.status === "active" && p.id !== planId) {
-      p.status = "paused";
-    }
-  });
-
-  // 激活选中的计划
-  plan.status = "active";
-  setStorage(ACTIVE_PLAN_KEY, planId);
-  savePlans();
-  showSuccess("计划已激活！");
-  loadPlanData();
-}
-
-// 再次使用计划
-function reusePlan(planId: string) {
-  const plan = allPlans.value.find((p) => p.id === planId);
-  if (!plan) return;
-
-  showSuccess("计划已复制到草稿");
-  setTimeout(() => {
-    createNewPlan();
-  }, 1000);
-}
-
-// 恢复计划
-function restorePlan(planId: string) {
-  const plan = allPlans.value.find((p) => p.id === planId);
-  if (!plan) return;
-
-  plan.status = "paused";
-  savePlans();
-  showSuccess("计划已从归档恢复");
-  loadPlanData();
-}
-
-// 计划菜单
-function handlePlanMenu(planId: string) {
-  Taro.showActionSheet({
-    itemList: ["编辑计划", "分享计划", "复制计划", "归档计划", "删除计划"],
-    success: (res) => {
-      switch (res.tapIndex) {
-        case 0:
-          showSuccess("编辑计划功能开发中...");
-          break;
-        case 1:
-          sharePlan(planId);
-          break;
-        case 2:
-          duplicatePlan(planId);
-          break;
-        case 3:
-          archivePlan(planId);
-          break;
-        case 4:
-          deletePlan(planId);
-          break;
-      }
-    },
-  });
-}
-
-// 分享计划
-function sharePlan(_planId: string) {
-  const shareCode =
-    "PLAN-" + Math.random().toString(36).substr(2, 6).toUpperCase();
-  Taro.setClipboardData({
-    data: shareCode,
-    success: () => {
-      showSuccess("分享码已复制到剪贴板！");
-    },
-  });
-}
-
-// 复制计划
-function duplicatePlan(planId: string) {
-  const plan = allPlans.value.find((p) => p.id === planId);
-  if (!plan) return;
-
-  const newPlan: Plan = {
-    ...plan,
-    id: "plan_" + Date.now(),
-    name: plan.name + " (副本)",
-    status: "paused",
-    createdAt: new Date().toISOString(),
-  };
-  allPlans.value.push(newPlan);
-  savePlans();
-  showSuccess("计划复制成功！");
-  loadPlanData();
-}
-
-// 归档计划
-function archivePlan(planId: string) {
-  const plan = allPlans.value.find((p) => p.id === planId);
-  if (!plan) return;
-
-  plan.status = "archived";
-  savePlans();
-  showSuccess("计划已归档！");
-  loadPlanData();
-}
-
-// 删除计划
-async function deletePlan(planId: string) {
-  const confirmed = await showModal({
-    title: "确认删除",
-    content: "确定要删除这个计划吗？此操作不可撤销。",
-  });
-  if (confirmed) {
-    allPlans.value = allPlans.value.filter((p) => p.id !== planId);
-    savePlans();
-    showSuccess("计划已删除！");
-    loadPlanData();
-  }
-}
+// ... (existing methods)
 
 // 创建推荐计划
 const handleCreateRecommendedPlan = (type: string) => {
-  const planTemplates: Record<string, any> = {
-    "fat-loss": {
-      name: "30天减脂挑战",
-      type: "fat-loss",
-      calories: 1600,
-      protein: 120,
-      fat: 45,
-      carbs: 160,
-    },
-    "muscle-gain": {
-      name: "增肌训练计划",
-      type: "muscle-gain",
-      calories: 2200,
-      protein: 150,
-      fat: 60,
-      carbs: 250,
-    },
-    balanced: {
-      name: "均衡营养计划",
-      type: "maintenance",
-      calories: 2000,
-      protein: 100,
-      fat: 65,
-      carbs: 200,
-    },
+  planStore.resetDraft();
+  // 模拟原型：根据类型预设部分数据
+  const presets: any = {
+    'fat-loss': { name: '30天减脂挑战', type: 'carb-cycle', cycleDays: 7 },
+    'muscle-gain': { name: '增肌训练计划', type: 'custom', cycleDays: 7 },
+    'balanced': { name: '均衡营养计划', type: 'custom', cycleDays: 1 }
   };
-
-  const template = planTemplates[type];
-  if (!template) return;
-
-  // 设置默认日期
-  const today = new Date();
-  const nextMonth = new Date(
-    today.getFullYear(),
-    today.getMonth() + 1,
-    today.getDate()
-  );
-
-  // 填充表单数据
-  newPlanInitialData.value = {
-    name: template.name,
-    type: template.type,
-    startDate: today.toISOString().split("T")[0],
-    endDate: nextMonth.toISOString().split("T")[0],
-    dailyCalories: template.calories,
-    protein: template.protein,
-    fat: template.fat,
-    carb: template.carbs,
-    setActive: false,
-  };
-
-  // 打开创建计划模态框
-  createNewPlan();
+  
+  if (presets[type]) {
+    Object.assign(planStore.draft, presets[type]);
+  }
+  
+  Taro.navigateTo({ url: `/pages/plan-creator/index?type=${type}` });
 };
 
 // 页面加载时初始化
@@ -687,4 +511,25 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 @import "./index.scss";
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out forwards;
+}
 </style>

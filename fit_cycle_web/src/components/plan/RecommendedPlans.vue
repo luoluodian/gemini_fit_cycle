@@ -6,7 +6,7 @@
         v-for="plan in recommendedPlans"
         :key="plan.type"
         :class="[
-          'flex items-center p-3 rounded-lg border',
+          'flex items-center p-3 rounded-lg border-[1rpx] border-solid active:scale-[0.98] transition-all',
           plan.bgClass
         ]"
       >
@@ -54,7 +54,7 @@ const recommendedPlans: RecommendedPlan[] = [
     name: '30天减脂挑战',
     description: '科学减脂，健康瘦身',
     icon: '🎯',
-    bgClass: 'bg-gradient-to-r from-emerald-50 to-green-50 border border-emerald-100',
+    bgClass: 'bg-gradient-to-r from-emerald-50 to-green-50 border-emerald-100',
     iconBgClass: 'bg-emerald-100',
     buttonClass: 'bg-emerald-600 hover:bg-emerald-700'
   },
@@ -63,7 +63,7 @@ const recommendedPlans: RecommendedPlan[] = [
     name: '增肌训练计划',
     description: '高蛋白饮食，助力增肌',
     icon: '💪',
-    bgClass: 'bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100',
+    bgClass: 'bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-100',
     iconBgClass: 'bg-blue-100',
     buttonClass: 'bg-blue-600 hover:bg-blue-700'
   },
@@ -72,7 +72,7 @@ const recommendedPlans: RecommendedPlan[] = [
     name: '均衡营养计划',
     description: '全面营养，健康生活',
     icon: '🥗',
-    bgClass: 'bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-100',
+    bgClass: 'bg-gradient-to-r from-purple-50 to-pink-50 border-purple-100',
     iconBgClass: 'bg-purple-100',
     buttonClass: 'bg-purple-600 hover:bg-purple-700'
   }

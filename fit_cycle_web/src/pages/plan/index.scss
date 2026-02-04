@@ -2,11 +2,13 @@
 .glass-card {
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1rpx solid rgba(255, 255, 255, 0.3);
+    border-radius: 32rpx;
 }
 .plan-card {
     transition: all 0.3s ease;
-    border-left: 4px solid transparent;
+    border-left: 8rpx solid transparent;
+    border-radius: 24rpx;
 }
 .plan-card.active {
     border-left-color: #10b981;

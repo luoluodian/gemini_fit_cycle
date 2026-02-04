@@ -7,6 +7,8 @@ import {
   Param,
   Body,
   Req,
+  Query,
+  UseGuards,
 } from '@nestjs/common';
 import { DietPlansService } from './diet-plans.service';
 import { CreateDietPlanDto } from '@/dtos/create-diet-plan.dto';
@@ -17,31 +19,13 @@ import { CreatePlanMealDto } from '@/dtos/create-plan-meal.dto';
 import { UpdatePlanMealDto } from '@/dtos/update-plan-meal.dto';
 import { CreatePlanMealItemDto } from '@/dtos/create-plan-meal-item.dto';
 import { UpdatePlanMealItemDto } from '@/dtos/update-plan-meal-item.dto';
+import { SavePlanTemplatesDto } from '@/dtos/save-plan-templates.dto';
+import { PlanStatus } from '@/database/entity/diet-plan.entity';
+import { JwtAuthGuard } from '@/modules/auth/jwt.guard';
 
 /**
  * DietPlansController 提供饮食计划管理相关接口。
- *
- * 每个接口都依赖请求对象中注入的当前用户信息，确保用户只能管理自己的计划数据。
- * 控制器与服务层解耦，负责解析请求参数和传递用户 ID。
  */
-import {
-  Controller,
-  Get,
-  Post,
-  Put,
-  Delete,
-  Param,
-  Body,
-  Req,
-  Query,
-  UseGuards,
-} from '@nestjs/common';
-import { DietPlansService } from './diet-plans.service';
-import { CreateDietPlanDto } from '@/dtos/create-diet-plan.dto';
-import { UpdateDietPlanDto } from '@/dtos/update-diet-plan.dto';
-import { PlanStatus } from '@/database/entity/diet-plan.entity';
-import { JwtAuthGuard } from '@/modules/auth/jwt-auth.guard';
-
 @Controller('diet-plans')
 @UseGuards(JwtAuthGuard)
 export class DietPlansController {
@@ -49,10 +33,7 @@ export class DietPlansController {
 
   /** 列出用户的所有饮食计划 */
   @Get()
-  async listPlans(
-    @Req() req: any,
-    @Query('status') status?: PlanStatus,
-  ) {
+  async listPlans(@Req() req: any, @Query('status') status?: PlanStatus) {
     const userId = req.user.userId;
     return this.dietPlansService.findAllByUser(userId, status);
   }
@@ -68,6 +49,17 @@ export class DietPlansController {
   @Get('recommended')
   async listRecommended() {
     return this.dietPlansService.findRecommended();
+  }
+
+  /** 批量保存计划模板 (日配置+餐单) */
+  @Post(':id/templates')
+  async saveTemplates(
+    @Req() req: any,
+    @Param('id') id: string,
+    @Body() dto: SavePlanTemplatesDto,
+  ) {
+    const userId = req.user.userId;
+    return this.dietPlansService.saveTemplates(Number(id), userId, dto);
   }
 
   /** 获取计划详情 */
@@ -102,94 +94,78 @@ export class DietPlansController {
     return this.dietPlansService.activatePlan(userId, Number(id));
   }
 
+  /** 暂停指定计划 */
+  @Post(':id/pause')
+  async pause(@Req() req: any, @Param('id') id: string) {
+    const userId = req.user.userId;
+    return this.dietPlansService.pausePlan(userId, Number(id));
+  }
+
+  // --- Sub-resources (Optional individual CRUD) ---
+
   /** 为计划新增计划日 */
-  @Post('diet-plans/:planId/days')
+  @Post(':planId/days')
   async createPlanDay(
     @Req() req: any,
     @Param('planId') planId: string,
     @Body() dto: CreatePlanDayDto,
   ) {
-    const userId = req.user?.id;
+    const userId = req.user.userId;
     return this.dietPlansService.createPlanDay(Number(planId), dto, userId);
   }
 
   /** 更新计划日 */
-  @Put('plan-days/:id')
+  @Put('../plan-days/:id')
   async updatePlanDay(
     @Req() req: any,
     @Param('id') id: string,
     @Body() dto: UpdatePlanDayDto,
   ) {
-    const userId = req.user?.id;
+    const userId = req.user.userId;
     return this.dietPlansService.updatePlanDay(Number(id), dto, userId);
   }
 
   /** 为计划日添加餐次 */
-  @Post('plan-days/:dayId/meals')
+  @Post('../plan-days/:dayId/meals')
   async createPlanMeal(
     @Req() req: any,
     @Param('dayId') dayId: string,
     @Body() dto: CreatePlanMealDto,
   ) {
-    const userId = req.user?.id;
+    const userId = req.user.userId;
     return this.dietPlansService.createPlanMeal(Number(dayId), dto, userId);
   }
 
   /** 更新计划餐次 */
-  @Put('plan-meals/:id')
+  @Put('../plan-meals/:id')
   async updatePlanMeal(
     @Req() req: any,
     @Param('id') id: string,
     @Body() dto: UpdatePlanMealDto,
   ) {
-    const userId = req.user?.id;
+    const userId = req.user.userId;
     return this.dietPlansService.updatePlanMeal(Number(id), dto, userId);
   }
 
   /** 为餐次添加食材明细 */
-  @Post('plan-meals/:mealId/items')
+  @Post('../plan-meals/:mealId/items')
   async createPlanMealItem(
     @Req() req: any,
     @Param('mealId') mealId: string,
     @Body() dto: CreatePlanMealItemDto,
   ) {
-    const userId = req.user?.id;
-    return this.dietPlansService.createPlanMealItem(
-      Number(mealId),
-      dto,
-      userId,
-    );
+    const userId = req.user.userId;
+    return this.dietPlansService.createPlanMealItem(Number(mealId), dto, userId);
   }
 
   /** 更新食材明细 */
-  @Put('plan-meal-items/:id')
+  @Put('../plan-meal-items/:id')
   async updatePlanMealItem(
     @Req() req: any,
     @Param('id') id: string,
     @Body() dto: UpdatePlanMealItemDto,
   ) {
-    const userId = req.user?.id;
+    const userId = req.user.userId;
     return this.dietPlansService.updatePlanMealItem(Number(id), dto, userId);
-  }
-
-  /** 删除计划日 */
-  @Delete('plan-days/:id')
-  async deletePlanDay(@Req() req: any, @Param('id') id: string) {
-    const userId = req.user?.id;
-    return this.dietPlansService.removePlanDay(Number(id), userId);
-  }
-
-  /** 删除计划餐次 */
-  @Delete('plan-meals/:id')
-  async deletePlanMeal(@Req() req: any, @Param('id') id: string) {
-    const userId = req.user?.id;
-    return this.dietPlansService.removePlanMeal(Number(id), userId);
-  }
-
-  /** 删除计划食材明细 */
-  @Delete('plan-meal-items/:id')
-  async deletePlanMealItem(@Req() req: any, @Param('id') id: string) {
-    const userId = req.user?.id;
-    return this.dietPlansService.removePlanMealItem(Number(id), userId);
   }
 }

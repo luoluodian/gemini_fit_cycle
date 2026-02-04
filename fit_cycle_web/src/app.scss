@@ -3,13 +3,25 @@
 @import 'tailwindcss/utilities';
 
 
-.min-h-screen {
+page {
   background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
   min-height: 100vh;
-  padding-bottom: calc(120rpx + env(safe-area-inset-bottom));
+}
+
+.min-h-screen {
+  min-height: 100vh;
 }
 
 // 针对不需要 TabBar 的页面（如登录页），可以添加覆盖样式
 .no-tabbar {
   padding-bottom: 0 !important;
+}
+
+body, view, text, button, input {
+  font-family: 'Noto Sans SC', system-ui, -apple-system, sans-serif !important;
+}
+
+/* 确保弹窗层级在最上层 */
+.fixed.z-50 {
+  z-index: 9999 !important;
 }

@@ -1,11 +1,12 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, DataSource } from 'typeorm';
 import { User } from '@/database/entity/user.entity';
 import { DietPlan, PlanStatus } from '@/database/entity/diet-plan.entity';
 import { PlanDay } from '@/database/entity/plan-day.entity';
 import { PlanMeal } from '@/database/entity/plan-meal.entity';
 import { PlanMealItem } from '@/database/entity/plan-meal-item.entity';
+import { DataDictionary } from '@/database/entity/data-dictionary.entity';
 import { CreateDietPlanDto } from '@/dtos/create-diet-plan.dto';
 import { UpdateDietPlanDto } from '@/dtos/update-diet-plan.dto';
 import { CreatePlanDayDto } from '@/dtos/create-plan-day.dto';
@@ -14,6 +15,7 @@ import { CreatePlanMealDto } from '@/dtos/create-plan-meal.dto';
 import { UpdatePlanMealDto } from '@/dtos/update-plan-meal.dto';
 import { CreatePlanMealItemDto } from '@/dtos/create-plan-meal-item.dto';
 import { UpdatePlanMealItemDto } from '@/dtos/update-plan-meal-item.dto';
+import { SavePlanTemplatesDto } from '@/dtos/save-plan-templates.dto';
 
 /**
  * DietPlansService 管理饮食计划以及关联的计划日、餐次和食材明细的 CRUD 操作。
@@ -31,7 +33,82 @@ export class DietPlansService {
     private readonly planMealItemRepo: Repository<PlanMealItem>,
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
+    @InjectRepository(DataDictionary)
+    private readonly dictRepo: Repository<DataDictionary>,
+    private readonly dataSource: DataSource,
   ) {}
+
+  /**
+   * 批量保存计划模板 (覆盖式)
+   */
+  async saveTemplates(planId: number, userId: number, dto: SavePlanTemplatesDto) {
+    const plan = await this.planRepo.findOne({ where: { id: planId, userId } });
+    if (!plan) throw new NotFoundException('计划不存在或无权限');
+
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      // 1. 清理现有配置 (物理删除 plan_days，会级联删除 meals 和 items)
+      await queryRunner.manager.delete(PlanDay, { planId });
+
+      // 2. 循环插入新配置
+      for (const dayDto of dto.templates) {
+        // 创建日配置
+        const day = queryRunner.manager.create(PlanDay, {
+          planId,
+          dayNumber: dayDto.dayNumber,
+          carbType: dayDto.carbType,
+          targetCalories: dayDto.targetCalories,
+          targetProtein: dayDto.targetProtein,
+          targetFat: dayDto.targetFat,
+          targetCarbs: dayDto.targetCarbs,
+        });
+        const savedDay = await queryRunner.manager.save(day);
+
+        for (const mealDto of dayDto.meals) {
+          // 查找餐次字典
+          const mealType = await this.dictRepo.findOne({ where: { id: mealDto.mealTypeId } });
+          if (!mealType) throw new NotFoundException(`餐次类型 ID ${mealDto.mealTypeId} 不存在`);
+          
+          // 创建餐次
+          const meal = queryRunner.manager.create(PlanMeal, {
+            planDay: savedDay,
+            mealType,
+            scheduledTime: mealDto.scheduledTime,
+            note: mealDto.note,
+          });
+          const savedMeal = await queryRunner.manager.save(meal);
+
+          for (const itemDto of mealDto.items) {
+            // 创建食材明细
+            const item = queryRunner.manager.create(PlanMealItem, {
+              planMeal: savedMeal,
+              customName: itemDto.customName,
+              quantity: itemDto.quantity,
+              unit: itemDto.unit,
+              calories: itemDto.calories,
+              protein: itemDto.protein,
+              fat: itemDto.fat,
+              carbs: itemDto.carbs,
+              fiber: itemDto.fiber,
+              sortOrder: itemDto.sortOrder,
+            });
+            await queryRunner.manager.save(item);
+          }
+        }
+      }
+
+      await queryRunner.commitTransaction();
+      return { success: true };
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw new InternalServerErrorException('批量保存失败: ' + err.message);
+    } finally {
+      await queryRunner.release();
+    }
+  }
 
   /**
    * 获取用户的所有饮食计划。
@@ -124,15 +201,48 @@ export class DietPlansService {
    * 激活计划。
    */
   async activatePlan(userId: number, planId: number) {
-    const plan = await this.planRepo.findOne({ where: { id: planId } });
-    if (!plan || Number(plan.userId) !== Number(userId))
-      throw new NotFoundException('无权限激活该计划');
+    const plan = await this.planRepo.findOne({ where: { id: planId, userId } });
+    if (!plan) throw new NotFoundException('计划不存在或无权限');
 
-    // 将用户所有计划设为 PAUSED
-    await this.planRepo.update({ userId }, { status: PlanStatus.PAUSED });
-    // 将指定计划设为 ACTIVE
-    await this.planRepo.update({ id: planId }, { status: PlanStatus.ACTIVE });
-    
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      // 1. 将该用户所有 ACTIVE 计划设为 PAUSED
+      await queryRunner.manager.update(
+        DietPlan, 
+        { userId, status: PlanStatus.ACTIVE }, 
+        { status: PlanStatus.PAUSED }
+      );
+
+      // 2. 激活目标计划
+      // 如果没有开始日期，默认设为今天
+      const updateData: any = { status: PlanStatus.ACTIVE };
+      if (!plan.startDate) {
+        updateData.startDate = new Date().toISOString().split('T')[0];
+      }
+
+      await queryRunner.manager.update(DietPlan, { id: planId }, updateData);
+
+      await queryRunner.commitTransaction();
+      return { success: true };
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw new InternalServerErrorException('激活计划失败: ' + err.message);
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  /**
+   * 暂停计划
+   */
+  async pausePlan(userId: number, planId: number) {
+    const plan = await this.planRepo.findOne({ where: { id: planId, userId } });
+    if (!plan) throw new NotFoundException('计划不存在或无权限');
+
+    await this.planRepo.update({ id: planId }, { status: PlanStatus.PAUSED });
     return { success: true };
   }
 

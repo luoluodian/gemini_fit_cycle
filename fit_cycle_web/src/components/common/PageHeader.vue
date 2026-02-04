@@ -42,16 +42,16 @@
             v-for="(action, index) in actions"
             :key="index"
             :class="[
-              'p-2 rounded-lg transition-colors',
+              'flex items-center space-x-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors shadow-sm',
               action.type === 'primary'
-                ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'
-                : 'bg-gray-100 hover:bg-gray-200',
+                ? 'bg-emerald-600 text-white hover:bg-emerald-700'
+                : 'bg-gray-100 hover:bg-gray-200 text-gray-700',
             ]"
             @click="handleAction(action)"
           >
             <svg
               v-if="action.icon"
-              class="w-5 h-5"
+              class="w-4 h-4"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -63,7 +63,7 @@
                 :d="action.icon"
               ></path>
             </svg>
-            <text v-else>{{ action.label }}</text>
+            <text v-if="action.label">{{ action.label }}</text>
           </view>
         </view>
       </view>
