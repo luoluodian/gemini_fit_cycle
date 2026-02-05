@@ -1,5 +1,7 @@
 # fit_cycle 项目协作宪法 (Project Constitution)
 
+- 容许以下命令（不用复核）： ls、mv、cp、node、npm、npx、grep、pkill、nohup、sleep、tail
+
 ## 1. 项目核心架构 (Project Architecture)
 
 - **开发模式**: Monorepo (单仓库)
@@ -20,6 +22,7 @@
 - **缓存**: Redis (ioredis v5.8.2)
 - **认证**: JWT (@nestjs/jwt v11.0.1) + Passport
 - **工具**: class-validator, class-transformer, Winston 日志系统
+- **服务** 禁止重新启动服务，有问题可以直接查询日志，日志目录：fit_cycle_app/logs/\*
 
 ### 前端 (fit_cycle_web)
 
@@ -53,6 +56,13 @@
   - 前端: `npm run build:weapp` (在 `fit_cycle_web` 目录下)
 - **同步状态**: 使用 `git status` 确认变更。
 - **文档更新**: 讨论出的架构决策或 API 变更必须实时同步更新到 `docs/pj_docs/` 下的对应文档。
+
+- **单独对话**
+  - 命令 ‘1:’ 开头的任务
+  - 独立任务 - 未使用任务清单中的任务
+  - 禁止画蛇添足，只准做对话中的事情
+  - 需要先给出分析文档，确认后才可以进行开发
+  - 每个开发任务需要严格遵守对应的开发规则（前端、后端）
 
 <!-- 所有的业务分析任务必须优先激活 static-logic-auditor 技能。
 在运行 Skill 前，确保本地已安装 vitest 和 jsdom。

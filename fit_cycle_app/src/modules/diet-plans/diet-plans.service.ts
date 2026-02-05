@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, NotFoundException, InternalServerErrorException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { User } from '@/database/entity/user.entity';
@@ -57,7 +57,7 @@ export class DietPlansService {
       await queryRunner.manager.delete(PlanDay, { planId });
 
       // 2. 构建实体树
-      const dayEntities = [];
+      const dayEntities: PlanDay[] = [];
       
       // 预加载所有需要的 MealType 字典，避免循环查询
       const mealTypes = await this.dictRepo.find({ where: { category: 'MealType' } });
@@ -213,18 +213,6 @@ export class DietPlansService {
       throw new NotFoundException('无权限更新该计划');
     Object.assign(plan, dto);
     return this.planRepo.save(plan);
-  }
-
-  /**
-   * 删除计划。
-   */
-  async removePlan(id: number, userId?: number) {
-    const plan = await this.planRepo.findOne({ where: { id } });
-    if (!plan) throw new NotFoundException('计划不存在');
-    if (userId && Number(plan.userId) !== Number(userId))
-      throw new NotFoundException('无权限删除该计划');
-    await this.planRepo.remove(plan);
-    return { success: true };
   }
 
   /**

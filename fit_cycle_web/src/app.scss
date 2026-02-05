@@ -2,6 +2,8 @@
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
 
+// NutUI 样式引入
+@import "@nutui/nutui-taro/dist/style.css";
 
 page {
   background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);

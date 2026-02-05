@@ -1,6 +1,6 @@
 <template>
   <view class="template-management-step space-y-6">
-    <!-- 1. 计划摘要卡片 -->
+    <!-- 1. 计划摘要卡片 (融合了进度与提示) -->
     <GlassCard
       background="#ffffff"
       card-class="p-6 border-[1rpx] border-solid border-gray-200"
@@ -38,24 +38,49 @@
       </view>
 
       <!-- 碳循环阶段摘要 -->
-      <view
-        v-if="isCarbCycle"
-        class="mt-6 pt-6 border-t border-gray-50 border-solid"
-      >
+      <view v-if="isCarbCycle" class="border-t border-gray-50 border-solid">
         <view class="flex items-center justify-around">
           <view class="flex flex-col items-center">
-            <view class="w-2.5 h-2.5 rounded-full bg-yellow-400 mb-1.5 shadow-sm"></view>
-            <text class="text-[20rpx] font-black text-gray-500">高碳 {{ highDays }}天</text>
+            <view
+              class="w-2.5 h-2.5 rounded-full bg-yellow-400 mb-1.5 shadow-sm"
+            ></view>
+            <text class="text-[20rpx] font-black text-gray-500"
+              >高碳 {{ highDays }}天</text
+            >
           </view>
           <view class="flex flex-col items-center">
-            <view class="w-2.5 h-2.5 rounded-full bg-emerald-400 mb-1.5 shadow-sm"></view>
-            <text class="text-[20rpx] font-black text-gray-500">中碳 {{ mediumDays }}天</text>
+            <view
+              class="w-2.5 h-2.5 rounded-full bg-emerald-400 mb-1.5 shadow-sm"
+            ></view>
+            <text class="text-[20rpx] font-black text-gray-500"
+              >中碳 {{ mediumDays }}天</text
+            >
           </view>
           <view class="flex flex-col items-center">
-            <view class="w-2.5 h-2.5 rounded-full bg-blue-400 mb-1.5 shadow-sm"></view>
-            <text class="text-[20rpx] font-black text-gray-500">低碳 {{ lowDays }}天</text>
+            <view
+              class="w-2.5 h-2.5 rounded-full bg-blue-400 mb-1.5 shadow-sm"
+            ></view>
+            <text class="text-[20rpx] font-black text-gray-500"
+              >低碳 {{ lowDays }}天</text
+            >
           </view>
         </view>
+      </view>
+
+      <!-- 操作提示集成 (原底部模块融合于此) -->
+      <view
+        class="mt-5 p-3 bg-blue-50/50 rounded-xl border border-solid border-blue-100 flex items-center space-x-3"
+      >
+        <view
+          class="w-6 h-6 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0"
+        >
+          <text class="text-[18rpx]">💡</text>
+        </view>
+        <text
+          class="text-[20rpx] text-blue-600 font-black leading-tight flex-1"
+        >
+          点击日模板右侧菜单，可灵活调整顺序、复制或删除天数。
+        </text>
       </view>
     </GlassCard>
 
@@ -97,7 +122,9 @@
           <view class="flex-1 min-w-0 px-1">
             <view class="flex items-center justify-between mb-1.5">
               <view class="flex items-center space-x-2">
-                <text class="font-black text-gray-800 text-base">第 {{ index + 1 }} 天</text>
+                <text class="font-black text-gray-800 text-base"
+                  >第 {{ index + 1 }} 天</text
+                >
                 <view
                   v-if="isCarbCycle"
                   :class="[
@@ -110,18 +137,22 @@
                   {{ getPhaseStyles(template).text }}
                 </view>
               </view>
-              <text class="text-[18rpx] text-gray-300 font-black">第 {{ Math.floor(index / 7) + 1 }} 周期</text>
+              <text class="text-[18rpx] text-gray-300 font-black"
+                >第 {{ Math.floor(index / 7) + 1 }} 周期</text
+              >
             </view>
 
             <view class="truncate">
               <text
                 v-if="template.name"
                 class="text-sm text-emerald-600 font-black bg-emerald-50 px-2 py-0.5 rounded border border-solid border-emerald-100"
-              >{{ template.name }}</text>
+                >{{ template.name }}</text
+              >
               <text
                 v-else-if="!template.isConfigured && !isCarbCycle"
                 class="text-sm text-gray-400 font-medium"
-              >未配置</text>
+                >未配置</text
+              >
               <view
                 v-else
                 class="flex items-center space-x-2 text-[20rpx] text-gray-400 font-bold"
@@ -140,7 +171,7 @@
           </view>
 
           <!-- 操作菜单按钮 (⋮) -->
-          <view 
+          <view
             class="w-10 h-10 flex items-center justify-center rounded-xl active:bg-black/5 transition-colors ml-2"
             @tap.stop="$emit('long-press', index)"
           >
@@ -158,23 +189,12 @@
           class="w-full mt-6 flex items-center justify-center p-5 border-[1rpx] border-solid border-emerald-200 bg-emerald-50/20 rounded-2xl active:bg-emerald-50 transition-all shadow-sm"
           @tap="handleAddTemplate"
         >
-          <text class="text-sm font-black text-emerald-600">+ 新增日模板 ({{ templates.length }}/{{ cycleDays }})</text>
+          <text class="text-sm font-black text-emerald-600"
+            >+ 新增日模板 ({{ templates.length }}/{{ cycleDays }})</text
+          >
         </view>
       </view>
     </GlassCard>
-
-    <!-- 3. 提示卡片 -->
-    <view class="bg-blue-50/50 rounded-2xl p-5 border-[1rpx] border-solid border-blue-100 flex items-start space-x-4 shadow-sm">
-      <view class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0">
-        <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-        </svg>
-      </view>
-      <view class="flex-1">
-        <text class="text-sm font-black text-gray-800 block mb-1">提示</text>
-        <text class="text-xs text-gray-500 leading-relaxed font-bold">点击卡片右侧的菜单按钮，可以灵活调整天数顺序、复制或删除天数。</text>
-      </view>
-    </view>
   </view>
 </template>
 
@@ -214,25 +234,67 @@ const emit = defineEmits([
 const cycleDays = computed(() => props.cycleInfo.cycleDays || 0);
 const cycleCount = computed(() => props.cycleInfo.cycleCount || 0);
 const isCarbCycle = computed(() => props.basicInfo.type === "carb-cycle");
-const configuredCount = computed(() => props.templates.filter((t) => t.isConfigured).length);
+const configuredCount = computed(
+  () => props.templates.filter((t) => t.isConfigured).length,
+);
 
 const typeLabel = computed(() => {
   const map: Record<string, string> = {
-    "fat-loss": "减脂", "muscle-gain": "增肌", maintenance: "维持", custom: "常规", "carb-cycle": "碳循环",
+    "fat-loss": "减脂",
+    "muscle-gain": "增肌",
+    maintenance: "维持",
+    custom: "常规",
+    "carb-cycle": "碳循环",
   };
   return map[props.basicInfo.type] || "常规";
 });
 
-const highDays = computed(() => props.templates.filter((t) => t.carbType === "high").length);
-const mediumDays = computed(() => props.templates.filter((t) => t.carbType === "medium").length);
-const lowDays = computed(() => props.templates.filter((t) => t.carbType === "low").length);
+const highDays = computed(
+  () => props.templates.filter((t) => t.carbType === "high").length,
+);
+const mediumDays = computed(
+  () => props.templates.filter((t) => t.carbType === "medium").length,
+);
+const lowDays = computed(
+  () => props.templates.filter((t) => t.carbType === "low").length,
+);
 
 const getPhaseStyles = (template: Template) => {
-  if (!isCarbCycle.value) return { bg: "bg-white", border: "border-gray-100", text: "", bar: "hidden" };
+  if (!isCarbCycle.value)
+    return {
+      bg: "bg-white",
+      border: "border-gray-100",
+      text: "",
+      bar: "hidden",
+    };
   const styles = {
-    high: { text: "高碳", icon: "🔥", bg: "bg-yellow-50/30", border: "border-yellow-100", bar: "bg-yellow-400", labelBg: "bg-yellow-100", labelColor: "text-yellow-700" },
-    medium: { text: "中碳", icon: "⚖️", bg: "bg-emerald-50/30", border: "border-emerald-100", bar: "bg-emerald-400", labelBg: "bg-emerald-100", labelColor: "text-emerald-700" },
-    low: { text: "低碳", icon: "❄️", bg: "bg-blue-50/30", border: "border-blue-100", bar: "bg-blue-400", labelBg: "bg-blue-100", labelColor: "text-blue-700" },
+    high: {
+      text: "高碳",
+      icon: "🔥",
+      bg: "bg-yellow-50/30",
+      border: "border-yellow-100",
+      bar: "bg-yellow-400",
+      labelBg: "bg-yellow-100",
+      labelColor: "text-yellow-700",
+    },
+    medium: {
+      text: "中碳",
+      icon: "⚖️",
+      bg: "bg-emerald-50/30",
+      border: "border-emerald-100",
+      bar: "bg-emerald-400",
+      labelBg: "bg-emerald-100",
+      labelColor: "text-emerald-700",
+    },
+    low: {
+      text: "低碳",
+      icon: "❄️",
+      bg: "bg-blue-50/30",
+      border: "border-blue-100",
+      bar: "bg-blue-400",
+      labelBg: "bg-blue-100",
+      labelColor: "text-blue-700",
+    },
   };
   return styles[template.carbType || "medium"];
 };

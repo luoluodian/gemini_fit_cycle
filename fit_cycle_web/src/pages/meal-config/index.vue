@@ -28,17 +28,17 @@
             </view>
             <view class="bg-blue-50/50 rounded-xl p-2 border border-solid border-blue-100">
               <text class="text-[16rpx] text-blue-600 block mb-0.5 font-black">蛋白</text>
-              <text class="text-base font-black text-blue-700 block">{{ Math.round(totalStats.protein) }}</text>
+              <text class="text-base font-black text-blue-700 block">{{ totalStats.protein.toFixed(1) }}</text>
               <text class="text-[14rpx] text-blue-400 font-bold">g</text>
             </view>
             <view class="bg-yellow-50/50 rounded-xl p-2 border border-solid border-yellow-100">
               <text class="text-[16rpx] text-yellow-600 block mb-0.5 font-black">碳水</text>
-              <text class="text-base font-black text-yellow-700 block">{{ Math.round(totalStats.carbs) }}</text>
+              <text class="text-base font-black text-yellow-700 block">{{ totalStats.carbs.toFixed(1) }}</text>
               <text class="text-[14rpx] text-yellow-400 font-bold">g</text>
             </view>
             <view class="bg-red-50/50 rounded-xl p-2 border border-solid border-red-100">
               <text class="text-[16rpx] text-red-600 block mb-0.5 font-black">脂肪</text>
-              <text class="text-base font-black text-red-700 block">{{ Math.round(totalStats.fat) }}</text>
+              <text class="text-base font-black text-red-700 block">{{ totalStats.fat.toFixed(1) }}</text>
               <text class="text-[14rpx] text-red-400 font-bold">g</text>
             </view>
           </view>
@@ -75,32 +75,17 @@
             </view>
 
             <!-- 食物列表条目 -->
-            <view v-else class="space-y-2">
-              <view 
+            <view v-else class="space-y-1">
+              <FoodItemCard
                 v-for="(food, index) in foods" 
                 :key="index"
-                class="flex items-center justify-between p-3 bg-white rounded-xl border-[1rpx] border-solid border-gray-100 shadow-sm transition-all active:scale-[0.98]"
-              >
-                <view class="flex-1 min-w-0 pr-4">
-                  <text class="block font-black text-gray-800 text-sm truncate">{{ food.name }}</text>
-                  <view class="flex items-center space-x-2 mt-1">
-                    <text class="text-[18rpx] text-gray-400 font-bold uppercase">{{ food.quantity }}{{ food.unit }} · {{ food.calories }}kcal</text>
-                    <view class="flex items-center space-x-1.5 text-[16rpx] text-gray-400 font-black">
-                      <text>🍞 {{ Math.round(food.carbs || 0) }}</text>
-                      <text>🥩 {{ Math.round(food.protein || 0) }}</text>
-                      <text>🥑 {{ Math.round(food.fat || 0) }}</text>
-                    </view>
-                  </view>
-                </view>
-                <view 
-                  @tap="removeFood(index)" 
-                  class="w-8 h-8 flex items-center justify-center bg-red-50 text-red-400 rounded-lg active:bg-red-100 border border-solid border-red-100 transition-colors"
-                >
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                  </svg>
-                </view>
-              </view>
+                :food="food"
+                :quantity="food.quantity"
+                show-edit
+                show-delete
+                @edit="handleEditItem(index)"
+                @delete="removeFood(index)"
+              />
             </view>
           </BaseScrollView>
         </GlassCard>
@@ -131,24 +116,19 @@
     </view>
 
     <!-- Modals -->
-    <FoodSelectionModal
-      :visible="foodModalVisible"
-      :foods="availableFoods"
-      @close="foodModalVisible = false"
-      @select="handleSelectFood"
+    <FoodPicker
+      v-model:visible="foodPickerVisible"
+      :title="mealLabel + ' - 添加食材'"
+      @select="handleFoodPicked"
     />
 
-    <QuantityInputModal
-      :visible="quantityModalVisible"
-      :food-name="selectedFood?.foodName || ''"
-      :food-unit="selectedFood?.baseUnit || ''"
-      :calories="selectedFood?.calories"
-      :protein="selectedFood?.protein"
-      :fat="selectedFood?.fat"
-      :carbs="selectedFood?.carbs"
-      :base-count="selectedFood?.baseCount"
-      @close="quantityModalVisible = false"
-      @confirm="handleConfirmAdd"
+    <FoodDetailModal
+      :visible="editModalVisible"
+      :food="editingFood"
+      :quantity="editingQuantity"
+      mode="edit"
+      @close="closeEditModal"
+      @confirm="handleUpdateItem"
     />
   </view>
 </template>
@@ -160,8 +140,10 @@ import { usePlanStore } from "@/stores/plan";
 import BaseNavBar from "@/components/common/BaseNavBar.vue";
 import BaseScrollView from "@/components/common/BaseScrollView.vue";
 import GlassCard from "@/components/common/GlassCard.vue";
-import FoodSelectionModal from "@/components/common/FoodSelectionModal.vue";
-import QuantityInputModal from "@/components/common/QuantityInputModal.vue";
+import FoodPicker from "@/components/food/FoodPicker.vue";
+import FoodItemCard from "@/components/food/FoodItemCard.vue";
+import FoodDetailModal from "@/components/food/FoodDetailModal.vue";
+import type { FoodItem } from "@/components/food/types";
 
 const planStore = usePlanStore();
 const currentDayIndex = planStore.currentDayIndex;
@@ -177,61 +159,12 @@ const foods = computed(() => {
   return template.meals[currentMealType];
 });
 
-const availableFoods = ref([
-  {
-    foodId: "FOOD_001",
-    foodName: "燕麦粥",
-    calories: 180,
-    baseUnit: "g",
-    protein: 6,
-    fat: 3,
-    carbs: 30,
-    baseCount: 100,
-  },
-  {
-    foodId: "FOOD_002",
-    foodName: "鸡胸肉",
-    calories: 165,
-    baseUnit: "g",
-    protein: 31,
-    fat: 3.6,
-    carbs: 0,
-    baseCount: 100,
-  },
-  {
-    foodId: "FOOD_003",
-    foodName: "西兰花",
-    calories: 34,
-    baseUnit: "g",
-    protein: 2.8,
-    fat: 0.4,
-    carbs: 7,
-    baseCount: 100,
-  },
-  {
-    foodId: "FOOD_004",
-    foodName: "三文鱼",
-    calories: 208,
-    baseUnit: "g",
-    protein: 25,
-    fat: 13,
-    carbs: 0,
-    baseCount: 100,
-  },
-  {
-    foodId: "FOOD_005",
-    foodName: "糙米饭",
-    calories: 111,
-    baseUnit: "g",
-    protein: 2.6,
-    fat: 0.9,
-    carbs: 23,
-    baseCount: 100,
-  },
-]);
-
 const mealLabel = computed(() => {
   const map: any = { breakfast: '早餐', lunch: '午餐', dinner: '晚餐', snacks: '加餐' };
+  // 兼容自定义餐次名
+  if (planStore.draft.templates[currentDayIndex]?.customLabels?.[currentMealType]) {
+    return planStore.draft.templates[currentDayIndex].customLabels[currentMealType];
+  }
   return map[currentMealType] || currentMealType;
 });
 
@@ -244,32 +177,75 @@ const totalStats = computed(() => {
   }), { calories: 0, protein: 0, carbs: 0, fat: 0 });
 });
 
-const foodModalVisible = ref(false);
-const quantityModalVisible = ref(false);
-const selectedFood = ref<any>(null);
+const foodPickerVisible = ref(false);
+const editModalVisible = ref(false);
+const editingFood = ref<any>(null);
+const editingIndex = ref(-1);
+const editingQuantity = ref(100);
 
 const openFoodSelector = () => {
-  foodModalVisible.value = true;
+  foodPickerVisible.value = true;
 };
 
-const handleSelectFood = (food: any) => {
-  selectedFood.value = food;
-  foodModalVisible.value = false;
-  quantityModalVisible.value = true;
-};
-
-const handleConfirmAdd = (quantity: number) => {
-  const ratio = quantity / selectedFood.value.baseCount;
+const handleFoodPicked = (result: { food: FoodItem; quantity: number }) => {
+  const { food, quantity } = result;
+  const ratio = quantity / (food.baseCount || 100);
+  
   foods.value.push({
-    name: selectedFood.value.foodName,
+    ...food,
+    name: food.name,
     quantity,
-    unit: selectedFood.value.baseUnit,
-    calories: Math.round(selectedFood.value.calories * ratio),
-    protein: Math.round(selectedFood.value.protein * ratio * 10) / 10,
-    carbs: Math.round(selectedFood.value.carbs * ratio * 10) / 10,
-    fat: Math.round(selectedFood.value.fat * ratio * 10) / 10
+    unit: food.unit,
+    calories: Math.round(food.calories * ratio),
+    protein: Math.round(food.protein * ratio * 10) / 10,
+    carbs: Math.round(food.carbs * ratio * 10) / 10,
+    fat: Math.round(food.fat * ratio * 10) / 10
   });
-  quantityModalVisible.value = false;
+};
+
+const handleEditItem = (index: number) => {
+  const item = foods.value[index];
+  if (!item) return;
+  
+  editingIndex.value = index;
+  // 为了让弹窗能反推基础营养，我们需要传一个类似原始食材的对象
+  // 这里假设 item 已经包含了原始的热量（每baseCount的热量）
+  // 实际上在 handleFoodPicked 中存入的是计算后的值，所以这里需要小心处理
+  // 这里暂时直接把 item 传进去，FoodDetailModal 会根据 quantity 和 baseCount 自动处理逻辑
+  editingFood.value = { ...item };
+  editingQuantity.value = item.quantity;
+  editModalVisible.value = true;
+};
+
+const closeEditModal = () => {
+  editModalVisible.value = false;
+  editingFood.value = null;
+  editingIndex.value = -1;
+};
+
+const handleUpdateItem = (result: { food: any, quantity: number }) => {
+  const { quantity } = result;
+  const index = editingIndex.value;
+  if (index === -1) return;
+
+  const currentItem = foods.value[index];
+  const oldQuantity = currentItem.quantity || 100;
+  
+  // 基于当前值按比例缩放，避免“滚雪球”误差的最好办法是使用原始基础值，
+  // 但目前数据结构中 calories 等存的是计算后的，所以我们按 (新分量/旧分量) 比例计算
+  const ratio = quantity / oldQuantity;
+  
+  const updatedItem = {
+    ...currentItem,
+    quantity,
+    calories: Math.round(currentItem.calories * ratio),
+    protein: Math.round(currentItem.protein * ratio * 10) / 10,
+    carbs: Math.round(currentItem.carbs * ratio * 10) / 10,
+    fat: Math.round(currentItem.fat * ratio * 10) / 10
+  };
+
+  foods.value[index] = updatedItem;
+  closeEditModal();
 };
 
 const removeFood = (index: number) => {

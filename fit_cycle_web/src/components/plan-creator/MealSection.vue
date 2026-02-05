@@ -42,40 +42,23 @@
       </view>
     </view>
 
-    <!-- 底部：详细食物列表 (保持单条删除，因为它属于细粒度操作) -->
-    <view v-if="foods.length > 0" class="space-y-2 mt-2 pt-2 border-t border-dashed border-gray-200">
-      <view 
+    <!-- 底部：详细食物列表 -->
+    <view v-if="foods.length > 0" class="space-y-1 mt-2 pt-2 border-t border-dashed border-gray-200">
+      <FoodItemCard
         v-for="(food, idx) in foods" 
         :key="idx" 
-        class="flex justify-between items-center py-2 px-2 bg-white rounded-lg border-[1rpx] border-solid border-gray-100 shadow-sm"
-      >
-        <view class="flex-1 min-w-0 mr-3">
-          <text class="text-[22rpx] text-gray-700 truncate block font-black">{{ food.name }}</text>
-          <view class="flex items-center space-x-3 mt-0.5">
-            <text class="text-[14rpx] text-gray-400 font-bold uppercase">{{ food.quantity }}{{ food.unit }} · {{ Math.round(food.calories || 0) }}kcal</text>
-            <view class="flex items-center space-x-2 text-[14rpx] text-gray-400 font-black">
-              <text>碳水 {{ Math.round(food.carbs || 0) }}g</text>
-              <text>蛋白 {{ Math.round(food.protein || 0) }}g</text>
-              <text>脂肪 {{ Math.round(food.fat || 0) }}g</text>
-            </view>
-          </view>
-        </view>
-        
-        <view 
-          class="w-6 h-6 flex items-center justify-center bg-red-50 text-red-400 rounded-md active:bg-red-100 border border-solid border-red-100"
-          @tap.stop="$emit('delete-food', idx)"
-        >
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-          </svg>
-        </view>
-      </view>
+        :food="food"
+        :quantity="food.quantity"
+        show-delete
+        @delete="$emit('delete-food', idx)"
+      />
     </view>
   </view>
 </template>
 
 <script setup lang="ts">
 import { computed } from "vue";
+import FoodItemCard from "../food/FoodItemCard.vue";
 
 interface Food {
   name: string;

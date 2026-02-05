@@ -45,12 +45,16 @@ export class FoodItemsController {
   /**
    * ========================================
    * 🌟 2. 热门食材
-   * GET /food-items/popular
+   * GET /food-items/popular?category=protein&type=system
    * ========================================
    */
   @Get('popular')
-  async popular(@Req() req) {
-    return this.service.getPopular(req.user.userId);
+  async popular(
+    @Req() req,
+    @Query('category') category?: string,
+    @Query('type') type?: string,
+  ) {
+    return this.service.getPopular(req.user.userId, category, type);
   }
 
   /**

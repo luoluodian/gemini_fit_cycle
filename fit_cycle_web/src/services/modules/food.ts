@@ -49,8 +49,11 @@ export async function updateFoodItem(id: number | string, data: Partial<FoodItem
 /**
  * 获取热门食材
  */
-export async function getPopularFoodItems(): Promise<FoodItem[]> {
-  return httpRequest.get("/food-items/popular");
+export async function getPopularFoodItems(category?: string, type?: string): Promise<FoodItem[]> {
+  const params: any = {};
+  if (category) params.category = category;
+  if (type) params.type = type;
+  return httpRequest.get("/food-items/popular", params);
 }
 
 /**

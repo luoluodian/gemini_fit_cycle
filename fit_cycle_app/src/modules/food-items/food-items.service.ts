@@ -239,19 +239,62 @@ export class FoodItemsService {
    * 🌟 获取热门食材
    * 按收藏量排序取前10
    */
-  async getPopular(userId?: number) {
+  async getPopular(userId?: number, category?: string, type?: string) {
+    this.logger.log({
+      level: "info",
+      message: "获取热门食材开始",
+      userId,
+      category,
+      type,
+    });
+
     // 1. 聚合查询收藏量
+    // 使用 getRawAndEntities 以确保 OrderBy 别名在分页和聚合场景下生效
     const queryBuilder = this.foodRepo
       .createQueryBuilder("food")
-      .leftJoin("user_favorite_foods", "fav", "fav.food_id = food.id")
-      .select("food")
+      .leftJoin(UserFavoriteFood, "fav", "fav.foodId = food.id")
+      .select([
+        "food.id",
+        "food.name",
+        "food.type",
+        "food.userId",
+        "food.category",
+        "food.imageUrl",
+        "food.calories",
+        "food.protein",
+        "food.fat",
+        "food.carbs",
+        "food.baseCount",
+        "food.unit",
+        "food.description",
+      ])
       .addSelect("COUNT(fav.id)", "favorite_count")
       .groupBy("food.id")
       .orderBy("favorite_count", "DESC")
       .addOrderBy("food.id", "DESC")
-      .take(10);
+      .limit(10); // 使用 limit 而非 take，因为 groupBy 已经保证了 ID 唯一性
 
-    const items = await queryBuilder.getMany();
+    // 严格过滤
+    if (category) {
+      queryBuilder.andWhere("food.category = :category", { category });
+    }
+    if (type) {
+      queryBuilder.andWhere("food.type = :type", { type });
+    }
+
+    const { entities, raw } = await queryBuilder.getRawAndEntities();
+    let items = entities;
+
+    // 降级策略：如果没有热门数据（例如所有收藏量都为0，或者过滤后为空）
+    // 其实上面的 SQL 在收藏量为0时也会返回数据，但如果我们需要确保有数据填充：
+    if (items.length === 0) {
+      this.logger.log({ level: "info", message: "热门食材为空，执行降级策略" });
+      items = await this.foodRepo.find({
+        where: { type: type as any || FoodType.SYSTEM, category: category as any },
+        order: { id: "DESC" },
+        take: 10,
+      });
+    }
 
     // 2. 增强 isFavorite 状态
     let favoriteIds: Set<number> = new Set();
@@ -263,10 +306,17 @@ export class FoodItemsService {
       favoriteIds = new Set(favorites.map((f) => Number(f.foodId)));
     }
 
-    return items.map((item) => ({
+    const result = items.map((item) => ({
       ...item,
       isFavorite: favoriteIds.has(Number(item.id)),
     }));
+
+    this.logger.log({
+      level: "info",
+      message: "获取热门食材完成",
+      count: result.length,
+    });
+    return result;
   }
 
   /**

@@ -22,8 +22,10 @@ describe('FoodItemsService', () => {
     leftJoinAndSelect: jest.fn().mockReturnThis(),
     select: jest.fn().mockReturnThis(),
     addSelect: jest.fn().mockReturnThis(),
+    limit: jest.fn().mockReturnThis(),
     groupBy: jest.fn().mockReturnThis(),
     getMany: jest.fn().mockResolvedValue([]),
+    getRawAndEntities: jest.fn().mockResolvedValue({ entities: [], raw: [] }),
     getManyAndCount: jest.fn().mockResolvedValue([[], 0]),
   };
 
@@ -138,7 +140,7 @@ describe('FoodItemsService', () => {
   describe('getPopular', () => {
     it('should return top 10 items sorted by favorite count', async () => {
       const mockItems = [{ id: 1, name: 'Apple' }];
-      mockQueryBuilder.getMany.mockResolvedValue(mockItems);
+      mockQueryBuilder.getRawAndEntities.mockResolvedValue({ entities: mockItems, raw: [] });
       mockFavoriteRepo.find.mockResolvedValue([]);
 
       const result = await service.getPopular(1);

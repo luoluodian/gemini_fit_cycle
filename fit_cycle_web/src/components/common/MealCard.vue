@@ -6,12 +6,13 @@
     </view>
 
     <view class="space-y-2 mb-4">
-      <FoodItem
+      <FoodItemCard
         v-for="(food, index) in foods"
         :key="index"
         :food="food"
-        @edit="handleEditFood(index)"
-        @remove="handleRemoveFood(index)"
+        :quantity="food.quantity"
+        show-delete
+        @delete="handleRemoveFood(index)"
       />
       <view v-if="foods.length === 0" class="text-center text-gray-500 py-8">
         <svg
@@ -55,7 +56,7 @@
 </template>
 
 <script setup lang="ts">
-import FoodItem from "./FoodItem.vue";
+import FoodItemCard from "../food/FoodItemCard.vue";
 import GlassCard from "./GlassCard.vue";
 
 interface Food {
