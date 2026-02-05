@@ -5,53 +5,75 @@
       :visible="visible"
       position="bottom"
       :title="title"
-      content-class="bg-white rounded-t-3xl min-h-[75vh] flex flex-col"
-      body-class="flex flex-col overflow-hidden flex-1"
+      content-class="bg-white rounded-t-3xl h-[65vh] flex flex-col"
+      body-class="flex flex-col flex-1 min-h-0 overflow-hidden"
       @close="handleClose"
       @update:visible="(val) => !val && handleClose()"
     >
-      <!-- 搜索栏 -->
-      <view class="px-4 pt-2 mb-4 flex-shrink-0">
-        <SearchBar
-          v-model="searchText"
-          placeholder="输入食材名称搜索..."
-          @input="handleSearch"
-        />
-      </view>
-
-      <!-- 分类筛选 -->
-      <view class="mb-4 flex-shrink-0">
-        <FoodCategoryBar v-model="selectedCategory" @update:model-value="handleCategoryChange" />
-      </view>
-
-      <!-- 食物列表 -->
-      <view class="flex-1 flex flex-col min-h-0 relative overflow-hidden">
-        <view v-if="loading && foodsList.length === 0" class="absolute inset-0 z-[5] flex items-center justify-center bg-white/80">
-          <view class="flex flex-col items-center">
-            <view class="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mb-2"></view>
-            <text class="text-xs text-gray-400 font-bold">加载中...</text>
-          </view>
+      <!-- 1. 固定头部：搜索与分类 -->
+      <view class="flex-shrink-0 z-10 animate-fade-in-up px-4 pt-4">
+        <!-- 搜索栏 -->
+        <view class="mb-3">
+          <SearchBar
+            v-model="searchText"
+            placeholder="搜索食材名称..."
+            @input="handleSearch"
+          />
         </view>
 
-                  <BaseScrollView 
-                    flex
-                    :is-empty="!loading && foodsList.length === 0"
-                    :finished="!hasMore"
-                    empty-text="没有找到匹配的食材"
-                    scroll-view-class="px-4"
-                    content-class="space-y-1 pb-10"
-                    @load-more="handleLoadMore"
-                  >
-                                <FoodItemCard
-                                  v-for="food in foodsList"
-                                  :key="food.id"
-                                  :food="food"
-                                  @click="handleOpenDetail(food)"
-                                />
-                              </BaseScrollView>      </view>
+        <!-- 分类筛选 -->
+        <view class="h-[100rpx]">
+          <FoodCategoryBar
+            v-model="selectedCategory"
+            @update:model-value="handleCategoryChange"
+          />
+        </view>
+      </view>
+
+      <!-- 2. 食物列表卡片 (直接使用食材库模块结构) -->
+      <view class="px-4 pb-6 flex-1 min-h-0">
+        <GlassCard
+          card-class="py-3 px-4 flex flex-col h-full"
+          shadow="lg"
+          class="animate-fade-in-up delay-200 h-full"
+        >
+          <view class="flex items-center justify-between mb-3 flex-shrink-0">
+            <text class="text-sm font-black text-gray-700">食物列表</text>
+            <text class="text-xs text-gray-400 font-bold"
+              >共 {{ totalCount }} 种</text
+            >
+          </view>
+
+          <BaseScrollView
+            height="550rpx"
+            :enhanced="true"
+            :is-empty="!loading && foodsList.length === 0"
+            :finished="!loading && foodsList.length > 0"
+            content-class="pr-2 space-y-2"
+            @load-more="handleLoadMore"
+          >
+            <view
+              v-if="loading && foodsList.length === 0"
+              class="py-10 text-center"
+            >
+              <text class="text-sm text-gray-400 font-bold"
+                >正在获取食材数据...</text
+              >
+            </view>
+            <template v-else>
+              <FoodItemCard
+                v-for="item in foodsList"
+                :key="item.id"
+                :food="item"
+                @click="handleOpenDetail"
+              />
+            </template>
+          </BaseScrollView>
+        </GlassCard>
+      </view>
     </BaseModal>
 
-    <!-- 2. 食物详情弹窗 (恢复为二级嵌套弹窗) -->
+    <!-- 2. 食物详情弹窗 (二级嵌套弹窗) -->
     <FoodDetailModal
       :visible="!!currentFood"
       :food="currentFood"
@@ -67,6 +89,7 @@ import { ref, watch } from "vue";
 import BaseModal from "@/components/common/BaseModal.vue";
 import BaseScrollView from "@/components/common/BaseScrollView.vue";
 import SearchBar from "@/components/common/SearchBar.vue";
+import GlassCard from "@/components/common/GlassCard.vue";
 import FoodCategoryBar from "./FoodCategoryBar.vue";
 import FoodItemCard from "./FoodItemCard.vue";
 import FoodDetailModal from "./FoodDetailModal.vue";
@@ -92,6 +115,7 @@ const emit = defineEmits<Emits>();
 const searchText = ref("");
 const selectedCategory = ref("all");
 const foodsList = ref<FoodItem[]>([]);
+const totalCount = ref(0);
 const loading = ref(false);
 
 const currentFood = ref<FoodItem | null>(null);
@@ -112,20 +136,27 @@ const fetchFoods = async (isLoadMore = false) => {
   if (loading.value || (!hasMore.value && isLoadMore)) return;
   const currentRequestId = ++lastRequestId;
   loading.value = true;
-  
+
   try {
     const params: any = {
       q: searchText.value,
       page: page.value,
       pageSize: 20,
     };
-    if (selectedCategory.value !== "all") params.category = selectedCategory.value;
+    if (selectedCategory.value !== "all")
+      params.category = selectedCategory.value;
 
     const res: any = await searchFoodItems(params);
     if (currentRequestId !== lastRequestId) return;
 
     const items = res.items || (Array.isArray(res) ? res : []);
-    const mappedItems = items.map((item: any) => ({ ...item, baseCount: item.baseCount || 100 }));
+    totalCount.value =
+      res.total ?? (isLoadMore ? totalCount.value : items.length);
+
+    const mappedItems = items.map((item: any) => ({
+      ...item,
+      baseCount: item.baseCount || 100,
+    }));
 
     if (isLoadMore) {
       foodsList.value = [...foodsList.value, ...mappedItems];
@@ -142,9 +173,11 @@ const fetchFoods = async (isLoadMore = false) => {
   }
 };
 
-const handleSearch = (e: any) => {
-  const val = e.detail.value;
-  if (!val) { resetList(); return; }
+const handleSearch = (val: string) => {
+  if (!val) {
+    resetList();
+    return;
+  }
   debouncedSearch();
 };
 
@@ -165,13 +198,39 @@ const handleOpenDetail = (food: FoodItem) => {
   currentFood.value = food;
 };
 
-const confirmSelection = (result: { food: FoodItem, quantity: number }) => {
+const confirmSelection = (result: { food: FoodItem; quantity: number }) => {
   emit("select", result);
   currentFood.value = null;
   handleClose();
 };
 
-watch(() => props.visible, (newVal) => {
-  if (newVal && foodsList.value.length === 0) resetList();
-});
+watch(
+  () => props.visible,
+  (newVal) => {
+    if (newVal && foodsList.value.length === 0) resetList();
+  },
+);
 </script>
+
+<style scoped lang="scss">
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.5s ease-out forwards;
+}
+
+.delay-200 {
+  animation-delay: 0.2s;
+  opacity: 0;
+  animation-fill-mode: forwards;
+}
+</style>

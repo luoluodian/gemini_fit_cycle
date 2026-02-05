@@ -1,74 +1,57 @@
 <template>
-  <view v-if="visible" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex flex-col justify-end sm:justify-center p-0 sm:p-4" @click="handleBackdropClick">
-    <view 
-      class="bg-white rounded-t-lg sm:rounded-lg w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]" 
-      @click.stop
-    >
-      <!-- Header -->
-      <view class="px-4 py-4 border-b border-gray-100 flex items-center justify-between">
-        <text class="text-lg font-bold text-gray-800">{{ title }}</text>
-        <view @click="handleClose" class="p-1">
-          <image 
-            src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGZpbGw9Im5vbmUiIHZpZXdCb3g9IjAgMCAyNCAyNCIgc3Ryb2tlPSIjOTY5RkExIj48cGF0aSBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS13aWR0aD0iMiIgZD0iTTYgMThMMTggNk02IDZsMTIgMTIiLz48L3N2Zz4="
-            class="w-6 h-6 opacity-60"
-          />
-        </view>
+  <BaseModal
+    :visible="visible"
+    position="bottom"
+    :title="title"
+    content-class="bg-white rounded-t-3xl min-h-[85vh] flex flex-col"
+    body-class="flex flex-col overflow-hidden flex-1"
+    @close="handleClose"
+    @update:visible="(val) => !val && handleClose()"
+  >
+    <!-- 1. Search & Filter Area (Fixed) -->
+    <view class="px-4 pt-2 space-y-4 flex-shrink-0">
+      <!-- Search Bar -->
+      <SearchBar
+        v-model="searchQuery"
+        placeholder="搜索食材..."
+        @input="handleInput"
+      />
+
+      <!-- Horizontal Categories -->
+      <view class="mb-2">
+        <FoodCategoryBar v-model="selectedCategory" @update:model-value="handleCategoryChange" />
       </view>
-
-      <!-- Search & Filter Area -->
-      <view class="p-4 space-y-4">
-        <!-- Search Bar -->
-        <SearchBar
-          v-model="searchQuery"
-          placeholder="搜索食材..."
-          @input="handleInput"
-        />
-
-        <!-- Horizontal Categories -->
-        <view class="mb-2">
-          <FoodCategoryBar v-model="selectedCategory" @update:model-value="handleCategoryChange" />
-        </view>
-      </view>
-
-      <!-- Result List -->
-      <scroll-view 
-        scroll-y 
-        class="flex-1 px-4 pb-6"
-        @scrolltolower="handleLoadMore"
-      >
-        <view v-if="loading && items.length === 0" class="py-10 text-center">
-          <text class="text-sm text-gray-400">正在加载中...</text>
-        </view>
-        
-        <view v-else-if="items.length === 0" class="py-10 text-center">
-          <text class="text-sm text-gray-400">未找到相关食材</text>
-        </view>
-
-        <view v-else class="space-y-1">
-          <FoodItemCard 
-            v-for="item in items" 
-            :key="item.id"
-            :food="item"
-            @click="handleSelect(item)"
-          />
-          
-          <view v-if="loading && items.length > 0" class="py-4 text-center">
-            <text class="text-xs text-gray-400">正在加载更多...</text>
-          </view>
-          <view v-else-if="!hasNext && items.length > 0" class="py-4 text-center">
-            <text class="text-xs text-gray-300">没有更多了</text>
-          </view>
-        </view>
-      </scroll-view>
     </view>
-  </view>
+
+    <!-- 2. Result List (Scrollable) -->
+    <view class="flex-1 min-h-0 flex flex-col relative mt-2">
+      <BaseScrollView 
+        flex
+        :is-empty="!loading && items.length === 0"
+        :finished="!hasNext"
+        empty-text="未找到相关食材"
+        scroll-view-class="px-4 pb-6 h-full"
+        content-class="space-y-1"
+        @load-more="handleLoadMore"
+      >
+        <FoodItemCard 
+          v-for="item in items" 
+          :key="item.id"
+          :food="item"
+          @click="handleSelect(item)"
+        />
+      </BaseScrollView>
+    </view>
+  </BaseModal>
 </template>
 
 <script setup lang="ts">
 import { ref, watch } from 'vue';
+import BaseModal from '../common/BaseModal.vue';
 import SearchBar from '../common/SearchBar.vue';
 import FoodCategoryBar from './FoodCategoryBar.vue';
 import FoodItemCard from './FoodItemCard.vue';
+import BaseScrollView from '../common/BaseScrollView.vue';
 import { FoodCategory, searchFoodItems } from '../../services/modules/food';
 import type { FoodItem } from '../../services/modules/food';
 import { debounce } from 'lodash-es';
@@ -153,12 +136,6 @@ const handleSelect = (food: FoodItem) => {
 
 const handleClose = () => {
   emit('close');
-};
-
-const handleBackdropClick = (e: any) => {
-  if (e.target === e.currentTarget) {
-    handleClose();
-  }
 };
 
 // 监听可见性

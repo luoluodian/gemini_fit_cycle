@@ -1,27 +1,24 @@
 <template>
-  <view v-if="plan" class="plan-detail-page h-screen flex flex-col overflow-hidden">
-    <!-- 1. Header -->
-    <BaseNavBar 
-      :title="plan.name" 
-      :subtitle="typeLabel + '计划 · 共 ' + totalDays + ' 天'" 
-      :show-back="true"
-    >
-      <template #right>
-        <view 
-          @tap="handleShowOptions" 
-          class="w-10 h-10 flex items-center justify-center rounded-xl active:bg-black/5 transition-colors"
-        >
-          <view class="flex flex-col space-y-0.5 items-center">
-            <view class="w-1 h-1 rounded-full bg-gray-400"></view>
-            <view class="w-1 h-1 rounded-full bg-gray-400"></view>
-            <view class="w-1 h-1 rounded-full bg-gray-400"></view>
-          </view>
+  <PageLayout
+    v-if="plan"
+    :title="plan.name"
+    :subtitle="typeLabel + '计划 · 共 ' + totalDays + ' 天'"
+  >
+    <template #nav-right>
+      <view
+        @tap="handleShowOptions"
+        class="w-10 h-10 flex items-center justify-center rounded-xl active:bg-black/5 transition-colors"
+      >
+        <view class="flex flex-col space-y-0.5 items-center">
+          <view class="w-1 h-1 rounded-full bg-gray-400"></view>
+          <view class="w-1 h-1 rounded-full bg-gray-400"></view>
+          <view class="w-1 h-1 rounded-full bg-gray-400"></view>
         </view>
-      </template>
-    </BaseNavBar>
+      </view>
+    </template>
 
     <!-- 2. Main Content -->
-    <BaseScrollView :flex="true" scroll-view-class="py-6" content-class="px-4 space-y-6">
+    <view class="space-y-6">
       <!-- 2.1 进度概览卡片 -->
       <view class="animate-fade-in-up">
         <GlassCard
@@ -38,27 +35,43 @@
                 statusStyles.text,
               ]"
             >
-              <view :class="['w-1.5 h-1.5 rounded-full mr-1.5', statusStyles.dot]"></view>
+              <view
+                :class="['w-1.5 h-1.5 rounded-full mr-1.5', statusStyles.dot]"
+              ></view>
               {{ statusStyles.label }}
             </view>
-            <text class="text-2xl font-black text-emerald-600">{{ progressPercent }}%</text>
+            <text class="text-2xl font-black text-emerald-600"
+              >{{ progressPercent }}%</text
+            >
           </view>
 
           <view class="flex items-end justify-between mb-5">
             <view>
               <view class="flex items-baseline">
-                <text class="text-5xl font-black text-gray-800">{{ plan.completedDays || 0 }}</text>
-                <text class="text-xl text-gray-300 font-bold ml-1">/{{ totalDays }}天</text>
+                <text class="text-5xl font-black text-gray-800">{{
+                  plan.completedDays || 0
+                }}</text>
+                <text class="text-xl text-gray-300 font-bold ml-1"
+                  >/{{ totalDays }}天</text
+                >
               </view>
-              <text class="text-xs font-black text-gray-400 mt-1">已完成天数</text>
+              <text class="text-xs font-black text-gray-400 mt-1"
+                >已完成天数</text
+              >
             </view>
             <view class="text-right pb-1">
-              <text class="text-sm font-black text-gray-600 block">{{ typeLabel }}计划</text>
-              <text class="text-[18rpx] text-gray-400 font-bold mt-0.5 block">{{ plan.cycleDays }}天 × {{ plan.cycleCount }}周期</text>
+              <text class="text-sm font-black text-gray-600 block"
+                >{{ typeLabel }}计划</text
+              >
+              <text class="text-[18rpx] text-gray-400 font-bold mt-0.5 block"
+                >{{ plan.cycleDays }}天 × {{ plan.cycleCount }}周期</text
+              >
             </view>
           </view>
 
-          <view class="w-full bg-gray-50 rounded-full h-2.5 mb-5 overflow-hidden">
+          <view
+            class="w-full bg-gray-50 rounded-full h-2.5 mb-5 overflow-hidden"
+          >
             <view
               class="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-full transition-all duration-1000"
               :style="{ width: progressPercent + '%' }"
@@ -66,37 +79,68 @@
           </view>
 
           <!-- 查看今日快捷按钮 -->
-          <view 
+          <view
             v-if="plan.status === 'active'"
             class="mb-5 px-4 py-3 bg-emerald-600 rounded-2xl flex items-center justify-between active:opacity-80 transition-all shadow-md shadow-emerald-100"
             @tap="handleViewToday"
           >
             <view class="flex items-center">
-              <view class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center mr-3">
+              <view
+                class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center mr-3"
+              >
                 <text class="text-white text-sm">📅</text>
               </view>
               <view>
-                <text class="text-white text-sm font-black block">查看今日任务</text>
-                <text class="text-white/60 text-[18rpx] font-bold">点击进入第 {{ plan.completedDays + 1 }} 天配置</text>
+                <text class="text-white text-sm font-black block"
+                  >查看今日任务</text
+                >
+                <text class="text-white/60 text-[18rpx] font-bold"
+                  >点击进入第 {{ plan.completedDays + 1 }} 天配置</text
+                >
               </view>
             </view>
-            <svg class="w-5 h-5 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            <svg
+              class="w-5 h-5 text-white/50"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 5l7 7-7 7"
+              ></path>
             </svg>
           </view>
 
           <!-- 计划日程 (周期分组) -->
-          <view class="bg-gray-50/80 rounded-2xl p-4 border border-solid border-gray-100">
+          <view
+            class="bg-gray-50/80 rounded-2xl p-4 border border-solid border-gray-100"
+          >
             <view class="flex items-center justify-between mb-4">
               <text class="text-sm font-black text-gray-700">计划日程</text>
-              <text class="text-[18rpx] font-black text-emerald-600">{{ remainingDaysText }}</text>
+              <text class="text-[18rpx] font-black text-emerald-600">{{
+                remainingDaysText
+              }}</text>
             </view>
 
             <view class="space-y-4 max-h-[400rpx] overflow-y-auto pr-1">
-              <view v-for="c in plan.cycleCount" :key="c" class="bg-white rounded-xl p-3 border border-solid border-gray-100 shadow-sm">
+              <view
+                v-for="c in plan.cycleCount"
+                :key="c"
+                class="bg-white rounded-xl p-3 border border-solid border-gray-100 shadow-sm"
+              >
                 <view class="flex items-center justify-between mb-2.5">
-                  <text class="text-xs font-black text-gray-500">第 {{ c }} 周期</text>
-                  <text :class="['text-[16rpx] font-black px-2 py-0.5 rounded', getCycleStatus(c).class]">
+                  <text class="text-xs font-black text-gray-500"
+                    >第 {{ c }} 周期</text
+                  >
+                  <text
+                    :class="[
+                      'text-[16rpx] font-black px-2 py-0.5 rounded',
+                      getCycleStatus(c).class,
+                    ]"
+                  >
                     {{ getCycleStatus(c).label }}
                   </text>
                 </view>
@@ -106,15 +150,18 @@
                     :key="d"
                     :class="[
                       'aspect-square rounded-lg flex items-center justify-center text-xs font-black relative transition-all active:scale-95',
-                      getDayStyles(c, d).class
+                      getDayStyles(c, d).class,
                     ]"
                     @tap="handleViewDay(c, d)"
                   >
                     {{ (c - 1) * plan.cycleDays + d }}
                     <!-- 碳循环小点 -->
-                    <view 
+                    <view
                       v-if="getDayPhaseColor(d)"
-                      :class="['absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full border border-solid border-white', getDayPhaseColor(d)]"
+                      :class="[
+                        'absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full border border-solid border-white',
+                        getDayPhaseColor(d),
+                      ]"
                     ></view>
                   </view>
                 </view>
@@ -122,17 +169,33 @@
             </view>
 
             <!-- 图例 -->
-            <view class="mt-4 pt-3 border-t border-solid border-gray-100 flex items-center justify-center space-x-4 text-[16rpx] font-black text-gray-400">
-              <view class="flex items-center"><view class="w-2 h-2 rounded bg-emerald-500 mr-1"></view>已完成</view>
-              <view class="flex items-center"><view class="w-2 h-2 rounded bg-white border border-solid border-emerald-500 mr-1"></view>今天</view>
-              <view class="flex items-center"><view class="w-2 h-2 rounded bg-gray-200 mr-1"></view>未开始</view>
+            <view
+              class="mt-4 pt-3 border-t border-solid border-gray-100 flex items-center justify-center space-x-4 text-[16rpx] font-black text-gray-400"
+            >
+              <view class="flex items-center"
+                ><view class="w-2 h-2 rounded bg-emerald-500 mr-1"></view
+                >已完成</view
+              >
+              <view class="flex items-center"
+                ><view
+                  class="w-2 h-2 rounded bg-white border border-solid border-emerald-500 mr-1"
+                ></view
+                >今天</view
+              >
+              <view class="flex items-center"
+                ><view class="w-2 h-2 rounded bg-gray-200 mr-1"></view
+                >未开始</view
+              >
             </view>
           </view>
         </GlassCard>
       </view>
 
       <!-- 2.2 碳循环配置 (可选) -->
-      <view v-if="plan.type === 'carb-cycle' && plan.carbCycleConfig" class="animate-fade-in-up delay-100 pb-10">
+      <view
+        v-if="plan.type === 'carb-cycle' && plan.carbCycleConfig"
+        class="animate-fade-in-up delay-100"
+      >
         <GlassCard
           background="#ffffff"
           card-class="p-5 border-[1rpx] border-solid border-gray-200 shadow-lg"
@@ -147,72 +210,124 @@
             <text class="text-[18rpx] text-gray-400 font-bold">体重与配比</text>
           </view>
 
-          <view class="bg-blue-50/30 rounded-2xl p-4 border border-solid border-blue-100 mb-4 text-center">
-            <text class="text-xs font-black text-blue-400 block mb-1">当前体重</text>
+          <view
+            class="bg-blue-50/30 rounded-2xl p-4 border border-solid border-blue-100 mb-4 text-center"
+          >
+            <text class="text-xs font-black text-blue-400 block mb-1"
+              >当前体重</text
+            >
             <view class="flex items-baseline justify-center">
-              <text class="text-3xl font-black text-blue-700">{{ plan.carbCycleConfig.weight }}</text>
+              <text class="text-3xl font-black text-blue-700">{{
+                plan.carbCycleConfig.weight
+              }}</text>
               <text class="text-sm font-black text-blue-400 ml-1">kg</text>
             </view>
           </view>
 
           <view class="grid grid-cols-3 gap-3 mb-6">
-            <view v-for="(val, key) in plan.carbCycleConfig.baseRatios" :key="key" class="text-center p-2.5 bg-gray-50 rounded-xl border border-solid border-gray-100">
-              <text class="text-[16rpx] text-gray-400 font-black block mb-1">{{ getRatioLabel(key) }}</text>
-              <text class="text-sm font-black text-gray-700">{{ val }}<text class="text-[14rpx] ml-0.5 text-gray-400">g/kg</text></text>
+            <view
+              v-for="(val, key) in plan.carbCycleConfig.baseRatios"
+              :key="key"
+              class="text-center p-2.5 bg-gray-50 rounded-xl border border-solid border-gray-100"
+            >
+              <text class="text-[16rpx] text-gray-400 font-black block mb-1">{{
+                getRatioLabel(key)
+              }}</text>
+              <text class="text-sm font-black text-gray-700"
+                >{{ val
+                }}<text class="text-[14rpx] ml-0.5 text-gray-400"
+                  >g/kg</text
+                ></text
+              >
             </view>
           </view>
 
           <!-- 阶段列表 -->
           <view class="space-y-3">
-            <view v-for="(config, phase) in plan.carbCycleConfig.phases" :key="phase" :class="['p-4 rounded-2xl border border-solid shadow-sm', getPhaseStyles(phase).bg, getPhaseStyles(phase).border]">
+            <view
+              v-for="(config, phase) in plan.carbCycleConfig.phases"
+              :key="phase"
+              :class="[
+                'p-4 rounded-2xl border border-solid shadow-sm',
+                getPhaseStyles(phase).bg,
+                getPhaseStyles(phase).border,
+              ]"
+            >
               <view class="flex items-center justify-between mb-3">
                 <view class="flex items-center">
-                  <view :class="['w-8 h-8 rounded-lg flex items-center justify-center mr-3 shadow-sm', getPhaseStyles(phase).iconBg]">
-                    <text class="text-lg">{{ getPhaseStyles(phase).icon }}</text>
+                  <view
+                    :class="[
+                      'w-8 h-8 rounded-lg flex items-center justify-center mr-3 shadow-sm',
+                      getPhaseStyles(phase).iconBg,
+                    ]"
+                  >
+                    <text class="text-lg">{{
+                      getPhaseStyles(phase).icon
+                    }}</text>
                   </view>
                   <view>
-                    <text class="text-sm font-black text-gray-800">{{ getPhaseStyles(phase).name }}</text>
-                    <text :class="['text-[16rpx] font-bold block', getPhaseStyles(phase).text]">{{ getPhaseStyles(phase).desc }}</text>
+                    <text class="text-sm font-black text-gray-800">{{
+                      getPhaseStyles(phase).name
+                    }}</text>
+                    <text
+                      :class="[
+                        'text-[16rpx] font-bold block',
+                        getPhaseStyles(phase).text,
+                      ]"
+                      >{{ getPhaseStyles(phase).desc }}</text
+                    >
                   </view>
                 </view>
-                <text class="text-xs font-black text-gray-500">{{ config.days }} 天/周期</text>
+                <text class="text-xs font-black text-gray-500"
+                  >{{ config.days }} 天/周期</text
+                >
               </view>
-              <view class="bg-white/60 rounded-xl p-2.5 grid grid-cols-3 gap-2 text-center">
+              <view
+                class="bg-white/60 rounded-xl p-2.5 grid grid-cols-3 gap-2 text-center"
+              >
                 <view>
-                  <text class="text-[16rpx] text-gray-400 font-black block">蛋白质</text>
-                  <text class="text-xs font-black text-blue-600">{{ phaseDetailResults?.[phase]?.protein }}g</text>
+                  <text class="text-[16rpx] text-gray-400 font-black block"
+                    >蛋白质</text
+                  >
+                  <text class="text-xs font-black text-blue-600"
+                    >{{ phaseDetailResults?.[phase]?.protein }}g</text
+                  >
                 </view>
                 <view>
-                  <text class="text-[16rpx] text-gray-400 font-black block">碳水</text>
-                  <text class="text-xs font-black text-emerald-600">{{ phaseDetailResults?.[phase]?.carbs }}g</text>
+                  <text class="text-[16rpx] text-gray-400 font-black block"
+                    >碳水</text
+                  >
+                  <text class="text-xs font-black text-emerald-600"
+                    >{{ phaseDetailResults?.[phase]?.carbs }}g</text
+                  >
                 </view>
                 <view>
-                  <text class="text-[16rpx] text-gray-400 font-black block">脂肪</text>
-                  <text class="text-xs font-black text-red-600">{{ phaseDetailResults?.[phase]?.fat }}g</text>
+                  <text class="text-[16rpx] text-gray-400 font-black block"
+                    >脂肪</text
+                  >
+                  <text class="text-xs font-black text-red-600"
+                    >{{ phaseDetailResults?.[phase]?.fat }}g</text
+                  >
                 </view>
               </view>
             </view>
           </view>
         </GlassCard>
       </view>
-    </BaseScrollView>
-
-    <!-- 3. Actions Footer (仅在非活跃计划显示激活按钮等) -->
-    <view 
-      v-if="plan.status !== 'active'"
-      class="bg-white border-t border-gray-200 px-4 pt-3 z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] flex-shrink-0"
-      style="padding-bottom: env(safe-area-inset-bottom);"
-    >
-      <BaseButton class="w-full mb-3" type="primary" @click="handleActivate">激活此计划</BaseButton>
     </view>
-  </view>
+
+    <template #footer v-if="plan.status !== 'active'">
+      <BaseButton class="w-full" type="primary" @click="handleActivate"
+        >激活此计划</BaseButton
+      >
+    </template>
+  </PageLayout>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
 import Taro, { useRouter } from "@tarojs/taro";
-import BaseNavBar from "@/components/common/BaseNavBar.vue";
-import BaseScrollView from "@/components/common/BaseScrollView.vue";
+import PageLayout from "@/components/common/PageLayout.vue";
 import GlassCard from "@/components/common/GlassCard.vue";
 import BaseButton from "@/components/common/BaseButton.vue";
 import { planService } from "@/services";
@@ -241,7 +356,9 @@ const fetchDetail = async () => {
   }
 };
 
-const totalDays = computed(() => (plan.value?.cycleDays || 0) * (plan.value?.cycleCount || 0));
+const totalDays = computed(
+  () => (plan.value?.cycleDays || 0) * (plan.value?.cycleCount || 0),
+);
 const progressPercent = computed(() => {
   if (!totalDays.value) return 0;
   return Math.round(((plan.value?.completedDays || 0) / totalDays.value) * 100);
@@ -254,24 +371,51 @@ const remainingDaysText = computed(() => {
 
 const statusStyles = computed(() => {
   const map: any = {
-    active: { label: "进行中", bg: "bg-emerald-50", text: "text-emerald-700", dot: "bg-emerald-500" },
-    paused: { label: "已暂停", bg: "bg-yellow-50", text: "text-yellow-700", dot: "bg-yellow-500" },
-    completed: { label: "已完成", bg: "bg-gray-100", text: "text-gray-500", dot: "bg-gray-400" },
-    draft: { label: "草稿", bg: "bg-blue-50", text: "text-blue-700", dot: "bg-blue-500" },
+    active: {
+      label: "进行中",
+      bg: "bg-emerald-50",
+      text: "text-emerald-700",
+      dot: "bg-emerald-500",
+    },
+    paused: {
+      label: "已暂停",
+      bg: "bg-yellow-50",
+      text: "text-yellow-700",
+      dot: "bg-yellow-500",
+    },
+    completed: {
+      label: "已完成",
+      bg: "bg-gray-100",
+      text: "text-gray-500",
+      dot: "bg-gray-400",
+    },
+    draft: {
+      label: "草稿",
+      bg: "bg-blue-50",
+      text: "text-blue-700",
+      dot: "bg-blue-500",
+    },
   };
   return map[plan.value?.status] || map.draft;
 });
 
 const typeLabel = computed(() => {
-  const map: any = { "carb-cycle": "碳循环", custom: "常规", "fat-loss": "减脂", "muscle-gain": "增肌" };
+  const map: any = {
+    "carb-cycle": "碳循环",
+    custom: "常规",
+    "fat-loss": "减脂",
+    "muscle-gain": "增肌",
+  };
   return map[plan.value?.type] || "常规";
 });
 
 const getCycleStatus = (c: number) => {
   const completed = plan.value?.completedDays || 0;
   const cycleDays = plan.value?.cycleDays || 0;
-  if (completed >= c * cycleDays) return { label: "已完成", class: "bg-emerald-100 text-emerald-700" };
-  if (completed >= (c - 1) * cycleDays) return { label: "进行中", class: "bg-blue-100 text-blue-700" };
+  if (completed >= c * cycleDays)
+    return { label: "已完成", class: "bg-emerald-100 text-emerald-700" };
+  if (completed >= (c - 1) * cycleDays)
+    return { label: "进行中", class: "bg-blue-100 text-blue-700" };
   return { label: "待开始", class: "bg-gray-100 text-gray-400" };
 };
 
@@ -279,19 +423,28 @@ const getDayStyles = (c: number, d: number) => {
   const currentDay = (c - 1) * (plan.value?.cycleDays || 0) + d;
   const completed = plan.value?.completedDays || 0;
   if (currentDay <= completed) return { class: "bg-emerald-500 text-white" };
-  if (currentDay === completed + 1 && plan.value?.status === 'active') {
-    return { class: "bg-white text-emerald-600 border-[2rpx] border-solid border-emerald-500 shadow-[0_0_10rpx_rgba(16,185,129,0.2)]" };
+  if (currentDay === completed + 1 && plan.value?.status === "active") {
+    return {
+      class:
+        "bg-white text-emerald-600 border-[2rpx] border-solid border-emerald-500 shadow-[0_0_10rpx_rgba(16,185,129,0.2)]",
+    };
   }
   return { class: "bg-gray-100 text-gray-400" };
 };
 
 const getDayPhaseColor = (d: number) => {
-  if (plan.value?.type !== 'carb-cycle' || !plan.value?.planDays) return null;
+  if (plan.value?.type !== "carb-cycle" || !plan.value?.planDays) return null;
   // 查找对应天模板的类型
   const dayInCycle = d; // 1-7
-  const template = plan.value.planDays.find((pd: any) => pd.dayNumber === dayInCycle);
+  const template = plan.value.planDays.find(
+    (pd: any) => pd.dayNumber === dayInCycle,
+  );
   if (!template) return null;
-  const colors: any = { high: 'bg-yellow-400', medium: 'bg-emerald-400', low: 'bg-blue-400' };
+  const colors: any = {
+    high: "bg-yellow-400",
+    medium: "bg-emerald-400",
+    low: "bg-blue-400",
+  };
   return colors[template.carbType];
 };
 
@@ -302,39 +455,74 @@ const getRatioLabel = (key: string) => {
 
 const getPhaseStyles = (phase: string) => {
   const map: any = {
-    high: { name: "高碳日", desc: "增加碳水摄入", icon: "🔥", bg: "bg-yellow-50/50", border: "border-yellow-100", iconBg: "bg-yellow-100", text: "text-yellow-600" },
-    medium: { name: "中碳日", desc: "基准比例配置", icon: "⚖️", bg: "bg-emerald-50/50", border: "border-emerald-100", iconBg: "bg-emerald-100", text: "text-emerald-600" },
-    low: { name: "低碳日", desc: "严格控制碳水", icon: "❄️", bg: "bg-blue-50/50", border: "border-blue-100", iconBg: "bg-blue-100", text: "text-blue-600" },
+    high: {
+      name: "高碳日",
+      desc: "增加碳水摄入",
+      icon: "🔥",
+      bg: "bg-yellow-50/50",
+      border: "border-yellow-100",
+      iconBg: "bg-yellow-100",
+      text: "text-yellow-600",
+    },
+    medium: {
+      name: "中碳日",
+      desc: "基准比例配置",
+      icon: "⚖️",
+      bg: "bg-emerald-50/50",
+      border: "border-emerald-100",
+      iconBg: "bg-emerald-100",
+      text: "text-emerald-600",
+    },
+    low: {
+      name: "低碳日",
+      desc: "严格控制碳水",
+      icon: "❄️",
+      bg: "bg-blue-50/50",
+      border: "border-blue-100",
+      iconBg: "bg-blue-100",
+      text: "text-blue-600",
+    },
   };
   return map[phase];
 };
 
 const phaseDetailResults = computed(() => {
-  if (plan.value?.type !== 'carb-cycle' || !plan.value?.carbCycleConfig) return null;
+  if (plan.value?.type !== "carb-cycle" || !plan.value?.carbCycleConfig)
+    return null;
   return calculateCarbCycle({
     weight: plan.value.carbCycleConfig.weight,
     cycleDays: plan.value.cycleDays,
     baseRatios: plan.value.carbCycleConfig.baseRatios,
-    phases: plan.value.carbCycleConfig.phases
+    phases: plan.value.carbCycleConfig.phases,
   }).phaseResults;
 });
 
 const handleShowOptions = () => {
   const options = ["编辑计划", "暂停计划", "分享计划", "导出数据", "删除计划"];
   if (plan.value?.status === "paused") options[1] = "激活计划";
-  
+
   Taro.showActionSheet({
     itemList: options,
     confirmColor: "#10b981",
     success: (res) => {
       switch (res.tapIndex) {
-        case 0: handleEditPlan(); break;
-        case 1: plan.value?.status === "paused" ? handleActivate() : handlePause(); break;
-        case 2: handleShare(); break;
-        case 3: showError("导出功能开发中"); break;
-        case 4: handleDelete(); break;
+        case 0:
+          handleEditPlan();
+          break;
+        case 1:
+          plan.value?.status === "paused" ? handleActivate() : handlePause();
+          break;
+        case 2:
+          handleShare();
+          break;
+        case 3:
+          showError("导出功能开发中");
+          break;
+        case 4:
+          handleDelete();
+          break;
       }
-    }
+    },
   });
 };
 
@@ -343,19 +531,19 @@ const handleShare = async () => {
     showLoading("生成分享码...");
     const res = await planService.sharePlan(planId);
     hideToast();
-    
+
     Taro.showModal({
-      title: '计划分享',
+      title: "计划分享",
       content: `分享码：${res.code}\n\n有效期至：${new Date(res.expireAt).toLocaleDateString()}\n\n已为您自动复制分享码。`,
-      confirmText: '我知道了',
-      showCancel: false
+      confirmText: "我知道了",
+      showCancel: false,
     });
 
     Taro.setClipboardData({
       data: res.code,
       success: () => {
         // Taro 会自动弹出系统 Toast
-      }
+      },
     });
   } catch (e) {
     showError("生成失败");
@@ -370,12 +558,12 @@ const handleEditPlan = () => {
   planStore.draft.cycleDays = plan.value.cycleDays;
   planStore.draft.cycleCount = plan.value.cycleCount;
   planStore.draft.carbCycleConfig = plan.value.carbCycleConfig;
-  
+
   // 转换模板格式供向导流使用
   if (plan.value.planDays) {
     planStore.draft.templates = plan.value.planDays.map((pd: any) => ({
-      tempId: 'temp_' + pd.id,
-      name: pd.name || '',
+      tempId: "temp_" + pd.id,
+      name: pd.name || "",
       targetCalories: pd.targetCalories,
       protein: pd.targetProtein,
       fat: pd.targetFat,
@@ -383,19 +571,25 @@ const handleEditPlan = () => {
       carbType: pd.carbType,
       isConfigured: true,
       meals: pd.planMeals?.reduce((acc: any, pm: any) => {
-        const mealKeyMap: any = { 1: 'breakfast', 2: 'lunch', 3: 'dinner', 4: 'snacks' };
+        const mealKeyMap: any = {
+          1: "breakfast",
+          2: "lunch",
+          3: "dinner",
+          4: "snacks",
+        };
         const key = mealKeyMap[pm.mealType?.value] || `custom_${pm.id}`;
-        acc[key] = pm.mealItems?.map((mi: any) => ({
-          name: mi.customName,
-          quantity: mi.quantity,
-          unit: mi.unit,
-          calories: mi.calories,
-          protein: mi.protein,
-          fat: mi.fat,
-          carbs: mi.carbs
-        })) || [];
+        acc[key] =
+          pm.mealItems?.map((mi: any) => ({
+            name: mi.customName,
+            quantity: mi.quantity,
+            unit: mi.unit,
+            calories: mi.calories,
+            protein: mi.protein,
+            fat: mi.fat,
+            carbs: mi.carbs,
+          })) || [];
         return acc;
-      }, {}) || { breakfast: [], lunch: [], dinner: [], snacks: [] }
+      }, {}) || { breakfast: [], lunch: [], dinner: [], snacks: [] },
     }));
   }
 
@@ -439,27 +633,27 @@ const handleDelete = () => {
           showError("删除失败");
         }
       }
-    }
+    },
   });
 };
 
 const handleViewDay = (c: number, d: number) => {
   // 跳转到编辑具体天模板
   const dayNumber = d;
-  Taro.navigateTo({ url: `/pages/edit-template/index?planId=${planId}&dayIndex=${dayNumber - 1}` });
+  Taro.navigateTo({
+    url: `/pages/edit-template/index?planId=${planId}&dayIndex=${dayNumber - 1}`,
+  });
 };
 
 const handleViewToday = () => {
   const todayDayNumber = (plan.value?.completedDays || 0) + 1;
-  Taro.navigateTo({ url: `/pages/daily-plan/index?planId=${planId}&day=${todayDayNumber}` });
+  Taro.navigateTo({
+    url: `/pages/daily-plan/index?planId=${planId}&day=${todayDayNumber}`,
+  });
 };
 </script>
 
 <style scoped lang="scss">
-.plan-detail-page {
-  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
-}
-
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -475,6 +669,10 @@ const handleViewToday = () => {
   animation: fadeInUp 0.6s ease-out forwards;
 }
 
-.delay-100 { animation-delay: 0.1s; }
-.delay-200 { animation-delay: 0.2s; }
+.delay-100 {
+  animation-delay: 0.1s;
+}
+.delay-200 {
+  animation-delay: 0.2s;
+}
 </style>

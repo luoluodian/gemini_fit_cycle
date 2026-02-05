@@ -1,8 +1,7 @@
 <template>
   <GlassCard
-    background="#ffffff"
     card-class="p-6 border-[1rpx] border-solid border-gray-200"
-    radius="lg"
+    radius="xl"
     :border="false"
   >
     <h3 class="text-lg font-semibold text-gray-800 mb-4">基础信息</h3>
@@ -69,7 +68,9 @@
         <checkbox
           id="setActive"
           :checked="formData.setActive"
-          @tap="emit('update:formData', { setActive: !formData.setActive })"
+          @change="
+            (e) => emit('update:formData', { setActive: e.detail.value })
+          "
           color="#10b981"
           style="transform: scale(0.8)"
         />

@@ -3,7 +3,7 @@
     background="#ffffff"
     :card-class="[
       'p-4 border-[1rpx] border-solid border-gray-200 flex flex-col min-h-0 shadow-sm',
-      flex ? 'flex-1' : '',
+      flex ? 'flex-1 h-full' : '',
     ]"
     radius="2xl"
     :border="false"
@@ -32,9 +32,11 @@
         :title="getMealLabel(meal)"
         :icon="getMealIcon(meal)"
         :foods="meals[meal] || []"
+        :is-expanded="expandedMealKey === meal"
         @edit="$emit('edit-meal', meal)"
         @delete-food="(idx) => $emit('delete-food', meal, idx)"
         @show-menu="$emit('meal-menu', meal)"
+        @toggle="handleToggleMeal(meal)"
       />
 
       <!-- 添加餐次按钮 -->
@@ -50,7 +52,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
+import { ref, computed } from "vue";
 import GlassCard from "../common/GlassCard.vue";
 import BaseScrollView from "../common/BaseScrollView.vue";
 import MealSection from "./MealSection.vue";
@@ -80,6 +82,12 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 defineEmits(["edit-meal", "delete-food", "add-meal", "meal-menu"]);
+
+const expandedMealKey = ref<string | null>(null);
+
+const handleToggleMeal = (key: string) => {
+  expandedMealKey.value = expandedMealKey.value === key ? null : key;
+};
 
 const totalFoodsCount = computed(() => {
   return Object.values(props.meals).reduce((acc, curr) => acc + curr.length, 0);

@@ -15,7 +15,7 @@
     <view class="flex-1 min-w-0 flex flex-col justify-center">
       <!-- Top Row: Name + Weight/Cal (Always aligned right to fill space) -->
       <view class="flex items-center justify-between">
-        <view class="flex items-center gap-1.5 min-w-0 flex-1 pr-2">
+        <view class="flex items-center gap-1.5 min-w-0 flex-1 pr-3">
           <text class="font-black text-gray-800 text-sm truncate">{{ food.name }}</text>
           <text
             v-if="!quantity"
@@ -25,11 +25,11 @@
           </text>
         </view>
         
-        <view class="flex items-center gap-2 flex-shrink-0">
+        <view class="flex items-center gap-2 flex-shrink-0 ml-auto">
            <text class="text-[20rpx] font-black" :class="quantity ? 'text-emerald-600' : 'text-gray-400'">
              {{ quantity ? `${quantity}${food.unit || 'g'}` : `${food.baseCount || 100}${food.unit || 'g'}` }}
            </text>
-           <text class="text-[20rpx] font-black text-gray-800">{{ displayNutrition.calories }}<text class="text-[14rpx] font-bold text-gray-400 ml-0.5">kcal</text></text>
+           <text class="text-[20rpx] font-black text-gray-800 whitespace-nowrap">{{ displayNutrition.calories }}<text class="text-[14rpx] font-bold text-gray-400 ml-0.5">kcal</text></text>
         </view>
       </view>
 

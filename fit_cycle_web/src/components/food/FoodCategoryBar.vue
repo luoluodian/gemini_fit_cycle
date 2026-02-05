@@ -3,13 +3,14 @@
     :scroll-x="true"
     :scroll-y="false"
     width="100%"
-    scroll-view-class="pb-2 "
-    content-class="flex space-x-2 pr-4"
+    height="100rpx"
+    scroll-view-class="pb-2"
+    content-class="inline-block min-w-max pr-4"
   >
     <view
       v-for="cat in unifiedCategories"
       :key="cat.key"
-      class="px-4 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center space-x-1.5 border border-solid flex-shrink-0"
+      class="inline-flex px-4 py-1.5 rounded-lg text-xs font-medium transition-all items-center space-x-1.5 border border-solid mr-2"
       :class="
         modelValue === cat.key
           ? 'bg-emerald-600 text-white shadow-sm border-emerald-600 scale-[1.02]'

@@ -1,103 +1,100 @@
 <template>
-  <view v-if="localTemplate" class="edit-template-page h-screen flex flex-col overflow-hidden">
-    <!-- 1. Header -->
-    <BaseNavBar 
-      :title="'编辑第 ' + (currentDayIndex + 1) + ' 天'" 
-      :show-back="true"
-    >
-      <template #right>
-        <view 
-          @tap="handleShowMenu" 
-          class="w-10 h-10 flex items-center justify-center rounded-xl active:bg-black/5 transition-colors"
-        >
-          <view class="flex flex-col space-y-0.5 items-center">
-            <view class="w-1 h-1 rounded-full bg-gray-400"></view>
-            <view class="w-1 h-1 rounded-full bg-gray-400"></view>
-            <view class="w-1 h-1 rounded-full bg-gray-400"></view>
-          </view>
+  <PageLayout 
+    v-if="localTemplate" 
+    :title="'编辑第 ' + (currentDayIndex + 1) + ' 天'" 
+    :use-scroll-view="false"
+  >
+    <template #nav-right>
+      <view 
+        @tap="handleShowMenu" 
+        class="w-10 h-10 flex items-center justify-center rounded-xl active:bg-black/5 transition-colors"
+      >
+        <view class="flex flex-col space-y-0.5 items-center">
+          <view class="w-1 h-1 rounded-full bg-gray-400"></view>
+          <view class="w-1 h-1 rounded-full bg-gray-400"></view>
+          <view class="w-1 h-1 rounded-full bg-gray-400"></view>
         </view>
-      </template>
-    </BaseNavBar>
-
-    <!-- 2. Main Content (Fixed Layout) -->
-    <view class="flex-1 flex flex-col min-h-0 px-4 py-4 space-y-2 overflow-hidden">
-      <!-- 模板名称 (Fixed) -->
-      <view class="flex-shrink-0 animate-fade-in-up">
-        <GlassCard 
-          background="#ffffff" 
-          card-class="p-4 border-[1rpx] border-solid border-gray-200 shadow-sm"
-          radius="xl"
-          :border="false"
-        >
-          <view class="flex items-center">
-            <view class="w-10 h-10 rounded-full bg-orange-50 flex items-center justify-center mr-3 flex-shrink-0">
-              <text class="text-lg">🏷️</text>
-            </view>
-            <view class="flex-1 min-w-0 relative">
-              <text class="text-[20rpx] font-black text-gray-400 block mb-0.5 tracking-widest uppercase">模板名称</text>
-              <input 
-                type="text" 
-                v-model="localTemplate.name"
-                maxlength="6"
-                class="w-full py-1 text-base font-black text-gray-800 transition-all border-b-[1rpx] border-solid border-transparent focus:border-emerald-500" 
-                placeholder="例如：练腿日"
-                placeholder-class="text-gray-300 font-bold"
-              />
-            </view>
-            <view class="ml-4 flex flex-col items-center justify-center bg-gray-50 px-2 py-1 rounded-lg border border-solid border-gray-100">
-              <text class="text-[18rpx] text-gray-400 font-black leading-none">{{ localTemplate.name?.length || 0 }}</text>
-              <view class="w-3 h-[2rpx] bg-gray-200 my-0.5"></view>
-              <text class="text-[16rpx] text-gray-300 font-black leading-none">6</text>
-            </view>
-          </view>
-        </GlassCard>
       </view>
+    </template>
 
-      <!-- 营养进度对比 (Fixed) -->
-      <view class="flex-shrink-0 animate-fade-in-up delay-100">
-        <NutritionProgress 
-          :target="targetNutrition"
-          :current="currentNutrition"
-          :carb-type="localTemplate.carbType"
-        />
-      </view>
+    <!-- 1. 顶部固定扩展区 (Sticky) -->
+    <template #fixed-top>
+      <view class="px-4 pt-4 space-y-2">
+        <!-- 模板名称 -->
+        <view class="animate-fade-in-up">
+          <GlassCard 
+            background="#ffffff" 
+            card-class="p-4 border-[1rpx] border-solid border-gray-200 shadow-sm"
+            radius="xl"
+            :border="false"
+          >
+            <view class="flex items-center">
+              <view class="w-10 h-10 rounded-full bg-orange-50 flex items-center justify-center mr-3 flex-shrink-0">
+                <text class="text-lg">🏷️</text>
+              </view>
+              <view class="flex-1 min-w-0 relative">
+                <text class="text-[20rpx] font-black text-gray-400 block mb-0.5 tracking-widest uppercase">模板名称</text>
+                <input 
+                  type="text" 
+                  v-model="localTemplate.name"
+                  maxlength="6"
+                  class="w-full py-1 text-base font-black text-gray-800 transition-all border-b-[1rpx] border-solid border-transparent focus:border-emerald-500" 
+                  placeholder="例如：练腿日"
+                  placeholder-class="text-gray-300 font-bold"
+                />
+              </view>
+              <view class="ml-4 flex flex-col items-center justify-center bg-gray-50 px-2 py-1 rounded-lg border border-solid border-gray-100">
+                <text class="text-[18rpx] text-gray-400 font-black leading-none">{{ localTemplate.name?.length || 0 }}</text>
+                <view class="w-3 h-[2rpx] bg-gray-200 my-0.5"></view>
+                <text class="text-[16rpx] text-gray-300 font-black leading-none">6</text>
+              </view>
+            </view>
+          </GlassCard>
+        </view>
 
-      <!-- 当日餐单 (Fixed Height & Scrollable) -->
-      <view style="height: 480rpx;" class="animate-fade-in-up delay-200">
-        <PlanDailyMealCard
-          :meal-order="mealOrder"
-          :meals="localTemplate.meals"
-          :show-add-button="planStore.draft.type === 'carb-cycle'"
-          :flex="false"
-          max-height="480rpx"
-          @edit-meal="goToMealConfig"
-          @delete-food="handleDeleteFood"
-          @add-meal="handleShowAddMeal"
-          @meal-menu="handleMealMenu"
-        />
+        <!-- 营养进度对比 -->
+        <view class="animate-fade-in-up delay-100">
+          <NutritionProgress 
+            :target="targetNutrition"
+            :current="currentNutrition"
+            :carb-type="localTemplate.carbType"
+          />
+        </view>
       </view>
+    </template>
+
+    <!-- 2. 中间内容区：当日餐单 (Flex-1 + Scroll) -->
+    <view class="flex-1 min-h-0 flex flex-col p-4 animate-fade-in-up delay-200 h-full">
+      <PlanDailyMealCard
+        :meal-order="mealOrder"
+        :meals="localTemplate.meals"
+        :show-add-button="planStore.draft.type === 'carb-cycle'"
+        :flex="true"
+        @edit-meal="goToMealConfig"
+        @delete-food="handleDeleteFood"
+        @add-meal="handleShowAddMeal"
+        @meal-menu="handleMealMenu"
+      />
     </view>
 
-    <!-- 3. Footer -->
-    <view 
-      class="bg-white border-t border-gray-200 px-4 pt-3 z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] flex-shrink-0"
-      style="padding-bottom: env(safe-area-inset-bottom);"
-    >
-      <view class="flex space-x-3 max-w-md mx-auto mb-3">
+    <!-- 3. 底部操作区 -->
+    <template #footer>
+      <view class="flex space-x-3">
         <view
           @tap="handleBack"
-          class="flex-1 bg-gray-100 text-gray-700 py-3 px-4 rounded-xl font-black active:bg-gray-200 transition-colors text-center"
+          class="flex-1 bg-gray-100 text-gray-700 py-3.5 rounded-xl font-black active:bg-gray-200 transition-colors text-center"
         >
           取消
         </view>
         <view
           @tap="handleSave"
-          class="flex-1 bg-emerald-600 text-white py-3 px-4 rounded-xl font-black active:bg-emerald-700 transition-colors text-center shadow-sm"
+          class="flex-1 bg-emerald-600 text-white py-3.5 rounded-xl font-black active:bg-emerald-700 transition-colors text-center shadow-sm"
         >
-          保存此天配置
+          保存配置
         </view>
       </view>
-    </view>
+    </template>
+
     <!-- 弹窗：添加自定义餐次 -->
     <BaseModal
       :visible="showAddMealModal"
@@ -122,16 +119,17 @@
         </view>
       </view>
     </BaseModal>
-  </view>
+  </PageLayout>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
 import Taro, { useDidShow } from "@tarojs/taro";
-import BaseNavBar from "@/components/common/BaseNavBar.vue";
+import PageLayout from "@/components/common/PageLayout.vue";
 import GlassCard from "@/components/common/GlassCard.vue";
 import NutritionProgress from "@/components/plan-creator/NutritionProgress.vue";
 import PlanDailyMealCard from "@/components/plan-creator/PlanDailyMealCard.vue";
+import BaseModal from "@/components/common/BaseModal.vue";
 import { usePlanStore } from "@/stores/plan";
 import { showSuccess, showError } from "@/utils/toast";
 
@@ -354,9 +352,6 @@ const confirmAddMeal = () => {
 </script>
 
 <style scoped lang="scss">
-.edit-template-page {
-  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
-}
 .hero-title {
   font-family: 'Noto Serif SC', serif;
 }

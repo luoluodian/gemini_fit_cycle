@@ -8,12 +8,12 @@
     content-class="w-[85vw] overflow-x-hidden bg-white rounded-3xl"
   >
     <!-- Custom Top Bar -->
-    <view class="flex items-center justify-between mb-4 px-1">
+    <view class="flex items-center justify-between mb-4 pt-4 px-4">
       <view
-        class="p-2 text-gray-400 active:opacity-60 transition-all"
+        class="w-10 h-10 flex items-center justify-center text-gray-400 active:opacity-60 transition-all"
         @click="handleClose"
       >
-        <Close font-size="18"></Close>
+        <Close :size="18"></Close>
       </view>
 
       <text
@@ -24,13 +24,13 @@
       <!-- Favorite Button (Only in view mode or if specified) -->
       <view
         v-if="mode === 'view'"
-        class="p-2 transition-all active:scale-95"
+        class="w-10 h-10 flex items-center justify-center transition-all active:scale-95"
         @click="handleToggleFavorite"
       >
-        <HeartFill v-if="isFavorite" font-size="24" color="#ef4444"></HeartFill>
-        <Heart v-else font-size="24" color="#d1d5db"></Heart>
+        <HeartFill v-if="isFavorite" :size="22" color="#ef4444"></HeartFill>
+        <Heart v-else :size="22" color="#d1d5db"></Heart>
       </view>
-      <view v-else class="w-10"></view>
+      <view v-else class="w-10 h-10"></view>
     </view>
 
     <view v-if="food" class="pb-6 px-4 overflow-x-hidden">
@@ -100,9 +100,10 @@
             <text class="text-[18rpx] text-gray-400 mb-1 block font-black"
               >热量</text
             >
-            <text class="text-sm font-black text-emerald-500 block">{{
-              displayNutrition.calories
-            }}</text>
+            <text class="text-sm font-black text-emerald-500 block"
+              >{{ displayNutrition.calories
+              }}<text class="text-[10px] ml-0.5">kcal</text></text
+            >
           </view>
         </view>
       </view>
@@ -165,12 +166,13 @@ const localQuantity = ref(100);
 
 // Sync local quantity when modal opens or food changes
 watch(
-  () => props.visible,
-  (newVal) => {
-    if (newVal && props.food) {
+  [() => props.visible, () => props.food?.id],
+  ([newVisible, newFoodId]) => {
+    if (newVisible && props.food) {
       localQuantity.value = props.quantity || props.food.baseCount || 100;
     }
   },
+  { immediate: true },
 );
 
 const displayNutrition = computed(() => {

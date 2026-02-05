@@ -7,41 +7,27 @@
     round
     :z-index="zIndex"
     style="border-radius: 16rpx"
-    catch-move
   >
     <view
       :class="[
-        'bg-white rounded-lg p-4 max-h-[75vh] overflow-hidden flex flex-col',
+        'bg-white rounded-lg flex flex-col max-h-[85vh] overflow-hidden',
         contentClass,
       ]"
-      style="overflow: hidden; border-radius: 16rpx"
-      @touchmove.stop.prevent
+      style="border-radius: 16rpx"
     >
       <!-- 标题栏 -->
-      <view v-if="showHeader" class="pb-4 border-b border-gray-200">
+      <view v-if="showHeader" class="pt-4 px-4 pb-4 border-b border-gray-200">
         <view class="flex items-center justify-between">
           <view v-if="title" class="flex-1">
-            <text class="text-lg font-semibold text-gray-800">{{ title }}</text>
+            <text class="text-lg font-black text-gray-800">{{ title }}</text>
           </view>
           <slot name="header"></slot>
           <view
             v-if="showClose"
-            class="cursor-pointer transition-colors text-gray-400 hover:text-gray-600"
+            class="p-1 cursor-pointer transition-colors text-gray-400 hover:text-gray-600 active:scale-90"
             @click="handleClose"
           >
-            <svg
-              class="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M6 18L18 6M6 6l12 12"
-              ></path>
-            </svg>
+            <Close :size="20"></Close>
           </view>
         </view>
       </view>
@@ -61,6 +47,7 @@
 
 <script setup lang="ts">
 import { ref, watch } from "vue";
+import { Close } from "@nutui/icons-vue-taro";
 
 interface Props {
   visible: boolean;
@@ -84,7 +71,7 @@ const props = withDefaults(defineProps<Props>(), {
   closeOnOverlay: true,
   lockScroll: true,
   round: true,
-  zIndex: 200,
+  zIndex: 100000,
   contentClass: "",
   bodyClass: "",
 });

@@ -1,187 +1,228 @@
 <template>
-  <view v-if="planStore.draft?.carbCycleConfig" class="carb-cycle-setup-page h-screen flex flex-col overflow-hidden">
-    <BaseNavBar title="碳循环设置" :show-back="true" />
-
-    <BaseScrollView :flex="true" scroll-view-class="py-6" content-class="px-4 space-y-6">
-      <!-- 1. 当前体重 (⚖️) -->
-      <view class="animate-fade-in-up">
-        <GlassCard
-          background="#ffffff"
-          card-class="p-5 border-[1rpx] border-solid border-gray-200"
-          radius="xl"
-          :border="false"
-        >
-          <view class="flex items-center justify-between">
-            <view class="flex items-center">
-              <view
-                class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center mr-3"
-              >
-                <text class="text-xl">⚖️</text>
-              </view>
-              <view>
-                <text class="text-lg font-bold text-gray-800 block"
-                  >当前体重</text
-                >
-                <text class="text-xs text-gray-400">用于计算营养素摄入量</text>
-              </view>
-            </view>
-            <view class="flex items-center bg-gray-50 px-3 py-1 rounded-xl">
-              <input
-                v-model.number="planStore.draft.carbCycleConfig.weight"
-                type="digit"
-                class="w-16 h-10 text-xl font-black text-emerald-600 text-center"
-              />
-              <text class="ml-1 text-sm font-bold text-gray-500">kg</text>
-            </view>
-          </view>
-        </GlassCard>
-      </view>
-
-      <!-- 2. 营养素配比 (⚡) -->
-      <view class="animate-fade-in-up delay-100">
-        <GlassCard
-          background="#ffffff"
-          card-class="p-5 border-[1rpx] border-solid border-gray-200"
-          radius="xl"
-          :border="false"
-        >
-          <view class="flex items-center justify-between mb-4">
-            <text class="text-lg font-bold text-gray-800">营养素配比</text>
-            <text class="text-[20rpx] text-gray-400 font-bold uppercase"
-              >每kg体重 / 天</text
+  <PageLayout v-if="planStore.draft?.carbCycleConfig" title="碳循环设置">
+    <!-- 1. 当前体重 (⚖️) -->
+    <view class="animate-fade-in-up">
+      <GlassCard
+        background="#ffffff"
+        card-class="p-5 border-[1rpx] border-solid border-gray-200"
+        radius="xl"
+        :border="false"
+      >
+        <view class="flex items-center justify-between">
+          <view class="flex items-center">
+            <view
+              class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center mr-3"
             >
-          </view>
-
-          <view class="grid grid-cols-3 gap-3">
-            <!-- 蛋白 -->
-            <view class="bg-blue-50/50 rounded-2xl p-3 text-center border border-solid border-blue-100">
-              <text class="block text-xl mb-1">🍗</text>
-              <text class="block text-[20rpx] font-black text-blue-700 mb-2"
-                >蛋白质</text
-              >
-              <input
-                v-model.number="planStore.draft.carbCycleConfig.baseRatios.protein"
-                type="digit"
-                class="w-full h-8 bg-white border border-solid border-blue-200 rounded-lg text-center text-sm font-bold"
-              />
+              <text class="text-xl">⚖️</text>
             </view>
-            <!-- 碳水 -->
-            <view class="bg-yellow-50/50 rounded-2xl p-3 text-center border border-solid border-yellow-100">
-              <text class="block text-xl mb-1">⚡</text>
-              <text class="block text-[20rpx] font-black text-yellow-700 mb-2"
-                >碳水</text
+            <view>
+              <text class="text-lg font-bold text-gray-800 block"
+                >当前体重</text
               >
-              <input
-                v-model.number="planStore.draft.carbCycleConfig.baseRatios.carbs"
-                type="digit"
-                class="w-full h-8 bg-white border border-solid border-yellow-200 rounded-lg text-center text-sm font-bold"
-              />
-            </view>
-            <!-- 脂肪 -->
-            <view class="bg-red-50/50 rounded-2xl p-3 text-center border border-solid border-red-100">
-              <text class="block text-xl mb-1">🥑</text>
-              <text class="block text-[20rpx] font-black text-red-700 mb-2"
-                >脂肪</text
-              >
-              <input
-                v-model.number="planStore.draft.carbCycleConfig.baseRatios.fat"
-                type="digit"
-                class="w-full h-8 bg-white border border-solid border-red-200 rounded-lg text-center text-sm font-bold"
-              />
+              <text class="text-xs text-gray-400">用于计算营养素摄入量</text>
             </view>
           </view>
+          <view class="flex items-center bg-gray-50 px-3 py-1 rounded-xl">
+            <input
+              :value="planStore.draft.carbCycleConfig.weight"
+              type="digit"
+              class="w-16 h-10 text-xl font-black text-emerald-600 text-center"
+              @input="
+                (e) =>
+                  (planStore.draft.carbCycleConfig.weight =
+                    parseFloat(e.detail.value) || 0)
+              "
+            />
+            <text class="ml-1 text-sm font-bold text-gray-500">kg</text>
+          </view>
+        </view>
+      </GlassCard>
+    </view>
 
-          <view class="mt-4 p-3 bg-gray-50/80 rounded-xl text-center border border-solid border-gray-100">
-            <text class="text-[20rpx] text-gray-400 font-bold"
-              >本周期 ({{ cycleDays }}天) 总量预计</text
+    <!-- 2. 营养素配比 (⚡) -->
+    <view class="animate-fade-in-up delay-100">
+      <GlassCard
+        background="#ffffff"
+        card-class="p-5 border-[1rpx] border-solid border-gray-200"
+        radius="xl"
+        :border="false"
+      >
+        <view class="flex items-center justify-between mb-4">
+          <text class="text-lg font-bold text-gray-800">营养素配比</text>
+          <text class="text-[20rpx] text-gray-400 font-bold uppercase"
+            >每kg体重 / 天</text
+          >
+        </view>
+
+        <view class="grid grid-cols-3 gap-3">
+          <!-- 蛋白 -->
+          <view
+            class="bg-blue-50/50 rounded-2xl p-3 text-center border border-solid border-blue-100"
+          >
+            <text class="block text-xl mb-1">🍗</text>
+            <text class="block text-[20rpx] font-black text-blue-700 mb-2"
+              >蛋白质</text
             >
-            <view class="flex items-center justify-center space-x-2 mt-1">
-              <text class="text-xs font-black text-gray-600"
-                >蛋 {{ algoResult.summary.totalProtein }}g</text
-              >
-              <text class="text-gray-300">·</text>
-              <text class="text-xs font-black text-gray-600"
-                >碳 {{ algoResult.summary.totalCarbs }}g</text
-              >
-              <text class="text-gray-300">·</text>
-              <text class="text-xs font-black text-gray-600"
-                >脂 {{ algoResult.summary.totalFat }}g</text
-              >
-            </view>
+            <input
+              :value="planStore.draft.carbCycleConfig.baseRatios.protein"
+              type="digit"
+              class="w-full h-8 bg-white border border-solid border-blue-200 rounded-lg text-center text-sm font-bold"
+              @input="
+                (e) =>
+                  (planStore.draft.carbCycleConfig.baseRatios.protein =
+                    parseFloat(e.detail.value) || 0)
+              "
+            />
           </view>
-        </GlassCard>
-      </view>
+          <!-- 碳水 -->
+          <view
+            class="bg-yellow-50/50 rounded-2xl p-3 text-center border border-solid border-yellow-100"
+          >
+            <text class="block text-xl mb-1">⚡</text>
+            <text class="block text-[20rpx] font-black text-yellow-700 mb-2"
+              >碳水</text
+            >
+            <input
+              :value="planStore.draft.carbCycleConfig.baseRatios.carbs"
+              type="digit"
+              class="w-full h-8 bg-white border border-solid border-yellow-200 rounded-lg text-center text-sm font-bold"
+              @input="
+                (e) =>
+                  (planStore.draft.carbCycleConfig.baseRatios.carbs =
+                    parseFloat(e.detail.value) || 0)
+              "
+            />
+          </view>
+          <!-- 脂肪 -->
+          <view
+            class="bg-red-50/50 rounded-2xl p-3 text-center border border-solid border-red-100"
+          >
+            <text class="block text-xl mb-1">🥑</text>
+            <text class="block text-[20rpx] font-black text-red-700 mb-2"
+              >脂肪</text
+            >
+            <input
+              :value="planStore.draft.carbCycleConfig.baseRatios.fat"
+              type="digit"
+              class="w-full h-8 bg-white border border-solid border-red-200 rounded-lg text-center text-sm font-bold"
+              @input="
+                (e) =>
+                  (planStore.draft.carbCycleConfig.baseRatios.fat =
+                    parseFloat(e.detail.value) || 0)
+              "
+            />
+          </view>
+        </view>
 
-      <!-- 3. 阶段分配 -->
-      <view class="space-y-4">
-        <!-- 高碳 -->
-        <view class="animate-fade-in-up delay-200">
-          <PhaseCard
-            type="high"
-            title="高碳日"
-            desc="高碳水配置"
-            icon="🔥"
-            v-model:days="planStore.draft.carbCycleConfig.phases.high.days"
-            v-model:protein-ratio="planStore.draft.carbCycleConfig.phases.high.proteinRatio"
-            v-model:carb-ratio="planStore.draft.carbCycleConfig.phases.high.carbRatio"
-            v-model:fat-ratio="planStore.draft.carbCycleConfig.phases.high.fatRatio"
-            :result="algoResult.phaseResults.high"
-          />
-        </view>
-        <!-- 中碳 -->
-        <view class="animate-fade-in-up delay-300">
-          <PhaseCard
-            type="medium"
-            title="中碳日"
-            desc="基准配置"
-            icon="⚖️"
-            v-model:days="planStore.draft.carbCycleConfig.phases.medium.days"
-            v-model:protein-ratio="planStore.draft.carbCycleConfig.phases.medium.proteinRatio"
-            v-model:carb-ratio="planStore.draft.carbCycleConfig.phases.medium.carbRatio"
-            v-model:fat-ratio="planStore.draft.carbCycleConfig.phases.medium.fatRatio"
-            :result="algoResult.phaseResults.medium"
-          />
-        </view>
-        <!-- 低碳 -->
-        <view class="animate-fade-in-up delay-400">
-          <PhaseCard
-            type="low"
-            title="低碳日"
-            desc="低碳水配置"
-            icon="❄️"
-            v-model:days="planStore.draft.carbCycleConfig.phases.low.days"
-            v-model:protein-ratio="planStore.draft.carbCycleConfig.phases.low.proteinRatio"
-            v-model:carb-ratio="planStore.draft.carbCycleConfig.phases.low.carbRatio"
-            v-model:fat-ratio="planStore.draft.carbCycleConfig.phases.low.fatRatio"
-            :result="algoResult.phaseResults.low"
-          />
-        </view>
-      </view>
-
-      <!-- 4. 天数检查 -->
-      <view class="animate-fade-in-up delay-500 pb-10">
         <view
-          :class="[
-            'p-4 rounded-2xl text-center border border-solid transition-all duration-300 shadow-sm',
-            checkStatus.class,
-          ]"
+          class="mt-4 p-3 bg-gray-50/80 rounded-xl text-center border border-solid border-gray-100"
         >
-          <view class="flex items-center justify-center space-x-2">
-            <text class="text-sm font-black">{{ checkStatus.text }}</text>
-            <text class="text-base font-black"
-              >{{ totalAllocatedDays }} / {{ cycleDays }}</text
+          <text class="text-[20rpx] text-gray-400 font-bold"
+            >本周期 ({{ cycleDays }}天) 总量预计</text
+          >
+          <view class="flex items-center justify-center space-x-2 mt-1">
+            <text class="text-xs font-black text-gray-600"
+              >蛋 {{ algoResult.summary.totalProtein }}g</text
             >
-            <text class="text-sm font-bold">天</text>
+            <text class="text-gray-300">·</text>
+            <text class="text-xs font-black text-gray-600"
+              >碳 {{ algoResult.summary.totalCarbs }}g</text
+            >
+            <text class="text-gray-300">·</text>
+            <text class="text-xs font-black text-gray-600"
+              >脂 {{ algoResult.summary.totalFat }}g</text
+            >
           </view>
-          <text class="text-[20rpx] mt-1 block opacity-80">{{
-            checkStatus.subText
-          }}</text>
         </view>
-      </view>
-    </BaseScrollView>
+      </GlassCard>
+    </view>
 
-    <!-- 底部操作 -->
-    <view class="p-4 bg-white border-t border-gray-100 pb-safe shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+    <!-- 3. 阶段分配 -->
+    <view class="space-y-4">
+      <!-- 高碳 -->
+      <view class="animate-fade-in-up delay-200">
+        <PhaseCard
+          type="high"
+          title="高碳日"
+          desc="高碳水配置"
+          icon="🔥"
+          v-model:days="planStore.draft.carbCycleConfig.phases.high.days"
+          v-model:protein-ratio="
+            planStore.draft.carbCycleConfig.phases.high.proteinRatio
+          "
+          v-model:carb-ratio="
+            planStore.draft.carbCycleConfig.phases.high.carbRatio
+          "
+          v-model:fat-ratio="
+            planStore.draft.carbCycleConfig.phases.high.fatRatio
+          "
+          :result="algoResult.phaseResults.high"
+        />
+      </view>
+      <!-- 中碳 -->
+      <view class="animate-fade-in-up delay-300">
+        <PhaseCard
+          type="medium"
+          title="中碳日"
+          desc="基准配置"
+          icon="⚖️"
+          v-model:days="planStore.draft.carbCycleConfig.phases.medium.days"
+          v-model:protein-ratio="
+            planStore.draft.carbCycleConfig.phases.medium.proteinRatio
+          "
+          v-model:carb-ratio="
+            planStore.draft.carbCycleConfig.phases.medium.carbRatio
+          "
+          v-model:fat-ratio="
+            planStore.draft.carbCycleConfig.phases.medium.fatRatio
+          "
+          :result="algoResult.phaseResults.medium"
+        />
+      </view>
+      <!-- 低碳 -->
+      <view class="animate-fade-in-up delay-400">
+        <PhaseCard
+          type="low"
+          title="低碳日"
+          desc="低碳水配置"
+          icon="❄️"
+          v-model:days="planStore.draft.carbCycleConfig.phases.low.days"
+          v-model:protein-ratio="
+            planStore.draft.carbCycleConfig.phases.low.proteinRatio
+          "
+          v-model:carb-ratio="
+            planStore.draft.carbCycleConfig.phases.low.carbRatio
+          "
+          v-model:fat-ratio="
+            planStore.draft.carbCycleConfig.phases.low.fatRatio
+          "
+          :result="algoResult.phaseResults.low"
+        />
+      </view>
+    </view>
+
+    <!-- 4. 天数检查 -->
+    <view class="animate-fade-in-up delay-500">
+      <view
+        :class="[
+          'p-4 rounded-2xl text-center border border-solid transition-all duration-300 shadow-sm',
+          checkStatus.class,
+        ]"
+      >
+        <view class="flex items-center justify-center space-x-2">
+          <text class="text-sm font-black">{{ checkStatus.text }}</text>
+          <text class="text-base font-black"
+            >{{ totalAllocatedDays }} / {{ cycleDays }}</text
+          >
+          <text class="text-sm font-bold">天</text>
+        </view>
+        <text class="text-[20rpx] mt-1 block opacity-80">{{
+          checkStatus.subText
+        }}</text>
+      </view>
+    </view>
+
+    <template #footer>
       <view class="flex space-x-3">
         <BaseButton class="flex-1" type="secondary" @click="handleBack"
           >上一步</BaseButton
@@ -189,20 +230,22 @@
         <BaseButton
           class="flex-1"
           type="primary"
-          :disabled="!algoResult.isBalanced || planStore.draft.carbCycleConfig.weight <= 0"
+          :disabled="
+            !algoResult.isBalanced ||
+            planStore.draft.carbCycleConfig.weight <= 0
+          "
           @click="handleNext"
           >下一步</BaseButton
         >
       </view>
-    </view>
-  </view>
+    </template>
+  </PageLayout>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch } from "vue";
 import Taro from "@tarojs/taro";
-import BaseNavBar from "@/components/common/BaseNavBar.vue";
-import BaseScrollView from "@/components/common/BaseScrollView.vue";
+import PageLayout from "@/components/common/PageLayout.vue";
 import BaseButton from "@/components/common/BaseButton.vue";
 import GlassCard from "@/components/common/GlassCard.vue";
 import PhaseCard from "@/components/carb-cycle-setup/PhaseCard.vue";
@@ -217,19 +260,20 @@ const cycleDays = computed(() => planStore.draft.cycleDays);
 const algoResult = computed(() => {
   const config = planStore.draft?.carbCycleConfig;
   if (!config) return null;
-  
+
   return calculateCarbCycle({
     weight: config.weight,
     cycleDays: planStore.draft.cycleDays,
     baseRatios: config.baseRatios,
-    phases: config.phases
+    phases: config.phases,
   });
 });
 
 const totalAllocatedDays = computed(
-  () => (Number(planStore.draft?.carbCycleConfig?.phases?.high?.days) || 0) + 
-        (Number(planStore.draft?.carbCycleConfig?.phases?.medium?.days) || 0) + 
-        (Number(planStore.draft?.carbCycleConfig?.phases?.low?.days) || 0)
+  () =>
+    (Number(planStore.draft?.carbCycleConfig?.phases?.high?.days) || 0) +
+    (Number(planStore.draft?.carbCycleConfig?.phases?.medium?.days) || 0) +
+    (Number(planStore.draft?.carbCycleConfig?.phases?.low?.days) || 0),
 );
 
 const checkStatus = computed(() => {
@@ -261,8 +305,11 @@ watch(
   (newVal) => {
     // 重新获取当前分配的总天数
     const phases = planStore.draft?.carbCycleConfig?.phases;
-    const total = (Number(phases?.high?.days) || 0) + (Number(phases?.medium?.days) || 0) + (Number(phases?.low?.days) || 0);
-    
+    const total =
+      (Number(phases?.high?.days) || 0) +
+      (Number(phases?.medium?.days) || 0) +
+      (Number(phases?.low?.days) || 0);
+
     if (total !== newVal) {
       Taro.showModal({
         title: "周期变动提示",
@@ -270,7 +317,7 @@ watch(
         showCancel: false,
       });
     }
-  }
+  },
 );
 
 const handleBack = () => Taro.navigateBack();
@@ -311,17 +358,13 @@ const handleNext = async () => {
 
   // 2. 更新 Store
   planStore.draft.templates = list;
-  
+
   // 3. 跳转到配置日模板页面
   Taro.navigateTo({ url: "/pages/plan-templates/index" });
 };
 </script>
 
 <style scoped lang="scss">
-.carb-cycle-setup-page {
-  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
-}
-
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -337,9 +380,19 @@ const handleNext = async () => {
   animation: fadeInUp 0.6s ease-out forwards;
 }
 
-.delay-100 { animation-delay: 0.1s; }
-.delay-200 { animation-delay: 0.2s; }
-.delay-300 { animation-delay: 0.3s; }
-.delay-400 { animation-delay: 0.4s; }
-.delay-500 { animation-delay: 0.5s; }
+.delay-100 {
+  animation-delay: 0.1s;
+}
+.delay-200 {
+  animation-delay: 0.2s;
+}
+.delay-300 {
+  animation-delay: 0.3s;
+}
+.delay-400 {
+  animation-delay: 0.4s;
+}
+.delay-500 {
+  animation-delay: 0.5s;
+}
 </style>

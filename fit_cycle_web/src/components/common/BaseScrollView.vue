@@ -130,6 +130,7 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<{
   (e: "scroll", event: any): void;
   (e: "scrollToLower"): void;
+  (e: "load-more"): void;
   (e: "scrollToUpper"): void;
   (e: "refresh"): void;
   (e: "restore"): void;
@@ -154,10 +155,10 @@ const scrollStyle = computed<CSSProperties>(() => {
 
   if (props.flex) {
     style.flex = '1';
-    style.height = '0';
+    style.height = '100%';
     style.minHeight = '0'; // 强制设为 0 以支持 flex 内部滚动
   } else {
-    style.height = formatSize(props.height);
+    style.height = formatSize(props.height) || 'auto';
     style.minHeight = undefined;
   }
 
@@ -167,7 +168,10 @@ const scrollStyle = computed<CSSProperties>(() => {
 const showFooter = computed(() => props.loading || props.finished);
 
 const onScroll = (e: any) => emit("scroll", e);
-const onScrollToLower = () => emit("scrollToLower");
+const onScrollToLower = () => {
+  emit("scrollToLower");
+  emit("load-more");
+};
 const onScrollToUpper = () => emit("scrollToUpper");
 const onRefresh = () => emit("refresh");
 const onRestore = () => emit("restore");

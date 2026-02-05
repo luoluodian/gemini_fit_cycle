@@ -54,9 +54,9 @@
     />
 
     <!-- 添加食物模态框 -->
-    <FoodModal
-      :visible="foodModalVisible"
-      @close="handleCloseFoodModal"
+    <FoodPicker
+      v-model:visible="foodModalVisible"
+      title="选择食材"
       @select="handleSelectFood"
     />
 
@@ -79,7 +79,7 @@ import MealCard from "@/components/common/MealCard.vue";
 import QuickSuggestions from "@/components/daily-plan/QuickSuggestions.vue";
 import FloatingButtons from "@/components/daily-plan/FloatingButtons.vue";
 import BottomActions from "@/components/daily-plan/BottomActions.vue";
-import FoodModal from "@/components/daily-plan/FoodModal.vue";
+import FoodPicker from "@/components/food/FoodPicker.vue";
 import TargetsModal from "@/components/daily-plan/TargetsModal.vue";
 import { navigateBack } from "@/router";
 import { useRouterParams } from "@/router/hooks";
@@ -401,8 +401,21 @@ const handleAddQuickFood = (food: Food) => {
   showSuccess(`已添加 ${food.name}`);
 };
 
-const handleSelectFood = (food: Food) => {
-  handleAddQuickFood(food);
+const handleSelectFood = (result: { food: any; quantity: number }) => {
+  const { food, quantity } = result;
+  const ratio = quantity / (food.baseCount || 100);
+  
+  const foodToAdd: Food = {
+    name: food.name,
+    quantity: quantity,
+    unit: food.unit || 'g',
+    calories: Math.round(food.calories * ratio),
+    protein: Math.round(food.protein * ratio * 10) / 10,
+    fat: Math.round(food.fat * ratio * 10) / 10,
+    carbs: Math.round(food.carbs * ratio * 10) / 10
+  };
+  
+  handleAddQuickFood(foodToAdd);
   handleCloseFoodModal();
 };
 

@@ -1,8 +1,7 @@
 <template>
   <GlassCard
-    background="#ffffff"
     card-class="p-6 border-[1rpx] border-solid border-gray-200"
-    radius="lg"
+    radius="xl"
     :border="false"
   >
     <h3 class="text-lg font-semibold text-gray-800 mb-4">周期设置</h3>

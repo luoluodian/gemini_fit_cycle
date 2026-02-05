@@ -1,17 +1,28 @@
 <template>
-  <view class="plan-templates-page h-screen flex flex-col overflow-hidden">
-    <!-- 1. Header (恢复标准用法) -->
-    <BaseNavBar 
-      title="配置日模板" 
-      :show-back="true"
-    />
+  <PageLayout 
+    v-if="planStore.draft" 
+    title="配置日模板" 
+    :use-scroll-view="false"
+  >
+    <!-- 1. 顶部固定区：计划摘要与进度 (Sticky) -->
+    <template #fixed-top>
+      <view class="px-4 pt-4">
+        <TemplateManagementStep
+          v-model:templates="planStore.draft.templates"
+          :basic-info="planStore.draft"
+          :cycle-info="planStore.draft"
+          mode="header"
+        />
+      </view>
+    </template>
 
-    <!-- 2. Main Content -->
-    <BaseScrollView :flex="true" scroll-view-class="px-4 py-6" content-class="space-y-6">
+    <!-- 2. 中间内容区：日模板列表 (Flex-1 + Scroll) -->
+    <view class="flex-1 min-h-0 flex flex-col p-4 h-full">
       <TemplateManagementStep
         v-model:templates="planStore.draft.templates"
         :basic-info="planStore.draft"
         :cycle-info="planStore.draft"
+        mode="list"
         @edit="handleEditTemplate"
         @add="handleAddTemplate"
         @auto-fill="handleAutoFill"
@@ -20,36 +31,30 @@
         @move="handleMoveTemplate"
         @long-press="handleLongPress"
       />
-      <!-- Placeholder -->
-      <view class="h-10 w-full"></view>
-    </BaseScrollView>
+    </view>
 
-    <!-- 3. Footer -->
-    <view 
-      class="bg-white border-t border-gray-200 px-4 pt-3 z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]"
-      style="padding-bottom: env(safe-area-inset-bottom);"
-    >
-      <view class="flex space-x-3 max-w-md mx-auto mb-3">
+    <template #footer>
+      <view class="flex space-x-3">
         <view
           @tap="handleBack"
-          class="flex-1 bg-gray-100 text-gray-700 py-3 px-4 rounded-xl font-black active:bg-gray-200 transition-colors text-center"
+          class="flex-1 bg-gray-100 text-gray-700 py-3.5 rounded-xl font-black active:bg-gray-200 transition-colors text-center"
         >
           上一步
         </view>
         <view
           @tap="handleSave"
-          class="flex-1 bg-emerald-600 text-white py-3 px-4 rounded-xl font-black active:bg-emerald-700 transition-colors text-center shadow-sm"
+          class="flex-1 bg-emerald-600 text-white py-3.5 rounded-xl font-black active:bg-emerald-700 transition-colors text-center shadow-sm"
         >
           确认计划
         </view>
       </view>
-    </view>
-  </view>
+    </template>
+  </PageLayout>
 </template>
 
 <script setup lang="ts">
 import Taro, { useRouter } from "@tarojs/taro";
-import BaseNavBar from "@/components/common/BaseNavBar.vue";
+import PageLayout from "@/components/common/PageLayout.vue";
 import TemplateManagementStep from "@/components/plan-creator/TemplateManagementStep.vue";
 import { usePlanStore } from "@/stores/plan";
 import { planService } from "@/services";
@@ -189,9 +194,6 @@ const handleSave = async () => {
 </script>
 
 <style scoped>
-.plan-templates-page {
-  min-height: 100vh;
-}
 .hero-title {
   font-family: "Noto Serif SC", serif;
 }

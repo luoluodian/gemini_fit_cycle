@@ -60,6 +60,7 @@ declare module 'vue' {
     NutritionProgress: typeof import('./src/components/plan-creator/NutritionProgress.vue')['default']
     NutritionTargets: typeof import('./src/components/daily-plan/NutritionTargets.vue')['default']
     PageHeader: typeof import('./src/components/common/PageHeader.vue')['default']
+    PageLayout: typeof import('./src/components/common/PageLayout.vue')['default']
     PhaseCard: typeof import('./src/components/carb-cycle-setup/PhaseCard.vue')['default']
     PlanCard: typeof import('./src/components/plan/PlanCard.vue')['default']
     PlanDailyMealCard: typeof import('./src/components/plan-creator/PlanDailyMealCard.vue')['default']

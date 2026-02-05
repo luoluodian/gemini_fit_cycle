@@ -7,16 +7,16 @@
     @update="(val) => (modalVisible = val)"
     style="width: 90vw"
   >
-    <view class="p-1">
+    <view class="p-4">
       <!-- 标题栏 (增加删除与收藏) -->
       <view class="flex items-center justify-between mb-3 relative">
         <view class="w-10">
-          <view 
-            v-if="props.editingFood" 
+          <view
+            v-if="props.editingFood"
             class="p-1 text-red-400 active:opacity-60"
             @click="$emit('delete', props.editingFood)"
           >
-            <Del font-size="18"></Del>
+            <Del :size="22"></Del>
           </view>
         </view>
 
@@ -25,13 +25,17 @@
         }}</text>
 
         <view class="w-10 flex justify-end">
-          <view 
-            v-if="props.editingFood" 
+          <view
+            v-if="props.editingFood"
             class="p-1 transition-all active:scale-95"
             @click="$emit('toggleFavorite', props.editingFood)"
           >
-            <HeartFill v-if="props.editingFood.isFavorite" font-size="18" color="#ef4444"></HeartFill>
-            <Heart v-else font-size="18" color="#d1d5db"></Heart>
+            <HeartFill
+              v-if="props.editingFood.isFavorite"
+              :size="22"
+              color="#ef4444"
+            ></HeartFill>
+            <Heart v-else :size="22" color="#d1d5db"></Heart>
           </view>
         </view>
       </view>

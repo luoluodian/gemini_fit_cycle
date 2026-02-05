@@ -1,15 +1,12 @@
 <template>
-  <view v-if="foods" class="meal-config-page h-screen flex flex-col overflow-hidden">
-    <!-- 1. Header -->
-    <BaseNavBar 
-      :title="mealLabel + '食材配置'" 
-      :show-back="true"
-    />
-
-    <!-- 2. Main Content -->
-    <view class="flex-1 flex flex-col min-h-0 px-4 py-4 space-y-3 overflow-hidden">
-      <!-- 营养汇总卡片 -->
-      <view class="flex-shrink-0 animate-fade-in-up">
+  <PageLayout 
+    v-if="foods" 
+    :title="mealLabel + '食材配置'" 
+    :use-scroll-view="false"
+  >
+    <!-- 1. 顶部固定区：营养汇总 (Sticky) -->
+    <template #fixed-top>
+      <view class="px-4 pt-4">
         <GlassCard 
           background="#ffffff" 
           card-class="p-4 shadow-sm border-[1rpx] border-solid border-gray-200"
@@ -44,38 +41,32 @@
           </view>
         </GlassCard>
       </view>
+    </template>
 
-      <!-- 食物列表卡片 -->
-      <view class="flex-1 min-h-0 animate-fade-in-up delay-100">
-        <GlassCard 
-          background="#ffffff" 
-          card-class="p-4 shadow-sm border-[1rpx] border-solid border-gray-200 h-full flex flex-col"
-          radius="xl"
-          :border="false"
+    <!-- 2. 中间内容区：食物列表 (Flex-1 + Scroll) -->
+    <view class="flex-1 min-h-0 flex flex-col px-4 pt-3 pb-4 overflow-hidden h-full">
+      <GlassCard 
+        background="#ffffff" 
+        card-class="p-4 shadow-sm border-[1rpx] border-solid border-gray-200 flex-1 flex flex-col min-h-0 h-full"
+        radius="xl"
+        :border="false"
+      >
+        <view class="flex items-center justify-between mb-4 flex-shrink-0">
+          <h3 class="text-sm font-black text-gray-800 flex items-center">
+            <view class="w-1.5 h-3.5 bg-orange-500 rounded-full mr-2"></view>
+            已选食材清单
+          </h3>
+          <text class="text-[18rpx] text-gray-300 font-black uppercase tracking-widest">{{ foods.length }} 个食物</text>
+        </view>
+        
+        <BaseScrollView 
+          flex
+          scroll-view-class="flex-1 min-h-0"
+          content-class="pb-4"
         >
-          <view class="flex items-center justify-between mb-4 flex-shrink-0">
-            <h3 class="text-sm font-black text-gray-800 flex items-center">
-              <view class="w-1.5 h-3.5 bg-orange-500 rounded-full mr-2"></view>
-              已选食材清单
-            </h3>
-            <text class="text-[18rpx] text-gray-300 font-black uppercase tracking-widest">{{ foods.length }} 个食物</text>
-          </view>
-          
-          <BaseScrollView 
-            flex
-            scroll-view-class="flex-1 min-h-0"
-            content-class="pb-2"
-          >
-            <!-- 空状态 -->
-            <view v-if="foods.length === 0" class="flex flex-col items-center justify-center py-12">
-              <view class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-3">
-                <text class="text-3xl grayscale opacity-30">🍽️</text>
-              </view>
-              <text class="text-xs font-black text-gray-300 uppercase tracking-widest">还没有添加任何食材</text>
-            </view>
-
-            <!-- 食物列表条目 -->
-            <view v-else class="space-y-1">
+          <!-- 1. 列表有内容时的展示模式 -->
+          <template v-if="foods.length > 0">
+            <view class="space-y-1">
               <FoodItemCard
                 v-for="(food, index) in foods" 
                 :key="index"
@@ -87,33 +78,39 @@
                 @delete="removeFood(index)"
               />
             </view>
-          </BaseScrollView>
-        </GlassCard>
-      </view>
+            
+            <!-- 列表末尾的“追加”按钮 (长条形) -->
+            <view
+              class="w-full py-3 border-[1rpx] border-dashed border-emerald-100 bg-emerald-50/10 rounded-xl flex items-center justify-center active:bg-emerald-50 transition-all mt-3"
+              @tap="openFoodSelector"
+            >
+              <text class="text-[20rpx] font-black text-emerald-600/60">+ 继续添加食材</text>
+            </view>
+          </template>
 
-      <!-- 添加食材按钮 -->
-      <view class="flex-shrink-0 animate-fade-in-up delay-200">
-        <view 
-          @tap="openFoodSelector" 
-          class="w-full py-4 bg-emerald-500 rounded-2xl text-white font-black shadow-lg shadow-emerald-100 active:scale-[0.98] transition-all flex items-center justify-center space-x-3 mb-2"
-        >
-          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-          </svg>
-          <text class="tracking-widest text-sm">添加本餐食材</text>
-        </view>
-      </view>
+          <!-- 2. 列表为空时的展示模式 (正方形占位符) -->
+          <view v-else class="flex flex-col items-center pt-10">
+            <view 
+              class="w-32 h-32 border-2 border-dashed border-gray-100 bg-gray-50/30 rounded-2xl flex flex-col items-center justify-center active:scale-95 active:bg-emerald-50/20 active:border-emerald-200 transition-all"
+              @tap="openFoodSelector"
+            >
+              <text class="text-4xl text-gray-200 font-light mb-2">+</text>
+              <text class="text-[20rpx] font-black text-gray-300 uppercase tracking-widest">添加食材</text>
+            </view>
+          </view>
+        </BaseScrollView>
+      </GlassCard>
     </view>
 
-    <!-- 3. Footer -->
-    <view 
-      class="bg-white border-t border-gray-200 px-4 pt-3 z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]"
-      style="padding-bottom: env(safe-area-inset-bottom);"
-    >
-      <view @tap="handleBack" class="w-full bg-gray-800 text-white py-3.5 rounded-xl font-black active:bg-black transition-colors text-center shadow-sm mb-3 text-sm tracking-widest">
+    <!-- 3. 底部操作区 (精简为单按钮) -->
+    <template #footer>
+      <view 
+        @tap="handleBack" 
+        class="w-full bg-gray-800 text-white py-3.5 rounded-xl font-black active:bg-black transition-colors text-center shadow-sm text-sm tracking-widest"
+      >
         完成配置并返回
       </view>
-    </view>
+    </template>
 
     <!-- Modals -->
     <FoodPicker
@@ -130,14 +127,14 @@
       @close="closeEditModal"
       @confirm="handleUpdateItem"
     />
-  </view>
+  </PageLayout>
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from "vue";
 import Taro from "@tarojs/taro";
 import { usePlanStore } from "@/stores/plan";
-import BaseNavBar from "@/components/common/BaseNavBar.vue";
+import PageLayout from "@/components/common/PageLayout.vue";
 import BaseScrollView from "@/components/common/BaseScrollView.vue";
 import GlassCard from "@/components/common/GlassCard.vue";
 import FoodPicker from "@/components/food/FoodPicker.vue";
@@ -189,13 +186,20 @@ const openFoodSelector = () => {
 
 const handleFoodPicked = (result: { food: FoodItem; quantity: number }) => {
   const { food, quantity } = result;
-  const ratio = quantity / (food.baseCount || 100);
+  const baseCount = food.baseCount || 100;
+  const ratio = quantity / baseCount;
   
   foods.value.push({
     ...food,
-    name: food.name,
     quantity,
-    unit: food.unit,
+    // 存储一份原始营养基准，用于后续精确计算，防止反复修改带来的误差
+    reference: {
+      calories: food.calories,
+      protein: food.protein,
+      carbs: food.carbs,
+      fat: food.fat,
+      baseCount: baseCount
+    },
     calories: Math.round(food.calories * ratio),
     protein: Math.round(food.protein * ratio * 10) / 10,
     carbs: Math.round(food.carbs * ratio * 10) / 10,
@@ -208,11 +212,16 @@ const handleEditItem = (index: number) => {
   if (!item) return;
   
   editingIndex.value = index;
-  // 为了让弹窗能反推基础营养，我们需要传一个类似原始食材的对象
-  // 这里假设 item 已经包含了原始的热量（每baseCount的热量）
-  // 实际上在 handleFoodPicked 中存入的是计算后的值，所以这里需要小心处理
-  // 这里暂时直接把 item 传进去，FoodDetailModal 会根据 quantity 和 baseCount 自动处理逻辑
-  editingFood.value = { ...item };
+  // 传入带有原始基准数据的对象给弹窗
+  editingFood.value = { 
+    ...item, 
+    // 还原为基准营养值供弹窗显示和计算
+    calories: item.reference?.calories ?? item.calories,
+    protein: item.reference?.protein ?? item.protein,
+    carbs: item.reference?.carbs ?? item.carbs,
+    fat: item.reference?.fat ?? item.fat,
+    baseCount: item.reference?.baseCount ?? item.baseCount
+  };
   editingQuantity.value = item.quantity;
   editModalVisible.value = true;
 };
@@ -229,19 +238,24 @@ const handleUpdateItem = (result: { food: any, quantity: number }) => {
   if (index === -1) return;
 
   const currentItem = foods.value[index];
-  const oldQuantity = currentItem.quantity || 100;
+  // 始终基于原始 reference 进行计算，杜绝误差累加
+  const ref = currentItem.reference || {
+    calories: currentItem.calories,
+    protein: currentItem.protein,
+    carbs: currentItem.carbs,
+    fat: currentItem.fat,
+    baseCount: currentItem.baseCount || 100
+  };
   
-  // 基于当前值按比例缩放，避免“滚雪球”误差的最好办法是使用原始基础值，
-  // 但目前数据结构中 calories 等存的是计算后的，所以我们按 (新分量/旧分量) 比例计算
-  const ratio = quantity / oldQuantity;
+  const ratio = quantity / (ref.baseCount || 100);
   
   const updatedItem = {
     ...currentItem,
     quantity,
-    calories: Math.round(currentItem.calories * ratio),
-    protein: Math.round(currentItem.protein * ratio * 10) / 10,
-    carbs: Math.round(currentItem.carbs * ratio * 10) / 10,
-    fat: Math.round(currentItem.fat * ratio * 10) / 10
+    calories: Math.round(ref.calories * ratio),
+    protein: Math.round(ref.protein * ratio * 10) / 10,
+    carbs: Math.round(ref.carbs * ratio * 10) / 10,
+    fat: Math.round(ref.fat * ratio * 10) / 10
   };
 
   foods.value[index] = updatedItem;
@@ -256,10 +270,6 @@ const handleBack = () => Taro.navigateBack();
 </script>
 
 <style scoped lang="scss">
-.meal-config-page {
-  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
-}
-
 @keyframes fadeInUp {
   from {
     opacity: 0;
