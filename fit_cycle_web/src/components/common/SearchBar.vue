@@ -7,7 +7,9 @@
       class="search-input px-4 py-2 pl-10 border-[1rpx] border-solid border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 transition-all text-sm bg-white/90"
       @input="handleInput"
     />
-    <view class="absolute left-3 top-1/2 -translate-y-1/2 flex items-center pointer-events-none">
+    <view
+      class="absolute left-5 top-1/2 -translate-y-1/2 flex items-center pointer-events-none"
+    >
       <Search font-size="16" color="#9ca3af"></Search>
     </view>
   </view>
@@ -29,7 +31,7 @@ withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<{
   "update:modelValue": [value: string];
-  "input": [value: string];
+  input: [value: string];
 }>();
 
 const handleInput = (e: any) => {

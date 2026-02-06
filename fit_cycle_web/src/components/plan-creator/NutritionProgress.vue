@@ -8,8 +8,8 @@
     <!-- 标题栏 -->
     <view class="flex items-center justify-between mb-3 text-xs">
       <view class="flex items-center space-x-2">
-        <text class="text-gray-400 font-black">当日目标</text>
-        <template v-if="carbType">
+        <text class="text-gray-400 font-black">当日营养参数</text>
+        <template v-if="isCarbCycle">
           <text class="text-sm">{{ phaseInfo.icon }}</text>
           <text class="font-black text-gray-800">{{ phaseInfo.name }}</text>
         </template>
@@ -18,8 +18,10 @@
       <view class="flex items-baseline space-x-1">
         <text class="text-[18rpx] text-gray-400 font-black">热量</text>
         <text class="text-base font-black text-emerald-600">{{ Math.round(current.calories) }}</text>
-        <text class="text-[16rpx] text-gray-300 font-black">/</text>
-        <text class="text-xs font-black text-gray-400">{{ target.calories }}</text>
+        <template v-if="target.calories > 0">
+          <text class="text-[16rpx] text-gray-300 font-black">/</text>
+          <text class="text-xs font-black text-gray-400">{{ target.calories }}</text>
+        </template>
         <text class="text-[14rpx] text-gray-400 font-bold ml-0.5">kcal</text>
       </view>
     </view>
@@ -89,9 +91,12 @@ interface Props {
   target: Nutrition;
   current: Nutrition;
   carbType?: "high" | "medium" | "low";
+  isCarbCycle?: boolean;
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  isCarbCycle: false
+});
 
 const getPercent = (curr: number, tar: number) => {
   if (!tar || isNaN(tar) || tar <= 0) return 0;

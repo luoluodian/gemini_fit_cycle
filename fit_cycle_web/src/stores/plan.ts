@@ -1,7 +1,10 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
+import { useUserStore } from './user';
 
 export const usePlanStore = defineStore('plan', () => {
+  const userStore = useUserStore();
+
   // 正在创建的计划草稿
   const draft = ref({
     name: "",
@@ -49,16 +52,15 @@ export const usePlanStore = defineStore('plan', () => {
   const initTemplates = (sequence?: any[]) => {
     const list = [];
     const isCarbCycle = draft.value.type === "carb-cycle";
-    const defaultCals = isCarbCycle ? 1800 : 2000;
     
-    // 如果有算法生成的序列，优先使用序列初始化
+    // 如果有算法生成的序列 (碳循环模式)，直接使用
     if (isCarbCycle && sequence && sequence.length > 0) {
       draft.value.templates = sequence.map((item, i) => ({
         tempId: "temp_" + Date.now() + i,
         targetCalories: item.calories,
-        protein: item.protein,
-        fat: item.fat,
-        carbs: item.carbs,
+        targetProtein: item.protein,
+        targetFat: item.fat,
+        targetCarbs: item.carbs,
         isConfigured: true,
         carbType: item.type,
         meals: { breakfast: [], lunch: [], dinner: [], snacks: [] },
@@ -66,23 +68,26 @@ export const usePlanStore = defineStore('plan', () => {
       return;
     }
 
-    // 默认兜底初始化
+    // 常规模式初始化：尝试基于用户 TDEE 计算，否则为 0
+    const tdee = userStore.healthProfile?.tdee || 0;
+    const initialTargets = tdee > 0 ? {
+      calories: Math.round(tdee),
+      protein: Math.round(tdee * 0.25 / 4), // 25% 蛋白
+      fat: Math.round(tdee * 0.25 / 9),     // 25% 脂肪
+      carbs: Math.round(tdee * 0.5 / 4)     // 50% 碳水
+    } : { calories: 0, protein: 0, fat: 0, carbs: 0 };
+
     const initialCount = isCarbCycle ? draft.value.cycleDays : 1;
 
     for (let i = 0; i < initialCount; i++) {
       list.push({
         tempId: "temp_" + Date.now() + i,
-        targetCalories: defaultCals,
-        protein: 120,
-        fat: 50,
-        carbs: 180,
-        isConfigured: false,
-        meals: {
-          breakfast: [],
-          lunch: [],
-          dinner: [],
-          snacks: [],
-        },
+        targetCalories: initialTargets.calories,
+        targetProtein: initialTargets.protein,
+        targetFat: initialTargets.fat,
+        targetCarbs: initialTargets.carbs,
+        isConfigured: tdee > 0,
+        meals: { breakfast: [], lunch: [], dinner: [], snacks: [] },
         carbType: "medium",
       });
     }
@@ -92,21 +97,23 @@ export const usePlanStore = defineStore('plan', () => {
   const batchUpdateTargets = (targets: { calories: number, protein: number, fat: number, carbs: number }) => {
     draft.value.templates.forEach(temp => {
       temp.targetCalories = targets.calories;
-      temp.protein = targets.protein;
-      temp.fat = targets.fat;
-      temp.carbs = targets.carbs;
+      temp.targetProtein = targets.protein;
+      temp.targetFat = targets.fat;
+      temp.targetCarbs = targets.carbs;
       temp.isConfigured = true;
     });
   };
 
   const addTemplate = () => {
+    // 复用 initTemplates 中的逻辑计算默认值
+    const tdee = userStore.healthProfile?.tdee || 0;
     draft.value.templates.push({
       tempId: 'temp_' + Date.now(),
-      targetCalories: 2000,
-      protein: 120,
-      fat: 50,
-      carbs: 180,
-      isConfigured: false,
+      targetCalories: tdee > 0 ? Math.round(tdee) : 0,
+      targetProtein: tdee > 0 ? Math.round(tdee * 0.25 / 4) : 0,
+      targetFat: tdee > 0 ? Math.round(tdee * 0.25 / 9) : 0,
+      targetCarbs: tdee > 0 ? Math.round(tdee * 0.5 / 4) : 0,
+      isConfigured: tdee > 0,
       meals: {
         breakfast: [],
         lunch: [],
@@ -120,7 +127,6 @@ export const usePlanStore = defineStore('plan', () => {
   const copyTemplate = (index: number) => {
     const source = JSON.parse(JSON.stringify(draft.value.templates[index]));
     source.tempId = "temp_" + Date.now();
-    // 优化命名：如果已有名称，增加(复)后缀且不重复叠加；如果没有名称则保持空
     if (source.name) {
       if (!source.name.includes("(复)")) {
         source.name = source.name.substring(0, 4) + "(复)";

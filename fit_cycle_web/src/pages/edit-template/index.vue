@@ -58,6 +58,7 @@
             :target="targetNutrition"
             :current="currentNutrition"
             :carb-type="localTemplate.carbType"
+            :is-carb-cycle="planStore.draft.type === 'carb-cycle'"
           />
         </view>
       </view>
@@ -131,7 +132,7 @@ import NutritionProgress from "@/components/plan-creator/NutritionProgress.vue";
 import PlanDailyMealCard from "@/components/plan-creator/PlanDailyMealCard.vue";
 import BaseModal from "@/components/common/BaseModal.vue";
 import { usePlanStore } from "@/stores/plan";
-import { showSuccess, showError } from "@/utils/toast";
+import { showSuccess, showError, showModal } from "@/utils/toast";
 
 const planStore = usePlanStore();
 const currentDayIndex = planStore.currentDayIndex;
@@ -179,9 +180,9 @@ const getMealIcon = (type: string) => {
 
 const targetNutrition = computed(() => ({
   calories: localTemplate.value?.targetCalories || 0,
-  protein: localTemplate.value?.protein || 0,
-  carbs: localTemplate.value?.carbs || 0,
-  fat: localTemplate.value?.fat || 0,
+  protein: localTemplate.value?.targetProtein || 0,
+  carbs: localTemplate.value?.targetCarbs || 0,
+  fat: localTemplate.value?.targetFat || 0,
 }));
 
 const currentNutrition = computed(() => {
@@ -304,12 +305,39 @@ const handleSave = () => {
   if (localTemplate.value.name) {
     localTemplate.value.name = localTemplate.value.name.substring(0, 6);
   }
+
+  // 状态判定逻辑
+  const hasFood = currentNutrition.value.calories > 0;
+  const hasTarget = localTemplate.value.targetCalories > 0;
   
+  // 碳循环模式默认已配置，常规模式需检查
+  const isConfigured = planStore.draft.type === 'carb-cycle' 
+    ? true 
+    : (hasFood || hasTarget);
+
+  if (!isConfigured) {
+    Taro.showModal({
+      title: '提示',
+      content: '当前未设置营养目标也未添加食物，将标记为“未配置”，确定保存吗？',
+      confirmColor: '#10b981',
+      success: (res) => {
+        if (res.confirm) {
+          saveToStore(false);
+        }
+      }
+    });
+    return;
+  }
+  
+  saveToStore(true);
+};
+
+const saveToStore = (isConfigured: boolean) => {
   // 同步所有元数据（名称、餐次顺序、自定义标签、食材）
   planStore.updateTemplate(currentDayIndex, {
     ...localTemplate.value,
     mealOrder: mealOrder.value,
-    isConfigured: true
+    isConfigured
   });
   
   showSuccess("配置已保存");

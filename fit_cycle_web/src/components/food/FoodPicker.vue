@@ -11,7 +11,7 @@
       @update:visible="(val) => !val && handleClose()"
     >
       <!-- 1. 固定头部：搜索与分类 -->
-      <view class="flex-shrink-0 z-10 animate-fade-in-up px-4 pt-4">
+      <view class="flex-shrink-0 z-10 animate-fade-in-up px-4">
         <!-- 搜索栏 -->
         <view class="mb-3">
           <SearchBar
