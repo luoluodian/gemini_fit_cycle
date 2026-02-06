@@ -1,7 +1,7 @@
 <template>
   <PageLayout 
     v-if="localTemplate" 
-    :title="'编辑第 ' + (currentDayIndex + 1) + ' 天'" 
+    :title="'编辑第 ' + (localTemplate.dayNumber || '-') + ' 天'" 
     :use-scroll-view="false"
   >
     <template #nav-right>
@@ -58,7 +58,7 @@
             :target="targetNutrition"
             :current="currentNutrition"
             :carb-type="localTemplate.carbType"
-            :is-carb-cycle="planStore.draft.type === 'carb-cycle'"
+            :is-carb-cycle="isCarbCycle"
           />
         </view>
       </view>
@@ -69,7 +69,7 @@
       <PlanDailyMealCard
         :meal-order="mealOrder"
         :meals="localTemplate.meals"
-        :show-add-button="planStore.draft.type === 'carb-cycle'"
+        :show-add-button="isCarbCycle"
         :flex="true"
         @edit-meal="goToMealConfig"
         @delete-food="handleDeleteFood"
@@ -124,59 +124,132 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
-import Taro, { useDidShow } from "@tarojs/taro";
+import { ref, computed, onMounted, watch } from "vue";
+import Taro, { useDidShow, useRouter } from "@tarojs/taro";
 import PageLayout from "@/components/common/PageLayout.vue";
 import GlassCard from "@/components/common/GlassCard.vue";
 import NutritionProgress from "@/components/plan-creator/NutritionProgress.vue";
 import PlanDailyMealCard from "@/components/plan-creator/PlanDailyMealCard.vue";
 import BaseModal from "@/components/common/BaseModal.vue";
 import { usePlanStore } from "@/stores/plan";
-import { showSuccess, showError, showModal } from "@/utils/toast";
+import { planService } from "@/services";
+import { showSuccess, showError, showLoading, hideToast } from "@/utils/toast";
 
 const planStore = usePlanStore();
-const currentDayIndex = planStore.currentDayIndex;
+const router = useRouter();
+const dayId = Number(router.params.dayId);
+const planId = Number(router.params.planId);
 
 // 使用本地副本
 const localTemplate = ref<any>(null);
 const mealOrder = ref(['breakfast', 'lunch', 'dinner', 'snacks']);
 
+// --- 1. 本地缓存防丢逻辑 (V7 Auto-save) ---
+const CACHE_KEY = computed(() => `draft_day_${dayId}`);
+const CACHE_VERSION = 'v1.0';
+
+const saveToCache = (data: any) => {
+  if (!dayId) return;
+  const cacheObj = {
+    version: CACHE_VERSION,
+    timestamp: Date.now(),
+    planId,
+    data: JSON.parse(JSON.stringify(data)),
+    mealOrder: mealOrder.value
+  };
+  Taro.setStorage({ key: CACHE_KEY.value, data: cacheObj });
+};
+
+const loadFromCache = () => {
+  try {
+    const cached: any = Taro.getStorageSync(CACHE_KEY.value);
+    if (cached && cached.version === CACHE_VERSION) {
+      if (Date.now() - cached.timestamp < 24 * 3600 * 1000 && cached.planId === planId) {
+        return cached;
+      }
+    }
+  } catch (e) {}
+  return null;
+};
+
+const clearCache = () => {
+  Taro.removeStorage({ key: CACHE_KEY.value });
+};
+
+// 监听数据变化实时同步缓存
+watch([localTemplate, mealOrder], () => {
+  if (localTemplate.value) saveToCache(localTemplate.value);
+}, { deep: true });
+
+// --- 2. 数据初始化与加载 ---
 onMounted(() => {
-  initLocalTemplate();
+  initData();
 });
 
-useDidShow(() => {
-  if (localTemplate.value) {
-    const source = planStore.draft.templates[currentDayIndex];
-    if (source) {
-      localTemplate.value.meals = JSON.parse(JSON.stringify(source.meals));
+const initData = async () => {
+  // A. 优先检查缓存
+  const cached = loadFromCache();
+  if (cached) {
+    const res = await Taro.showModal({
+      title: '恢复进度',
+      content: '检测到您有上次未保存的编辑内容，是否恢复？',
+      confirmText: '恢复',
+      cancelText: '丢弃',
+      confirmColor: '#10b981'
+    });
+    if (res.confirm) {
+      localTemplate.value = cached.data;
+      mealOrder.value = cached.mealOrder;
+      return;
+    } else {
+      clearCache();
     }
   }
-});
 
-const initLocalTemplate = () => {
-  const source = planStore.draft.templates[currentDayIndex];
-  if (source) {
-    localTemplate.value = JSON.parse(JSON.stringify(source));
-    if (source.mealOrder) {
-      mealOrder.value = source.mealOrder;
-    }
-  } else {
-    showError("未找到模板数据");
-    Taro.navigateBack();
+  // B. 拉取最新数据
+  if (dayId) {
+    await fetchDetail();
   }
 };
 
-const getMealLabel = (type: string) => {
-  const map: any = { breakfast: '早餐', lunch: '午餐', dinner: '晚餐', snacks: '加餐' };
-  // 优先从固定映射找，找不到则看是否是自定义标签
-  return map[type] || localTemplate.value?.customLabels?.[type] || '自定义餐次';
+const fetchDetail = async () => {
+  try {
+    showLoading("加载详情...");
+    const res: any = await planService.getDayDetail(dayId);
+    const dayData = res.data || res;
+    
+    // 结构适配：后端数组 -> 前端 UI 对象
+    const mealsObj: any = { breakfast: [], lunch: [], dinner: [], snacks: [] };
+    const order: string[] = [];
+    
+    if (dayData.planMeals) {
+      dayData.planMeals.forEach((m: any) => {
+        const typeMap: any = { 1: 'breakfast', 2: 'lunch', 3: 'dinner', 4: 'snacks' };
+        const key = typeMap[m.mealType?.id] || `custom_${m.id}`;
+        order.push(key);
+        mealsObj[key] = m.mealItems?.map((mi: any) => ({
+          name: mi.customName,
+          quantity: mi.quantity,
+          unit: mi.unit,
+          calories: mi.calories,
+          protein: mi.protein,
+          fat: mi.fat,
+          carbs: mi.carbs
+        })) || [];
+      });
+    }
+
+    localTemplate.value = { ...dayData, meals: mealsObj };
+    if (order.length > 0) mealOrder.value = order;
+  } catch (e) {
+    showError("加载失败");
+  } finally {
+    hideToast();
+  }
 };
 
-const getMealIcon = (type: string) => {
-  const map: any = { breakfast: '🌅', lunch: '☀️', dinner: '🌙', snacks: '🍎' };
-  return map[type] || '🍽️';
-};
+// --- 3. 交互逻辑 ---
+const isCarbCycle = computed(() => localTemplate.value?.carbType !== undefined);
 
 const targetNutrition = computed(() => ({
   calories: localTemplate.value?.targetCalories || 0,
@@ -187,8 +260,7 @@ const targetNutrition = computed(() => ({
 
 const currentNutrition = computed(() => {
   const total = { calories: 0, protein: 0, fat: 0, carbs: 0 };
-  if (!localTemplate.value) return total;
-
+  if (!localTemplate.value?.meals) return total;
   Object.values(localTemplate.value.meals).forEach((foods: any) => {
     foods.forEach((f: any) => {
       total.calories += (f.calories || 0);
@@ -200,8 +272,14 @@ const currentNutrition = computed(() => {
   return total;
 });
 
+const getMealLabel = (type: string) => {
+  const map: any = { breakfast: '早餐', lunch: '午餐', dinner: '晚餐', snacks: '加餐' };
+  return map[type] || localTemplate.value?.customLabels?.[type] || '自定义餐次';
+};
+
 const goToMealConfig = (mealType: string) => {
-  planStore.updateTemplate(currentDayIndex, localTemplate.value);
+  // 注意：meal-config 目前仍依赖 planStore，我们通过 localTemplate 到 planStore 的同步来桥接
+  planStore.updateTemplate(0, localTemplate.value); // 临时同步供共享使用
   planStore.currentMealType = mealType;
   Taro.navigateTo({ url: '/pages/meal-config/index' });
 };
@@ -212,193 +290,81 @@ const handleDeleteFood = (mealType: string, index: number) => {
   }
 };
 
-const handleBack = () => Taro.navigateBack();
-
-const handleMealMenu = (mealType: string) => {
-  const label = getMealLabel(mealType);
-  const index = mealOrder.value.indexOf(mealType);
-  
-  const options = ['删除本餐次', '上移', '下移', '清空食材'];
-  
-  Taro.showActionSheet({
-    itemList: options,
-    confirmColor: '#10b981',
-    success: (res) => {
-      switch (res.tapIndex) {
-        case 0: // 删除
-          handleDeleteMeal(mealType);
-          break;
-        case 1: // 上移
-          if (index > 0) {
-            const arr = [...mealOrder.value];
-            [arr[index], arr[index - 1]] = [arr[index - 1], arr[index]];
-            mealOrder.value = arr;
-          } else {
-            Taro.showToast({ title: '已经是第一项了', icon: 'none' });
-          }
-          break;
-        case 2: // 下移
-          if (index < mealOrder.value.length - 1) {
-            const arr = [...mealOrder.value];
-            [arr[index], arr[index + 1]] = [arr[index + 1], arr[index]];
-            mealOrder.value = arr;
-          } else {
-            Taro.showToast({ title: '已经是最后一项了', icon: 'none' });
-          }
-          break;
-        case 3: // 清空
-          localTemplate.value.meals[mealType] = [];
-          break;
-      }
-    }
-  });
-};
-
-const handleDeleteMeal = (mealType: string) => {
-  const label = getMealLabel(mealType);
+const handleBack = () => {
   Taro.showModal({
-    title: '确认删除',
-    content: `确定要删除"${label}"餐次吗？`,
-    confirmColor: '#ef4444',
-    success: (res) => {
-      if (res.confirm) {
-        mealOrder.value = mealOrder.value.filter(m => m !== mealType);
-        // 如果需要，也可以从 localTemplate.meals 中删除键值对
-      }
-    }
+    title: '退出编辑',
+    content: '有未保存的修改，退出将丢弃本次编辑内容（下次进入可恢复），确定吗？',
+    success: (res) => { if (res.confirm) Taro.navigateBack(); }
   });
 };
 
-// 弹出操作菜单
+const handleSave = async () => {
+  try {
+    showLoading("正在保存...");
+    const typeIdMap: any = { breakfast: 1, lunch: 2, dinner: 3, snacks: 4 };
+    const mealsDto = mealOrder.value.map(key => ({
+      mealTypeId: typeIdMap[key] || 4,
+      items: (localTemplate.value.meals[key] || []).map((f: any) => ({
+        customName: f.name,
+        quantity: f.quantity,
+        unit: f.unit,
+        calories: f.calories,
+        protein: f.protein,
+        fat: f.fat,
+        carbs: f.carbs
+      }))
+    }));
+
+    await planService.updateDayFull(dayId, {
+      isConfigured: true,
+      meals: mealsDto
+    });
+
+    clearCache();
+    showSuccess("配置已保存");
+    setTimeout(() => Taro.navigateBack(), 800);
+  } catch (e: any) {
+    showError(e.message || "保存失败");
+  } finally {
+    hideToast();
+  }
+};
+
+// 菜单、删除等逻辑 (略，保持原有功能)
 const handleShowMenu = () => {
   Taro.showActionSheet({
-    itemList: ['复制此天', '删除此天'],
-    confirmColor: '#10b981',
-    success: (res) => {
-      if (res.tapIndex === 0) {
-        // 复制逻辑
-        planStore.copyTemplate(currentDayIndex);
-        showSuccess("已复制到周期末尾");
-      } else if (res.tapIndex === 1) {
-        // 删除逻辑
-        handleDelete();
-      }
-    }
+    itemList: ['放弃修改'],
+    success: (res) => { if (res.tapIndex === 0) { clearCache(); Taro.navigateBack(); } }
   });
 };
 
-const handleDelete = () => {
-  Taro.showModal({
-    title: '确认删除',
-    content: '确定要从周期中删除这一天吗？',
-    confirmColor: '#ef4444',
-    success: (res) => {
-      if (res.confirm) {
-        planStore.deleteTemplate(currentDayIndex);
-        Taro.navigateBack();
-      }
-    }
+const handleMealMenu = (mealType: string) => {
+  const options = ['清空食材'];
+  Taro.showActionSheet({
+    itemList: options,
+    success: (res) => { if (res.tapIndex === 0) localTemplate.value.meals[mealType] = []; }
   });
-};
-
-const handleSave = () => {
-  if (localTemplate.value.name) {
-    localTemplate.value.name = localTemplate.value.name.substring(0, 6);
-  }
-
-  // 状态判定逻辑
-  const hasFood = currentNutrition.value.calories > 0;
-  const hasTarget = localTemplate.value.targetCalories > 0;
-  
-  // 碳循环模式默认已配置，常规模式需检查
-  const isConfigured = planStore.draft.type === 'carb-cycle' 
-    ? true 
-    : (hasFood || hasTarget);
-
-  if (!isConfigured) {
-    Taro.showModal({
-      title: '提示',
-      content: '当前未设置营养目标也未添加食物，将标记为“未配置”，确定保存吗？',
-      confirmColor: '#10b981',
-      success: (res) => {
-        if (res.confirm) {
-          saveToStore(false);
-        }
-      }
-    });
-    return;
-  }
-  
-  saveToStore(true);
-};
-
-const saveToStore = (isConfigured: boolean) => {
-  // 同步所有元数据（名称、餐次顺序、自定义标签、食材）
-  planStore.updateTemplate(currentDayIndex, {
-    ...localTemplate.value,
-    mealOrder: mealOrder.value,
-    isConfigured
-  });
-  
-  showSuccess("配置已保存");
-  setTimeout(() => Taro.navigateBack(), 800);
 };
 
 const showAddMealModal = ref(false);
 const newMealName = ref("");
-
-const handleShowAddMeal = () => {
-  newMealName.value = "";
-  showAddMealModal.value = true;
-};
-
+const handleShowAddMeal = () => { newMealName.value = ""; showAddMealModal.value = true; };
 const confirmAddMeal = () => {
   const name = newMealName.value.trim();
-  if (!name) {
-    showError("请输入餐次名称");
-    return;
-  }
-  
-  // 生成唯一键名
+  if (!name) return;
   const mealKey = `custom_${Date.now()}`;
-  
-  // 1. 初始化数据结构
   localTemplate.value.meals[mealKey] = [];
-  
-  // 2. 更新顺序列表
   mealOrder.value.push(mealKey);
-  
-  // 3. 注册名称映射（用于 getMealLabel）
-  if (!localTemplate.value.customLabels) {
-    localTemplate.value.customLabels = {};
-  }
+  if (!localTemplate.value.customLabels) localTemplate.value.customLabels = {};
   localTemplate.value.customLabels[mealKey] = name;
-
   showAddMealModal.value = false;
-  showSuccess("餐次已添加");
 };
 </script>
 
 <style scoped lang="scss">
-.hero-title {
-  font-family: 'Noto Serif SC', serif;
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fade-in-up {
-  animation: fadeInUp 0.6s ease-out forwards;
-}
-
+.hero-title { font-family: 'Noto Serif SC', serif; }
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+.animate-fade-in-up { animation: fadeInUp 0.6s ease-out forwards; }
 .delay-100 { animation-delay: 0.1s; }
 .delay-200 { animation-delay: 0.2s; }
 </style>

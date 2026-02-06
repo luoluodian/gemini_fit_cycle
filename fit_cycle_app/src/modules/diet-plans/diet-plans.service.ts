@@ -17,6 +17,8 @@ import { UpdatePlanMealDto } from '@/dtos/update-plan-meal.dto';
 import { CreatePlanMealItemDto } from '@/dtos/create-plan-meal-item.dto';
 import { UpdatePlanMealItemDto } from '@/dtos/update-plan-meal-item.dto';
 import { SavePlanTemplatesDto } from '@/dtos/save-plan-templates.dto';
+import { InitPlanDaysDto } from '@/dtos/init-plan-days.dto';
+import { UpdatePlanDayFullDto } from '@/dtos/update-plan-day-full.dto';
 
 /**
  * DietPlansService 管理饮食计划以及关联的计划日、餐次和食材明细的 CRUD 操作。
@@ -40,6 +42,157 @@ export class DietPlansService {
     private readonly shareRepo: Repository<PlanShare>,
     private readonly dataSource: DataSource,
   ) {}
+
+  /**
+   * 批量初始化天数结构
+   */
+  async initDays(planId: number, userId: number, dto: InitPlanDaysDto) {
+    const plan = await this.planRepo.findOne({ 
+      where: { id: planId, userId },
+      relations: { planDays: true } 
+    });
+    if (!plan) throw new NotFoundException('计划不存在或无权限');
+
+    // 如果未强制覆盖，检查是否有已配置的天
+    if (!dto.force) {
+      const configuredDays = plan.planDays.filter(d => d.isConfigured);
+      if (configuredDays.length > 0) {
+        throw new ForbiddenException({
+          code: 'OVERWRITE_RISK',
+          message: `已有 ${configuredDays.length} 天配置过内容，重新初始化将清空它们。`,
+          details: configuredDays.map(d => d.dayNumber)
+        });
+      }
+    }
+
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      // 1. 清理该计划下的所有旧天
+      await queryRunner.manager.delete(PlanDay, { planId });
+
+      // 2. 批量生成新天
+      const dayEntities = dto.days.map(d => {
+        const day = new PlanDay();
+        day.planId = planId;
+        day.dayNumber = d.dayNumber;
+        day.carbType = d.carbType || 'medium';
+        day.targetCalories = d.targetCalories || 0;
+        day.targetProtein = d.targetProtein || 0;
+        day.targetFat = d.targetFat || 0;
+        day.targetCarbs = d.targetCarbs || 0;
+        day.isConfigured = false;
+        return day;
+      });
+
+      await queryRunner.manager.save(PlanDay, dayEntities);
+      await queryRunner.commitTransaction();
+      return { success: true, count: dayEntities.length };
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw new InternalServerErrorException('初始化天数失败: ' + err.message);
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  /**
+   * 获取单日全量详情
+   */
+  async findDayDetail(dayId: number, userId: number) {
+    const day = await this.planDayRepo.findOne({
+      where: { id: dayId },
+      relations: {
+        plan: true,
+        planMeals: {
+          mealType: true,
+          mealItems: true
+        }
+      }
+    });
+
+    if (!day) throw new NotFoundException('计划日不存在');
+    if (Number(day.plan.userId) !== userId) throw new ForbiddenException('无权限访问');
+
+    return day;
+  }
+
+  /**
+   * 单日全量更新 (差量级联更新)
+   */
+  async updateDayFull(dayId: number, userId: number, dto: UpdatePlanDayFullDto) {
+    const day = await this.planDayRepo.findOne({
+      where: { id: dayId },
+      relations: { plan: true }
+    });
+    if (!day) throw new NotFoundException('计划日不存在');
+    if (Number(day.plan.userId) !== userId) throw new ForbiddenException('无权限更新');
+
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      // 1. 更新 PlanDay 基础属性
+      const updateData: Partial<PlanDay> = {};
+      if (dto.carbType !== undefined) updateData.carbType = dto.carbType;
+      if (dto.targetCalories !== undefined) updateData.targetCalories = dto.targetCalories;
+      if (dto.targetProtein !== undefined) updateData.targetProtein = dto.targetProtein;
+      if (dto.targetFat !== undefined) updateData.targetFat = dto.targetFat;
+      if (dto.targetCarbs !== undefined) updateData.targetCarbs = dto.targetCarbs;
+      if (dto.isConfigured !== undefined) updateData.isConfigured = dto.isConfigured;
+      
+      await queryRunner.manager.update(PlanDay, dayId, updateData);
+
+      // 2. 清理旧的餐次和食材 (简单方案：物理删除再重建该天的)
+      // 更加严谨方案是做 Map 对比 ID 差量更新，但鉴于“单日模板”数据量极小（通常 3-5 餐，每餐 2-5 个食材），
+      // 物理重建性能可控且逻辑最清晰。
+      await queryRunner.manager.delete(PlanMeal, { planDayId: dayId });
+
+      // 3. 重建树状结构
+      const mealTypes = await this.dictRepo.find({ where: { category: 'MealType' } });
+      const mealTypeMap = new Map(mealTypes.map(m => [m.id, m]));
+
+      const newMeals: PlanMeal[] = [];
+      for (const mealDto of dto.meals) {
+        const mealType = mealTypeMap.get(mealDto.mealTypeId);
+        if (!mealType) continue;
+
+        const meal = this.planMealRepo.create({
+          planDayId: dayId,
+          mealType,
+          scheduledTime: mealDto.scheduledTime,
+          note: mealDto.note,
+          mealItems: mealDto.items.map(itemDto => this.planMealItemRepo.create({
+            customName: itemDto.customName,
+            quantity: itemDto.quantity,
+            unit: itemDto.unit,
+            calories: itemDto.calories,
+            protein: itemDto.protein,
+            fat: itemDto.fat,
+            carbs: itemDto.carbs,
+            fiber: itemDto.fiber,
+            sortOrder: itemDto.sortOrder,
+          }))
+        });
+        newMeals.push(meal);
+      }
+
+      if (newMeals.length > 0) {
+        await queryRunner.manager.save(PlanMeal, newMeals);
+      }
+
+      await queryRunner.commitTransaction();
+      return { success: true };
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw new InternalServerErrorException('更新失败: ' + err.message);
+    } finally {
+      await queryRunner.release();
+    }
+  }
 
   /**
    * 批量保存计划模板 (覆盖式)
@@ -133,23 +286,18 @@ export class DietPlansService {
     const where: any = { userId };
     if (status) where.status = status;
     
-    // 简单的分页逻辑
+    // 显式确保 page/limit 是数字 (针对某些框架透传字符串的情况)
+    const skip = (Number(page) - 1) * Number(limit);
+    const take = Number(limit);
+
     const [items, total] = await this.planRepo.findAndCount({
       where,
       order: { createdAt: 'DESC' },
-      skip: (page - 1) * limit,
-      take: limit,
+      skip,
+      take,
     });
 
-    // 如果前端只期望数组，暂时返回 items (兼容旧逻辑)，或者返回带 meta 的对象
-    // 根据项目惯例，这里我们暂时直接返回 items 数组，或者由 Controller 包装
-    // 但为了让分页生效，最好返回 { items, total }
-    // 考虑到前端 `plan/index.vue` 是直接 `allPlans.value = res || []`，
-    // 我们暂时只返回 items，或者修改前端适配。
-    // 为了不破坏前端，我们先返回 items。如果前端需要加载更多，再协议升级。
-    // 但作为审计修复，应该提供标准分页结构。
-    // 假设前端目前是一次性加载，分页只是为了防止后端崩。
-    return items;
+    return { items, total };
   }
 
   /**

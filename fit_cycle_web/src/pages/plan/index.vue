@@ -196,7 +196,7 @@ const newPlanInitialData = ref<Partial<any>>({});
 const activePlans = computed(() => {
   return formatPlans(
     allPlans.value.filter(
-      (p) => p.status === "active" || p.status === "paused",
+      (p) => p.status === "active" || p.status === "paused" || p.status === "draft",
     ),
   );
 });
@@ -234,8 +234,21 @@ function formatPlans(plans: Plan[]) {
       const typeText = typeMap[plan.type] || plan.type;
       const daysLeft = plan.endDate ? calculateDaysLeft(plan.endDate) : 0;
       description = `类型：${typeText} | 剩余：${daysLeft}天`;
-      targets = `目标热量：${plan.calories || 0} kcal`;
+      targets = `目标热量：${plan.targetCalories || 0} kcal`;
       progressColor = "#10b981";
+    } else if (plan.status === "draft") {
+      tags.push("草稿", "待配置");
+      const typeMap: Record<string, string> = {
+        "fat-loss": "减脂",
+        "muscle-gain": "增肌",
+        maintenance: "维持",
+        custom: "自定义",
+        "carb-cycle": "碳循环",
+      };
+      const typeText = typeMap[plan.type] || plan.type;
+      description = `类型：${typeText} | 创建时间：${formatDate(plan.createdAt)}`;
+      targets = `目标：未正式开启`;
+      progressColor = "#9ca3af";
     } else if (plan.status === "paused") {
       tags.push("暂停中");
       const typeMap: Record<string, string> = {
@@ -248,7 +261,7 @@ function formatPlans(plans: Plan[]) {
       const typeText = typeMap[plan.type] || plan.type;
       const daysLeft = plan.endDate ? calculateDaysLeft(plan.endDate) : 0;
       description = `类型：${typeText} | 剩余：${daysLeft}天`;
-      targets = `目标热量：${plan.calories || 0} kcal`;
+      targets = `目标热量：${plan.targetCalories || 0} kcal`;
       progressColor = "#f59e0b";
     } else if (plan.status === "completed") {
       tags.push("已完成");
@@ -289,9 +302,9 @@ function formatPlans(plans: Plan[]) {
 
     // 生成操作按钮
     const actions: any[] = [];
-    if (plan.status === "active" || plan.status === "paused") {
+    if (plan.status === "active" || plan.status === "paused" || plan.status === "draft") {
       actions.push({
-        label: "查看详情",
+        label: plan.status === 'draft' ? "继续配置" : "查看详情",
         type: "view",
         class: "flex-1 bg-emerald-600 text-white hover:bg-emerald-700",
       });
@@ -384,8 +397,10 @@ function formatDate(dateString: string): string {
 async function loadPlanData() {
   try {
     showLoading("加载中...");
-    const res = await planService.getPlans();
-    allPlans.value = res || [];
+    // 显式传递分页参数，避免潜在的参数解析错误
+    const res: any = await planService.getPlans({ page: 1, limit: 20 });
+    // 适配后端分页结构 { items, total } 或 直接数组 (兜底)
+    allPlans.value = res.items || (Array.isArray(res) ? res : []);
   } catch (error) {
     console.error("加载计划失败:", error);
     showError("加载计划失败");
@@ -454,10 +469,17 @@ const handleCreatePlan = async (formData: any) => {
   // ... (existing handleCreatePlan code)
 };
 
+let isNavigating = false;
 const handlePlanAction = async (type: string, planId: string | number) => {
+  if (isNavigating) return;
+  
   switch (type) {
     case "view":
-      Taro.navigateTo({ url: `/pages/plan-detail/index?id=${planId}` });
+      isNavigating = true;
+      Taro.navigateTo({ 
+        url: `/pages/plan-detail/index?id=${planId}`,
+        complete: () => { isNavigating = false; }
+      });
       break;
     case "activate":
       try {
@@ -475,9 +497,29 @@ const handlePlanAction = async (type: string, planId: string | number) => {
     case "menu":
       // 可以展示更多操作
       Taro.showActionSheet({
-        itemList: ["编辑名称", "删除计划"],
+        itemList: ["分享计划", "编辑名称", "删除计划"],
         success: async (res) => {
-          if (res.tapIndex === 1) {
+          if (res.tapIndex === 0) {
+            // 分享逻辑
+            try {
+              showLoading("生成分享码...");
+              const { code } = await planService.sharePlan(Number(planId));
+              Taro.showModal({
+                title: '分享成功',
+                content: `分享码: ${code}\n复制此码发给好友即可导入计划。`,
+                confirmText: '复制码',
+                success: (mRes) => {
+                  if (mRes.confirm) {
+                    Taro.setClipboardData({ data: code });
+                  }
+                }
+              });
+            } catch (e) {
+              showError("生成分享码失败");
+            } finally {
+              hideToast();
+            }
+          } else if (res.tapIndex === 2) {
             Taro.showModal({
               title: "确认删除",
               content: "确定要删除此计划吗？",

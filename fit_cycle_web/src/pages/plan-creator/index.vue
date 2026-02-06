@@ -34,7 +34,8 @@ import PageLayout from "@/components/common/PageLayout.vue";
 import BasicInfoStep from "@/components/plan-creator/BasicInfoStep.vue";
 import CycleSettingsStep from "@/components/plan-creator/CycleSettingsStep.vue";
 import { usePlanStore } from "@/stores/plan";
-import { showError } from "@/utils/toast";
+import { planService } from "@/services";
+import { showLoading, hideToast, showError } from "@/utils/toast";
 
 const planStore = usePlanStore();
 
@@ -42,19 +43,43 @@ const handleUpdate = (data: any) => {
   Object.assign(planStore.draft, data);
 };
 
-const handleNext = () => {
+const handleNext = async () => {
   if (!planStore.draft.name.trim()) {
     showError("请输入计划名称");
     return;
   }
 
-  if (planStore.draft.type === "carb-cycle") {
-    // 碳循环流程：跳转到 Step 1.5 核心参数配置
-    Taro.navigateTo({ url: "/pages/carb-cycle-setup/index" });
-  } else {
-    // 常规流程：直接初始化模板并跳转到 Step 2 周期列表
-    planStore.initTemplates();
-    Taro.navigateTo({ url: "/pages/plan-templates/index" });
+  try {
+    showLoading("正在创建计划...");
+    // 1. 调用接口创建 DRAFT 状态的计划
+    const res = await planService.createPlan({
+      name: planStore.draft.name,
+      type: planStore.draft.type as any,
+      cycleDays: Number(planStore.draft.cycleDays),
+      cycleCount: Number(planStore.draft.cycleCount),
+    });
+    
+    const planId = res.id;
+    hideToast();
+
+    if (planStore.draft.type === "carb-cycle") {
+      // 碳循环流程：跳转到 Step 1.5 核心参数配置
+      Taro.navigateTo({ url: `/pages/carb-cycle-setup/index?planId=${planId}` });
+    } else {
+      // 常规流程：批量初始化默认天数并跳转
+      showLoading("正在生成日程...");
+      const days = [];
+      for (let i = 1; i <= planStore.draft.cycleDays; i++) {
+        days.push({ dayNumber: i });
+      }
+      await planService.initPlanDays(planId, { days });
+      
+      Taro.navigateTo({ url: `/pages/plan-templates/index?id=${planId}` });
+    }
+  } catch (e: any) {
+    showError(e.message || "创建失败");
+  } finally {
+    hideToast();
   }
 };
 

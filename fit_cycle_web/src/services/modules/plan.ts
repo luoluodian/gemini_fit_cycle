@@ -5,8 +5,8 @@ export const planService = {
   /**
    * 获取计划列表
    */
-  getPlans(params?: { status?: string }) {
-    return http.get<DietPlan[]>('/diet-plans', { params });
+  getPlans(params?: { status?: string; page?: number; limit?: number }) {
+    return http.get<any>('/diet-plans', params);
   },
 
   /**
@@ -63,6 +63,27 @@ export const planService = {
    */
   importPlan(code: string) {
     return http.post<{ id: number }>('/diet-plans/import', { code });
+  },
+
+  /**
+   * 批量初始化计划天数
+   */
+  initPlanDays(id: number, data: { days: any[]; force?: boolean }) {
+    return http.post<{ success: boolean; count: number }>(`/diet-plans/${id}/init-days`, data);
+  },
+
+  /**
+   * 获取单日全量详情
+   */
+  getDayDetail(dayId: number) {
+    return http.get<any>(`/diet-plans/days/${dayId}/detail`);
+  },
+
+  /**
+   * 单日全量更新
+   */
+  updateDayFull(dayId: number, data: any) {
+    return http.put<{ success: boolean }>(`/diet-plans/days/${dayId}/full-update`, data);
   },
 
   /**

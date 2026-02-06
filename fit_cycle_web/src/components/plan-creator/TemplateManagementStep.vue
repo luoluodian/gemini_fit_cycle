@@ -108,7 +108,7 @@
         >
           <view
             v-for="(template, index) in templates"
-            :key="template.tempId"
+            :key="template.id"
             :class="[
               'template-card relative flex items-center p-4 rounded-2xl border-[1rpx] border-solid transition-all active:scale-[0.98] shadow-sm',
               getPhaseStyles(template).border,
@@ -145,7 +145,7 @@
                   </view>
                 </view>
                 <text class="text-[18rpx] text-gray-300 font-black"
-                  >第 {{ Math.floor(index / 7) + 1 }} 周期</text
+                  >第 {{ Math.floor(index / cycleDays) + 1 }} 周期</text
                 >
               </view>
 
@@ -170,9 +170,9 @@
                     <text class="ml-0.5 opacity-50">kcal</text>
                   </view>
                   <text class="opacity-20 text-gray-200">|</text>
-                  <text>蛋 {{ template.protein }}g</text>
-                  <text>脂 {{ template.fat }}g</text>
-                  <text>碳 {{ template.carbs }}g</text>
+                  <text>蛋 {{ template.targetProtein }}g</text>
+                  <text>脂 {{ template.targetFat }}g</text>
+                  <text>碳 {{ template.targetCarbs }}g</text>
                 </view>
               </view>
             </view>
@@ -212,12 +212,13 @@ import GlassCard from "../common/GlassCard.vue";
 import BaseScrollView from "../common/BaseScrollView.vue";
 
 interface Template {
-  tempId: string;
+  id: string | number;
+  tempId?: string;
   name?: string;
   targetCalories: number;
-  protein: number;
-  fat: number;
-  carbs: number;
+  targetProtein: number;
+  targetFat: number;
+  targetCarbs: number;
   isConfigured: boolean;
   carbType?: "high" | "medium" | "low";
 }
@@ -247,7 +248,7 @@ const cycleDays = computed(() => props.cycleInfo.cycleDays || 0);
 const cycleCount = computed(() => props.cycleInfo.cycleCount || 0);
 const isCarbCycle = computed(() => props.basicInfo.type === "carb-cycle");
 const configuredCount = computed(
-  () => props.templates.filter((t) => t.isConfigured).length,
+  () => props.templates?.filter((t) => t.isConfigured).length || 0,
 );
 
 const typeLabel = computed(() => {
@@ -262,13 +263,13 @@ const typeLabel = computed(() => {
 });
 
 const highDays = computed(
-  () => props.templates.filter((t) => t.carbType === "high").length,
+  () => props.templates?.filter((t) => t.carbType === "high").length || 0,
 );
 const mediumDays = computed(
-  () => props.templates.filter((t) => t.carbType === "medium").length,
+  () => props.templates?.filter((t) => t.carbType === "medium").length || 0,
 );
 const lowDays = computed(
-  () => props.templates.filter((t) => t.carbType === "low").length,
+  () => props.templates?.filter((t) => t.carbType === "low").length || 0,
 );
 
 const getPhaseStyles = (template: Template) => {
@@ -279,7 +280,7 @@ const getPhaseStyles = (template: Template) => {
       text: "",
       bar: "hidden",
     };
-  const styles = {
+  const styles: any = {
     high: {
       text: "高碳",
       icon: "🔥",
@@ -308,7 +309,7 @@ const getPhaseStyles = (template: Template) => {
       labelColor: "text-blue-700",
     },
   };
-  return styles[template.carbType || "medium"];
+  return styles[template.carbType || "medium"] || styles.medium;
 };
 
 const handleEdit = (index: number) => emit("edit", index);

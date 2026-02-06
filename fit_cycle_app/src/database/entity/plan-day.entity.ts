@@ -82,6 +82,9 @@ export class PlanDay {
   @Column({ name: 'carb_type', length: 20, nullable: true, comment: '碳循环类型标识 (high/medium/low)' })
   carbType: string;
 
+  @Column({ name: 'is_configured', type: 'boolean', default: false, comment: '是否已配置完成' })
+  isConfigured: boolean;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 

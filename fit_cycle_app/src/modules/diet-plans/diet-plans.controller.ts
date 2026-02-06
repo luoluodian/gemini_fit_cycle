@@ -20,6 +20,8 @@ import { UpdatePlanMealDto } from '@/dtos/update-plan-meal.dto';
 import { CreatePlanMealItemDto } from '@/dtos/create-plan-meal-item.dto';
 import { UpdatePlanMealItemDto } from '@/dtos/update-plan-meal-item.dto';
 import { SavePlanTemplatesDto } from '@/dtos/save-plan-templates.dto';
+import { InitPlanDaysDto } from '@/dtos/init-plan-days.dto';
+import { UpdatePlanDayFullDto } from '@/dtos/update-plan-day-full.dto';
 import { PlanStatus } from '@/database/entity/diet-plan.entity';
 import { JwtAuthGuard } from '@/modules/auth/jwt.guard';
 
@@ -48,6 +50,38 @@ export class DietPlansController {
   async createPlan(@Req() req: any, @Body() dto: CreateDietPlanDto) {
     const userId = req.user.userId;
     return this.dietPlansService.createPlan(userId, dto);
+  }
+
+  /** 批量初始化计划天数 */
+  @Post(':id/init-days')
+  async initDays(
+    @Req() req: any,
+    @Param('id') id: string,
+    @Body() dto: InitPlanDaysDto
+  ) {
+    const userId = req.user.userId;
+    return this.dietPlansService.initDays(Number(id), userId, dto);
+  }
+
+  /** 获取单日全量详情 (包含餐次和食材) */
+  @Get('days/:dayId/detail')
+  async getDayDetail(
+    @Req() req: any,
+    @Param('dayId') dayId: string
+  ) {
+    const userId = req.user.userId;
+    return this.dietPlansService.findDayDetail(Number(dayId), userId);
+  }
+
+  /** 单日全量更新 */
+  @Put('days/:dayId/full-update')
+  async updateDayFull(
+    @Req() req: any,
+    @Param('dayId') dayId: string,
+    @Body() dto: UpdatePlanDayFullDto
+  ) {
+    const userId = req.user.userId;
+    return this.dietPlansService.updateDayFull(Number(dayId), userId, dto);
   }
 
   /** 获取系统推荐计划 */
@@ -120,7 +154,7 @@ export class DietPlansController {
     return this.dietPlansService.importPlan(userId, code);
   }
 
-  // --- Sub-resources (Optional individual CRUD) ---
+  // --- Sub-resources (Standardized CRUD) ---
 
   /** 为计划新增计划日 */
   @Post(':planId/days')
@@ -134,7 +168,7 @@ export class DietPlansController {
   }
 
   /** 更新计划日 */
-  @Put('../plan-days/:id')
+  @Put('days/:id')
   async updatePlanDay(
     @Req() req: any,
     @Param('id') id: string,
@@ -145,7 +179,7 @@ export class DietPlansController {
   }
 
   /** 为计划日添加餐次 */
-  @Post('../plan-days/:dayId/meals')
+  @Post('days/:dayId/meals')
   async createPlanMeal(
     @Req() req: any,
     @Param('dayId') dayId: string,
@@ -156,7 +190,7 @@ export class DietPlansController {
   }
 
   /** 更新计划餐次 */
-  @Put('../plan-meals/:id')
+  @Put('meals/:id')
   async updatePlanMeal(
     @Req() req: any,
     @Param('id') id: string,
@@ -167,7 +201,7 @@ export class DietPlansController {
   }
 
   /** 为餐次添加食材明细 */
-  @Post('../plan-meals/:mealId/items')
+  @Post('meals/:mealId/items')
   async createPlanMealItem(
     @Req() req: any,
     @Param('mealId') mealId: string,
@@ -178,7 +212,7 @@ export class DietPlansController {
   }
 
   /** 更新食材明细 */
-  @Put('../plan-meal-items/:id')
+  @Put('meal-items/:id')
   async updatePlanMealItem(
     @Req() req: any,
     @Param('id') id: string,

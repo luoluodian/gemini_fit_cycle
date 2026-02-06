@@ -116,7 +116,7 @@
 
           <!-- 计划日程 (周期分组) -->
           <view
-            class="bg-gray-50/80 rounded-2xl p-4 border border-solid border-gray-100"
+            class="bg-gray-50/80 rounded-2xl p-5 border border-solid border-gray-100"
           >
             <view class="flex items-center justify-between mb-4">
               <text class="text-sm font-black text-gray-700">计划日程</text>
@@ -125,11 +125,11 @@
               }}</text>
             </view>
 
-            <view class="space-y-4 max-h-[400rpx] overflow-y-auto pr-1">
+            <view class="space-y-4 max-h-[600rpx] overflow-y-auto pr-1">
               <view
                 v-for="c in plan.cycleCount"
                 :key="c"
-                class="bg-white rounded-xl p-3 border border-solid border-gray-100 shadow-sm"
+                class="bg-white rounded-xl p-4 border border-solid border-gray-100 shadow-sm"
               >
                 <view class="flex items-center justify-between mb-2.5">
                   <text class="text-xs font-black text-gray-500"
@@ -316,10 +316,21 @@
       </view>
     </view>
 
-    <template #footer v-if="plan.status !== 'active'">
-      <BaseButton class="w-full" type="primary" @click="handleActivate"
-        >激活此计划</BaseButton
-      >
+    <template #footer v-if="plan">
+      <view class="flex space-x-3 w-full">
+        <BaseButton 
+          class="flex-1" 
+          type="secondary" 
+          @tap="handleBack"
+        >返回上一页</BaseButton>
+        
+        <BaseButton 
+          v-if="plan.status !== 'active'" 
+          class="flex-[2]" 
+          type="primary" 
+          @tap="handleActivate"
+        >激活此计划</BaseButton>
+      </view>
     </template>
   </PageLayout>
 </template>
@@ -331,41 +342,56 @@ import PageLayout from "@/components/common/PageLayout.vue";
 import GlassCard from "@/components/common/GlassCard.vue";
 import BaseButton from "@/components/common/BaseButton.vue";
 import { planService } from "@/services";
+import { usePlanStore } from "@/stores/plan";
 import { calculateCarbCycle } from "@/utils/carb-cycle-algo";
 import { showSuccess, showError, showLoading, hideToast } from "@/utils/toast";
 
 const router = useRouter();
 const planId = Number(router.params.id);
+const planStore = usePlanStore();
 
 const plan = ref<any>(null);
 
 onMounted(() => {
-  fetchDetail();
+  // 延迟加载以防阻塞页面进入动画
+  setTimeout(() => {
+    fetchDetail();
+  }, 100);
 });
 
 const fetchDetail = async () => {
   if (!planId) return;
   try {
     showLoading("加载中...");
-    const res = await planService.getPlanDetail(planId);
-    plan.value = res;
+    const res: any = await planService.getPlanDetail(planId);
+    // 兼容后端结构并确保响应式
+    const data = res.data || res;
+    if (data) {
+      plan.value = data;
+    } else {
+      showError("未找到计划数据");
+    }
   } catch (e) {
+    console.error("Fetch Plan Detail Error:", e);
     showError("获取详情失败");
   } finally {
     hideToast();
   }
 };
 
-const totalDays = computed(
-  () => (plan.value?.cycleDays || 0) * (plan.value?.cycleCount || 0),
-);
+const totalDays = computed(() => {
+  if (!plan.value) return 0;
+  return (Number(plan.value.cycleDays) || 0) * (Number(plan.value.cycleCount) || 0);
+});
+
 const progressPercent = computed(() => {
-  if (!totalDays.value) return 0;
-  return Math.round(((plan.value?.completedDays || 0) / totalDays.value) * 100);
+  if (!plan.value || !totalDays.value) return 0;
+  return Math.min(100, Math.round(((Number(plan.value.completedDays) || 0) / totalDays.value) * 100));
 });
 
 const remainingDaysText = computed(() => {
-  const remaining = totalDays.value - (plan.value?.completedDays || 0);
+  if (!plan.value) return '加载中...';
+  const remaining = totalDays.value - (Number(plan.value.completedDays) || 0);
   return `还剩 ${Math.max(0, remaining)} 天`;
 });
 
@@ -551,49 +577,9 @@ const handleShare = async () => {
 };
 
 const handleEditPlan = () => {
-  // 将当前计划数据同步到草稿中，进入编辑模式
   if (!plan.value) return;
-  planStore.draft.name = plan.value.name;
-  planStore.draft.type = plan.value.type;
-  planStore.draft.cycleDays = plan.value.cycleDays;
-  planStore.draft.cycleCount = plan.value.cycleCount;
-  planStore.draft.carbCycleConfig = plan.value.carbCycleConfig;
-
-  // 转换模板格式供向导流使用
-  if (plan.value.planDays) {
-    planStore.draft.templates = plan.value.planDays.map((pd: any) => ({
-      tempId: "temp_" + pd.id,
-      name: pd.name || "",
-      targetCalories: pd.targetCalories,
-      protein: pd.targetProtein,
-      fat: pd.targetFat,
-      carbs: pd.targetCarbs,
-      carbType: pd.carbType,
-      isConfigured: true,
-      meals: pd.planMeals?.reduce((acc: any, pm: any) => {
-        const mealKeyMap: any = {
-          1: "breakfast",
-          2: "lunch",
-          3: "dinner",
-          4: "snacks",
-        };
-        const key = mealKeyMap[pm.mealType?.value] || `custom_${pm.id}`;
-        acc[key] =
-          pm.mealItems?.map((mi: any) => ({
-            name: mi.customName,
-            quantity: mi.quantity,
-            unit: mi.unit,
-            calories: mi.calories,
-            protein: mi.protein,
-            fat: mi.fat,
-            carbs: mi.carbs,
-          })) || [];
-        return acc;
-      }, {}) || { breakfast: [], lunch: [], dinner: [], snacks: [] },
-    }));
-  }
-
-  Taro.navigateTo({ url: "/pages/plan-creator/index?mode=edit&id=" + planId });
+  // 直接跳转到 plan-templates 页，复用配置流程
+  Taro.navigateTo({ url: `/pages/plan-templates/index?id=${planId}` });
 };
 
 const handleActivate = async () => {
@@ -618,6 +604,8 @@ const handlePause = async () => {
   }
 };
 
+const handleBack = () => Taro.navigateBack();
+
 const handleDelete = () => {
   Taro.showModal({
     title: "确认删除",
@@ -638,11 +626,20 @@ const handleDelete = () => {
 };
 
 const handleViewDay = (c: number, d: number) => {
-  // 跳转到编辑具体天模板
-  const dayNumber = d;
-  Taro.navigateTo({
-    url: `/pages/edit-template/index?planId=${planId}&dayIndex=${dayNumber - 1}`,
-  });
+  // 根据周期和日序号计算绝对 dayNumber (后端存储的 dayNumber 通常是 1-cycleDays)
+  // 如果 planDays 存储的是 1 到 cycleDays 的模板，则直接查找 d
+  // 如果 planDays 展开了所有周期 (例如 1-28)，则需要 (c-1)*cycleDays + d
+  // 根据 V7 设计，planDays 只存储一个周期的模板 (1-cycleDays)
+  const dayInCycle = d; 
+  const day = plan.value.planDays?.find((pd: any) => pd.dayNumber === dayInCycle);
+  
+  if (day) {
+    Taro.navigateTo({
+      url: `/pages/edit-template/index?planId=${planId}&dayId=${day.id}&mode=edit`,
+    });
+  } else {
+    showError("未找到该天数据");
+  }
 };
 
 const handleViewToday = () => {

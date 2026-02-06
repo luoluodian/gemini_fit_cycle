@@ -1,4 +1,5 @@
 import { IsString, IsOptional, IsNumber, IsEnum, IsDateString, IsObject, Max, Min, MaxLength } from 'class-validator';
+import { Type } from 'class-transformer';
 import { PlanType } from '@/database/entity/diet-plan.entity';
 
 /**
@@ -24,12 +25,14 @@ export class CreateDietPlanDto {
   @IsNumber()
   @Min(1)
   @Max(31)
+  @Type(() => Number)
   readonly cycleDays?: number;
 
   /** 循环次数 (例如 4 次表示一个月) */
   @IsOptional()
   @IsNumber()
   @Min(1)
+  @Type(() => Number)
   readonly cycleCount?: number;
 
   /** 计划开始日期 */
@@ -45,20 +48,24 @@ export class CreateDietPlanDto {
   /** 默认每日能量目标 (kcal) */
   @IsOptional()
   @IsNumber()
+  @Type(() => Number)
   readonly targetCalories?: number;
 
   /** 默认每日蛋白质目标 (g) */
   @IsOptional()
   @IsNumber()
+  @Type(() => Number)
   readonly targetProtein?: number;
 
   /** 默认每日脂肪目标 (g) */
   @IsOptional()
   @IsNumber()
+  @Type(() => Number)
   readonly targetFat?: number;
 
   /** 默认每日碳水化合物目标 (g) */
   @IsOptional()
   @IsNumber()
+  @Type(() => Number)
   readonly targetCarbs?: number;
 }

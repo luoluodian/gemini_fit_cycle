@@ -250,10 +250,13 @@ import BaseButton from "@/components/common/BaseButton.vue";
 import GlassCard from "@/components/common/GlassCard.vue";
 import PhaseCard from "@/components/carb-cycle-setup/PhaseCard.vue";
 import { usePlanStore } from "@/stores/plan";
+import { planService } from "@/services";
 import { calculateCarbCycle } from "@/utils/carb-cycle-algo";
-import { showError } from "@/utils/toast";
+import { showLoading, hideToast, showError } from "@/utils/toast";
 
 const planStore = usePlanStore();
+const router = useRouter();
+const planId = Number(router.params.planId);
 const cycleDays = computed(() => planStore.draft.cycleDays);
 
 // 使用计算属性封装算法调用
@@ -332,35 +335,34 @@ const handleNext = async () => {
     return;
   }
 
-  // 如果已经有模板内容，提醒用户将覆盖
-  if (planStore.draft.templates.length > 0) {
-    const res = await Taro.showModal({
-      title: "重新生成确认",
-      content: "修改碳循环配置将覆盖已有的日模板设置，确定继续吗？",
-      confirmColor: "#10b981",
+  try {
+    showLoading("正在生成周期数据...");
+    
+    // 1. 转换算法序列为后端 DTO 格式
+    const days = algoResult.value.sequence.map((item, i) => ({
+      dayNumber: i + 1,
+      carbType: item.type,
+      targetCalories: item.calories,
+      targetProtein: item.protein,
+      targetFat: item.fat,
+      targetCarbs: item.carbs
+    }));
+
+    // 2. 调用批量初始化接口
+    await planService.initPlanDays(planId, { 
+      days, 
+      force: true // 在向导流程中默认允许覆盖 
     });
-    if (!res.confirm) return;
+
+    hideToast();
+    
+    // 3. 跳转到日模板列表页
+    Taro.navigateTo({ url: `/pages/plan-templates/index?id=${planId}` });
+  } catch (e: any) {
+    showError(e.message || "初始化日程失败");
+  } finally {
+    hideToast();
   }
-
-  // 1. 根据算法生成的 sequence 初始化模板列表
-  // 映射关系：algoResult.sequence -> planStore.draft.templates
-  const list = algoResult.value.sequence.map((item, i) => ({
-    tempId: "temp_" + Date.now() + "_" + i,
-    name: "", // 不设名称，触发组件显示营养目标预览
-    targetCalories: item.calories,
-    protein: item.protein,
-    fat: item.fat,
-    carbs: item.carbs,
-    isConfigured: true,
-    carbType: item.type, // 'high' | 'medium' | 'low'
-    meals: { breakfast: [], lunch: [], dinner: [], snacks: [] },
-  }));
-
-  // 2. 更新 Store
-  planStore.draft.templates = list;
-
-  // 3. 跳转到配置日模板页面
-  Taro.navigateTo({ url: "/pages/plan-templates/index" });
 };
 </script>
 

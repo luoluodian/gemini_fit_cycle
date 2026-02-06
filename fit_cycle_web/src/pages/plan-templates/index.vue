@@ -1,6 +1,6 @@
 <template>
   <PageLayout 
-    v-if="planStore.draft" 
+    v-if="planData" 
     title="配置日模板" 
     :use-scroll-view="false"
   >
@@ -8,9 +8,9 @@
     <template #fixed-top>
       <view class="px-4 pt-4">
         <TemplateManagementStep
-          v-model:templates="planStore.draft.templates"
-          :basic-info="planStore.draft"
-          :cycle-info="planStore.draft"
+          :templates="planData.planDays"
+          :basic-info="planData"
+          :cycle-info="planData"
           mode="header"
         />
       </view>
@@ -19,13 +19,12 @@
     <!-- 2. 中间内容区：日模板列表 (Flex-1 + Scroll) -->
     <view class="flex-1 min-h-0 flex flex-col p-4 h-full">
       <TemplateManagementStep
-        v-model:templates="planStore.draft.templates"
-        :basic-info="planStore.draft"
-        :cycle-info="planStore.draft"
+        :templates="planData.planDays"
+        :basic-info="planData"
+        :cycle-info="planData"
         mode="list"
         @edit="handleEditTemplate"
         @add="handleAddTemplate"
-        @auto-fill="handleAutoFill"
         @copy="handleCopyTemplate"
         @delete="handleDeleteTemplate"
         @move="handleMoveTemplate"
@@ -53,140 +52,113 @@
 </template>
 
 <script setup lang="ts">
-import Taro, { useRouter } from "@tarojs/taro";
+import Taro, { useRouter, useDidShow } from "@tarojs/taro";
+import { ref } from "vue";
 import PageLayout from "@/components/common/PageLayout.vue";
 import TemplateManagementStep from "@/components/plan-creator/TemplateManagementStep.vue";
 import { usePlanStore } from "@/stores/plan";
 import { planService } from "@/services";
-import { convertTemplatesToDto } from "@/utils/plan-converter";
 import { showSuccess, showError, showLoading, hideToast } from "@/utils/toast";
 
 const planStore = usePlanStore();
 const router = useRouter();
-const isEditMode = router.params.mode === 'edit';
-const existingPlanId = Number(router.params.id);
+const planId = Number(router.params.id || router.params.planId);
+
+const planData = ref<any>(null);
+
+useDidShow(() => {
+  loadData();
+});
+
+const loadData = async () => {
+  if (!planId) return;
+  try {
+    showLoading("加载中...");
+    const res: any = await planService.getPlanDetail(planId);
+    planData.value = res.data || res;
+  } catch (e) {
+    showError("加载失败");
+  } finally {
+    hideToast();
+  }
+};
 
 const handleBack = () => Taro.navigateBack();
 
 const handleEditTemplate = (index: number) => {
-  planStore.currentDayIndex = index;
-  Taro.navigateTo({ url: "/pages/edit-template/index" });
+  const day = planData.value.planDays[index];
+  if (!day) return;
+  Taro.navigateTo({ 
+    url: `/pages/edit-template/index?dayId=${day.id}&planId=${planId}` 
+  });
 };
 
-const handleAddTemplate = () => {
-  if (planStore.draft.templates.length >= planStore.draft.cycleDays) {
+const handleAddTemplate = async () => {
+  if (planData.value.planDays.length >= planData.value.cycleDays) {
     Taro.showToast({ title: "已达到周期天数上限", icon: "none" });
     return;
   }
-  planStore.addTemplate();
-};
-
-const handleCopyTemplate = (index: number) => {
-  if (planStore.draft.templates.length >= planStore.draft.cycleDays) {
-    Taro.showToast({ title: "已达到周期天数上限", icon: "none" });
-    return;
+  
+  try {
+    showLoading("正在添加...");
+    await planService.createPlanDay(planId, { 
+      dayNumber: planData.value.planDays.length + 1 
+    });
+    loadData();
+  } catch (e) {
+    showError("添加失败");
   }
-  planStore.copyTemplate(index);
-  Taro.showToast({ title: "已复制", icon: "none" });
 };
 
-const handleDeleteTemplate = (index: number) => {
-  if (planStore.draft.templates.length <= 1) {
+const handleCopyTemplate = async () => {
+  showError("克隆功能开发中");
+};
+
+const handleDeleteTemplate = async (index: number) => {
+  const day = planData.value.planDays[index];
+  if (!day) return;
+  
+  if (planData.value.planDays.length <= 1) {
     Taro.showToast({ title: "至少保留一天", icon: "none" });
     return;
   }
-  planStore.deleteTemplate(index);
+
+  try {
+    showLoading("正在删除...");
+    await planService.removePlanDay(day.id);
+    loadData();
+  } catch (e) {
+    showError("删除失败");
+  }
 };
 
-const handleMoveTemplate = (from: number, to: number) => {
-  planStore.reorderTemplate(from, to);
+const handleMoveTemplate = () => {
+  showError("移动功能开发中");
 };
 
 const handleLongPress = (index: number) => {
-  const options = ["上移一天", "下移一天", "复制该天", "删除该天"];
+  const options = ["删除该天"];
   Taro.showActionSheet({
     itemList: options,
     success: (res) => {
-      switch (res.tapIndex) {
-        case 0:
-          handleMoveTemplate(index, index - 1);
-          break;
-        case 1:
-          handleMoveTemplate(index, index + 1);
-          break;
-        case 2:
-          handleCopyTemplate(index);
-          break;
-        case 3:
-          handleDeleteTemplate(index);
-          break;
-      }
+      if (res.tapIndex === 0) handleDeleteTemplate(index);
     },
   });
 };
 
-const handleAutoFill = () => {
-  if (planStore.draft.type === "carb-cycle") {
-    showSuccess("正在根据算法重新计算...");
-    // 碳循环流程的自动填充逻辑 (P-8/P-16 整合)
-  }
-};
-
 const handleSave = async () => {
   try {
-    showLoading(isEditMode ? "正在更新计划..." : "正在保存计划...");
-    
-    let planId: number;
-
-    if (isEditMode && existingPlanId) {
-      // 更新现有计划基础信息
-      await planService.updatePlan(existingPlanId, {
-        name: planStore.draft.name,
-        type: planStore.draft.type as any,
-        cycleDays: planStore.draft.cycleDays,
-        cycleCount: planStore.draft.cycleCount,
-        carbCycleConfig: planStore.draft.carbCycleConfig,
-      });
-      planId = existingPlanId;
-    } else {
-      // 创建新计划基础信息
-      const createRes = await planService.createPlan({
-        name: planStore.draft.name,
-        type: planStore.draft.type as any,
-        cycleDays: planStore.draft.cycleDays,
-        cycleCount: planStore.draft.cycleCount,
-        carbCycleConfig: planStore.draft.carbCycleConfig,
-      });
-      planId = createRes?.id;
-    }
-
-    if (!planId) throw new Error(isEditMode ? "计划更新失败" : "计划创建失败");
-
-    // 2. 转换并保存每日模板 (包含具体的食材)
-    showLoading("正在同步每日配置...");
-    const dtoList = convertTemplatesToDto(planStore.draft.templates);
-    await planService.savePlanTemplates(planId, { templates: dtoList });
-
-    // 3. 激活计划 (仅在新建模式且勾选时)
-    if (planStore.draft.setActive && !isEditMode) {
-      showLoading("正在激活计划...");
-      await planService.activatePlan(planId);
-    }
-
-    showSuccess(isEditMode ? "计划更新成功！" : "计划创建成功！");
+    showLoading("正在提交...");
+    await planService.updatePlan(planId, {
+      status: 'configured' as any
+    });
+    showSuccess("计划配置完成！");
     planStore.resetDraft();
-    
-    // 延迟返回
     setTimeout(() => {
-      if (isEditMode) {
-        Taro.navigateBack({ delta: 2 }); // 跳过向导回退到详情页
-      } else {
-        Taro.switchTab({ url: "/pages/plan/index" });
-      }
+      Taro.switchTab({ url: "/pages/plan/index" });
     }, 1500);
   } catch (e: any) {
-    console.error("Save Plan Error:", e);
-    showError(e.message || "保存失败，请重试");
+    showError(e.message || "提交失败");
   } finally {
     hideToast();
   }

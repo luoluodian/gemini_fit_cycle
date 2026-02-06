@@ -1,4 +1,5 @@
 import { IsString, IsOptional, IsNumber, IsEnum, IsDateString, IsObject, Max, Min, MaxLength } from 'class-validator';
+import { Type } from 'class-transformer';
 import { PlanType, PlanStatus } from '@/database/entity/diet-plan.entity';
 
 /**
@@ -26,11 +27,13 @@ export class UpdateDietPlanDto {
   @IsNumber()
   @Min(1)
   @Max(31)
+  @Type(() => Number)
   readonly cycleDays?: number;
 
   @IsOptional()
   @IsNumber()
   @Min(1)
+  @Type(() => Number)
   readonly cycleCount?: number;
 
   @IsOptional()
@@ -43,17 +46,21 @@ export class UpdateDietPlanDto {
 
   @IsOptional()
   @IsNumber()
+  @Type(() => Number)
   readonly targetCalories?: number;
 
   @IsOptional()
   @IsNumber()
+  @Type(() => Number)
   readonly targetProtein?: number;
 
   @IsOptional()
   @IsNumber()
+  @Type(() => Number)
   readonly targetFat?: number;
 
   @IsOptional()
   @IsNumber()
+  @Type(() => Number)
   readonly targetCarbs?: number;
 }
