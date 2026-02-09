@@ -244,7 +244,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from "vue";
-import Taro from "@tarojs/taro";
+import Taro, { useRouter } from "@tarojs/taro";
 import PageLayout from "@/components/common/PageLayout.vue";
 import BaseButton from "@/components/common/BaseButton.vue";
 import GlassCard from "@/components/common/GlassCard.vue";
@@ -262,7 +262,15 @@ const cycleDays = computed(() => planStore.draft.cycleDays);
 // 使用计算属性封装算法调用
 const algoResult = computed(() => {
   const config = planStore.draft?.carbCycleConfig;
-  if (!config) return null;
+  if (!config) return {
+    isBalanced: false,
+    summary: { totalProtein: 0, totalCarbs: 0, totalFat: 0 },
+    phaseResults: {
+      high: { protein: 0, carbs: 0, fat: 0, calories: 0 },
+      medium: { protein: 0, carbs: 0, fat: 0, calories: 0 },
+      low: { protein: 0, carbs: 0, fat: 0, calories: 0 }
+    }
+  };
 
   return calculateCarbCycle({
     weight: config.weight,

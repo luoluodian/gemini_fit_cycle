@@ -9,6 +9,7 @@
     <view v-if="actionText" class="mt-4">
       <view 
         class="px-4 py-2 bg-emerald-50 text-emerald-600 rounded-lg text-xs font-medium active:bg-emerald-100 transition-colors"
+        :data-test-id="dataTestId"
         @tap="handleAction"
       >
         {{ actionText }}
@@ -21,6 +22,7 @@
 interface Props {
   text?: string;
   actionText?: string;
+  dataTestId?: string;
 }
 
 interface Emits {
@@ -29,7 +31,8 @@ interface Emits {
 
 const props = withDefaults(defineProps<Props>(), {
   text: '暂无计划',
-  actionText: ''
+  actionText: '',
+  dataTestId: ''
 });
 
 const emit = defineEmits<Emits>();

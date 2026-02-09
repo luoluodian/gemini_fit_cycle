@@ -221,4 +221,25 @@ export class DietPlansController {
     const userId = req.user.userId;
     return this.dietPlansService.updatePlanMealItem(Number(id), dto, userId);
   }
+
+  /** 删除计划日 */
+  @Delete('days/:id')
+  async removePlanDay(@Req() req: any, @Param('id') id: string) {
+    const userId = req.user.userId;
+    return this.dietPlansService.removePlanDay(Number(id), userId);
+  }
+
+  /** 删除计划餐次 */
+  @Delete('meals/:id')
+  async removePlanMeal(@Req() req: any, @Param('id') id: string) {
+    const userId = req.user.userId;
+    return this.dietPlansService.removePlanMeal(Number(id), userId);
+  }
+
+  /** 删除餐次食材明细 */
+  @Delete('meal-items/:id')
+  async removePlanMealItem(@Req() req: any, @Param('id') id: string) {
+    const userId = req.user.userId;
+    return this.dietPlansService.removePlanMealItem(Number(id), userId);
+  }
 }

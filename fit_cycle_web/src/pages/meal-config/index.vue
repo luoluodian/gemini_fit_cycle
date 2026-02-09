@@ -148,7 +148,14 @@ const currentMealType = planStore.currentMealType;
 
 // 使用 computed 动态获取数据，保证响应式
 const foods = computed(() => {
-  const template = planStore.draft.templates[currentDayIndex];
+  // 优先从 templates[0] 获取（对应单日编辑模式的桥接数据）
+  let template = planStore.templates[0];
+  
+  // 如果 templates[0] 不存在，则回退到 draft.templates（对应新建计划流程）
+  if (!template) {
+    template = planStore.draft.templates[currentDayIndex];
+  }
+
   if (!template || !template.meals) return [];
   if (!template.meals[currentMealType]) {
     template.meals[currentMealType] = [];
@@ -158,9 +165,13 @@ const foods = computed(() => {
 
 const mealLabel = computed(() => {
   const map: any = { breakfast: '早餐', lunch: '午餐', dinner: '晚餐', snacks: '加餐' };
+  
+  // 同样处理模板引用逻辑
+  const template = planStore.templates[0] || planStore.draft.templates[currentDayIndex];
+  
   // 兼容自定义餐次名
-  if (planStore.draft.templates[currentDayIndex]?.customLabels?.[currentMealType]) {
-    return planStore.draft.templates[currentDayIndex].customLabels[currentMealType];
+  if (template?.customLabels?.[currentMealType]) {
+    return template.customLabels[currentMealType];
   }
   return map[currentMealType] || currentMealType;
 });

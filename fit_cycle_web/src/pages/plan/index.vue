@@ -5,6 +5,7 @@
       <template #left>
         <view
           class="flex items-center justify-center p-3 border-[1rpx] border-solid border-emerald-300 text-emerald-300 rounded-lg active:scale-95 transition-all ml-2 shadow-sm"
+          data-test-id="btn-nav-create"
           @tap="createNewPlan"
         >
           <Uploader font-size="18"></Uploader>
@@ -27,6 +28,7 @@
               <EmptyPlanState
                 text="暂无进行中的计划"
                 action-text="创建新计划"
+                data-test-id="btn-create-plan"
                 @action="createNewPlan"
               />
             </template>
@@ -560,6 +562,11 @@ const handleCreateRecommendedPlan = (type: string) => {
 // 页面加载时初始化
 onMounted(() => {
   loadPlanData();
+});
+
+// 暴露给自动化测试
+defineExpose({
+  createNewPlan
 });
 </script>
 

@@ -31,6 +31,13 @@ export const planService = {
   },
 
   /**
+   * 更新计划
+   */
+  updatePlan(id: number, data: any) {
+    return http.put(`/diet-plans/${id}`, data);
+  },
+
+  /**
    * 激活计划
    */
   activatePlan(id: number) {
@@ -89,13 +96,74 @@ export const planService = {
   /**
    * 批量保存计划模板
    */
+  savePlanTemplates(id: number, data: { templates: any[] }) {
+    return http.post<{ success: boolean }>(`/diet-plans/${id}/templates`, data);
+  },
 
-    savePlanTemplates(id: number, data: { templates: any[] }) {
+  // --- 子资源管理 (Sub-resources) ---
 
-      return http.post<{ success: boolean }>(`/diet-plans/${id}/templates`, data);
+  /**
+   * 为计划新增计划日
+   */
+  createPlanDay(planId: number, data: any) {
+    return http.post(`/diet-plans/${planId}/days`, data);
+  },
 
-    }
+  /**
+   * 更新计划日
+   */
+  updatePlanDay(dayId: number, data: any) {
+    return http.put(`/diet-plans/days/${dayId}`, data);
+  },
 
-  };
+  /**
+   * 删除计划日
+   */
+  removePlanDay(dayId: number) {
+    return http.delete(`/diet-plans/days/${dayId}`);
+  },
+
+  /**
+   * 为计划日添加餐次
+   */
+  createPlanMeal(dayId: number, data: any) {
+    return http.post(`/diet-plans/days/${dayId}/meals`, data);
+  },
+
+  /**
+   * 更新计划餐次
+   */
+  updatePlanMeal(mealId: number, data: any) {
+    return http.put(`/diet-plans/meals/${mealId}`, data);
+  },
+
+  /**
+   * 删除计划餐次
+   */
+  removePlanMeal(mealId: number) {
+    return http.delete(`/diet-plans/meals/${mealId}`);
+  },
+
+  /**
+   * 为餐次添加食材明细
+   */
+  createPlanMealItem(mealId: number, data: any) {
+    return http.post(`/diet-plans/meals/${mealId}/items`, data);
+  },
+
+  /**
+   * 更新食材明细
+   */
+  updatePlanMealItem(itemId: number, data: any) {
+    return http.put(`/diet-plans/meal-items/${itemId}`, data);
+  },
+
+  /**
+   * 删除食材明细
+   */
+  removePlanMealItem(itemId: number) {
+    return http.delete(`/diet-plans/meal-items/${itemId}`);
+  },
+};
 
   

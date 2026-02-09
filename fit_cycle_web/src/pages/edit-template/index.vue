@@ -249,7 +249,22 @@ const fetchDetail = async () => {
 };
 
 // --- 3. 交互逻辑 ---
-const isCarbCycle = computed(() => localTemplate.value?.carbType !== undefined);
+const isCarbCycle = computed(() => {
+  return localTemplate.value?.plan?.type === 'carb-cycle';
+});
+
+// 处理从 meal-config 返回的数据同步
+useDidShow(() => {
+  if (planStore.currentMealType && planStore.templates[0]?.meals) {
+    const mealType = planStore.currentMealType;
+    const updatedFoods = planStore.templates[0].meals[mealType];
+    if (updatedFoods && localTemplate.value) {
+      localTemplate.value.meals[mealType] = [...updatedFoods];
+      saveToCache(localTemplate.value);
+    }
+    planStore.currentMealType = "";
+  }
+});
 
 const targetNutrition = computed(() => ({
   calories: localTemplate.value?.targetCalories || 0,
@@ -278,8 +293,12 @@ const getMealLabel = (type: string) => {
 };
 
 const goToMealConfig = (mealType: string) => {
-  // 注意：meal-config 目前仍依赖 planStore，我们通过 localTemplate 到 planStore 的同步来桥接
-  planStore.updateTemplate(0, localTemplate.value); // 临时同步供共享使用
+  // 构建桥接数据，兼容 meal-config 的 store 依赖
+  const tempTemplate = {
+    ...localTemplate.value,
+    meals: JSON.parse(JSON.stringify(localTemplate.value.meals))
+  };
+  planStore.templates = [tempTemplate]; 
   planStore.currentMealType = mealType;
   Taro.navigateTo({ url: '/pages/meal-config/index' });
 };

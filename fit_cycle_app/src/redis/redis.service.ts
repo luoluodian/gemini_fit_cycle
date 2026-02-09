@@ -26,6 +26,18 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
       host: this.configService.get<string>('REDIS_HOST', 'localhost'),
       port: this.configService.get<number>('REDIS_PORT', 6379),
       password: this.configService.get<string>('REDIS_PASSWORD'),
+      // 🔥 增强远程连接稳定性
+      connectTimeout: 10000, // 10s 连接超时
+      maxRetriesPerRequest: 3, // 限制单次请求重试，防止死循环
+      retryStrategy: (times) => {
+        const delay = Math.min(times * 100, 3000);
+        return delay; // 指数退避重连
+      },
+      reconnectOnError: (err) => {
+        const targetError = 'READONLY';
+        if (err.message.includes(targetError)) return true;
+        return false;
+      },
     };
     this.client = new Redis(options);
     this.client.on('error', (err) => {

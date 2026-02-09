@@ -26,6 +26,7 @@ export const usePlanStore = defineStore('plan', () => {
 
   const currentDayIndex = ref(0);
   const currentMealType = ref("");
+  const templates = ref<any[]>([]);
 
   const resetDraft = () => {
     draft.value = {
@@ -47,6 +48,7 @@ export const usePlanStore = defineStore('plan', () => {
     };
     currentDayIndex.value = 0;
     currentMealType.value = "";
+    templates.value = [];
   };
 
   const initTemplates = (sequence?: any[]) => {
@@ -153,5 +155,5 @@ export const usePlanStore = defineStore('plan', () => {
     draft.value.templates.splice(toIndex, 0, item);
   };
 
-  return { draft, resetDraft, initTemplates, batchUpdateTargets, addTemplate, copyTemplate, deleteTemplate, updateTemplate, reorderTemplate };
+  return { draft, resetDraft, initTemplates, batchUpdateTargets, addTemplate, copyTemplate, deleteTemplate, updateTemplate, reorderTemplate, templates, currentDayIndex, currentMealType };
 });

@@ -29,6 +29,7 @@ export enum PlanStatus {
   COMPLETED = 'completed',
   ARCHIVED = 'archived',
   DRAFT = 'draft',
+  CONFIGURED = 'configured',
 }
 
 /**

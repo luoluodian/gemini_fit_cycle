@@ -78,7 +78,7 @@ export class DietPlansService {
         const day = new PlanDay();
         day.planId = planId;
         day.dayNumber = d.dayNumber;
-        day.carbType = d.carbType || 'medium';
+        day.carbType = d.carbType ?? null;
         day.targetCalories = d.targetCalories || 0;
         day.targetProtein = d.targetProtein || 0;
         day.targetFat = d.targetFat || 0;
@@ -114,7 +114,10 @@ export class DietPlansService {
     });
 
     if (!day) throw new NotFoundException('计划日不存在');
-    if (Number(day.plan.userId) !== userId) throw new ForbiddenException('无权限访问');
+    // 使用字符串比较，这是最稳健的跨类型 bigint 校验方案
+    if (String(day.plan.userId) !== String(userId)) {
+      throw new ForbiddenException(`无权限访问: 计划属于 ${day.plan.userId}, 当前用户 ${userId}`);
+    }
 
     return day;
   }
@@ -128,7 +131,7 @@ export class DietPlansService {
       relations: { plan: true }
     });
     if (!day) throw new NotFoundException('计划日不存在');
-    if (Number(day.plan.userId) !== userId) throw new ForbiddenException('无权限更新');
+    if (String(day.plan.userId) !== String(userId)) throw new ForbiddenException('无权限更新');
 
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();

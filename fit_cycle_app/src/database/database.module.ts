@@ -28,12 +28,15 @@ import { ConfigService } from '@nestjs/config';
             connectionLimit: 20, // 最大连接数
             waitForConnections: true, // 等待可用连接
             queueLimit: 0, // 不限制排队数量
+            enableKeepAlive: true, // 启用内核级 TCP 保活
+            keepAliveInitialDelay: 10000, // 保活延迟
           },
 
           // ======================
           // 🔥 超时设置（防止 ETIMEDOUT）
           // ======================
-          connectTimeout: 15000, // 15 秒连接超时
+          connectTimeout: 30000, // 增加到 30 秒连接超时
+          acquireTimeout: 30000, // 获取连接超时
 
           // 保活（避免 MySQL 自动断开 idle 连接）
           keepConnectionAlive: true,

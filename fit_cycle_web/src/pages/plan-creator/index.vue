@@ -63,14 +63,25 @@ const handleNext = async () => {
     hideToast();
 
     if (planStore.draft.type === "carb-cycle") {
-      // 碳循环流程：跳转到 Step 1.5 核心参数配置
+      // 关键修复：确保跳转前配置对象已初始化
+      if (!planStore.draft.carbCycleConfig) {
+        planStore.draft.carbCycleConfig = {
+          weight: 70,
+          baseRatios: { protein: 2.0, carbs: 3.0, fat: 0.8 },
+          phases: {
+            high: { days: 1, proteinRatio: 1, carbRatio: 1.5, fatRatio: 0.8 },
+            medium: { days: 1, proteinRatio: 1, carbRatio: 1, fatRatio: 1 },
+            low: { days: 1, proteinRatio: 1, carbRatio: 0.5, fatRatio: 1.2 }
+          }
+        };
+      }
       Taro.navigateTo({ url: `/pages/carb-cycle-setup/index?planId=${planId}` });
     } else {
-      // 常规流程：批量初始化默认天数并跳转
+      // 常规流程：确保此时 carbType 是空的
       showLoading("正在生成日程...");
       const days = [];
       for (let i = 1; i <= planStore.draft.cycleDays; i++) {
-        days.push({ dayNumber: i });
+        days.push({ dayNumber: i, carbType: null }); // 显式传 null
       }
       await planService.initPlanDays(planId, { days });
       
