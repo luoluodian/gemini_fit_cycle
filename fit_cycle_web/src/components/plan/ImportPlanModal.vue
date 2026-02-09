@@ -19,13 +19,13 @@
 
       <view class="flex space-x-3">
         <view
-          @tap="handleClose"
+          @click="handleClose"
           class="flex-1 bg-gray-50 text-gray-600 py-2 px-3 rounded-xl font-medium active:bg-gray-100 transition-colors text-center text-sm"
         >
           取消
         </view>
         <view
-          @tap="handleImport"
+          @click="handleImport"
           class="flex-1 bg-emerald-600 text-white py-2 px-3 rounded-xl font-medium active:bg-emerald-700 transition-colors text-center text-sm shadow-sm"
         >
           导入

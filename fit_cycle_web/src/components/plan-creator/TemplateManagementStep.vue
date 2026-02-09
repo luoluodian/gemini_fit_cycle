@@ -33,13 +33,18 @@
                 configuredCount
               }}</text>
               <text class="text-xs font-bold text-gray-300 mx-1">/</text>
-              <text class="text-sm font-bold text-gray-400">{{ cycleDays }}</text>
+              <text class="text-sm font-bold text-gray-400">{{
+                cycleDays
+              }}</text>
             </view>
           </view>
         </view>
 
         <!-- 碳循环阶段摘要 -->
-        <view v-if="isCarbCycle" class="border-t border-gray-50 border-solid mt-4 pt-4">
+        <view
+          v-if="isCarbCycle"
+          class="border-t border-gray-50 border-solid mt-4 pt-4"
+        >
           <view class="flex items-center justify-around">
             <view class="flex flex-col items-center">
               <view
@@ -114,7 +119,7 @@
               getPhaseStyles(template).border,
               getPhaseStyles(template).bg,
             ]"
-            @tap="handleEdit(index)"
+            @click="handleEdit(index)"
           >
             <!-- 侧边色条 -->
             <view
@@ -180,7 +185,7 @@
             <!-- 操作菜单按钮 (⋮) -->
             <view
               class="w-10 h-10 flex items-center justify-center rounded-xl active:bg-black/5 transition-colors ml-2"
-              @tap.stop="$emit('long-press', index)"
+              @click.stop="$emit('long-press', index)"
             >
               <view class="flex flex-col space-y-0.5 items-center">
                 <view class="w-1 h-1 rounded-full bg-gray-300"></view>
@@ -194,7 +199,7 @@
           <view
             v-if="templates.length < cycleDays"
             class="w-full mt-2 flex items-center justify-center p-5 border-[1rpx] border-solid border-emerald-200 bg-emerald-50/20 rounded-2xl active:bg-emerald-50 transition-all shadow-sm"
-            @tap="handleAddTemplate"
+            @click="handleAddTemplate"
           >
             <text class="text-sm font-black text-emerald-600"
               >+ 新增日模板 ({{ templates.length }}/{{ cycleDays }})</text

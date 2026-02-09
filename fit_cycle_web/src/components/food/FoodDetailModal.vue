@@ -117,13 +117,13 @@
         <view class="flex gap-3">
           <view
             class="flex-1 bg-gray-100 text-gray-600 py-3.5 rounded-2xl font-black text-center active:scale-[0.98] transition-all"
-            @tap="handleClose"
+            @click="handleClose"
           >
             取消
           </view>
           <view
             class="flex-[2] bg-emerald-600 text-white py-3.5 rounded-2xl font-black text-center active:scale-[0.98] transition-all shadow-lg shadow-emerald-100"
-            @tap="handleConfirm"
+            @click="handleConfirm"
           >
             确认添加
           </view>

@@ -12,13 +12,13 @@
     <template #footer>
       <view class="flex space-x-3">
         <view
-          @tap="handleCancel"
+          @click="handleCancel"
           class="flex-1 bg-gray-100 text-gray-700 py-3 px-4 rounded-xl font-black active:bg-gray-200 transition-colors text-center"
         >
           取消
         </view>
         <view
-          @tap="handleNext"
+          @click="handleNext"
           class="flex-1 bg-emerald-600 text-white py-3 px-4 rounded-xl font-black active:bg-emerald-700 transition-colors text-center shadow-sm"
         >
           下一步
@@ -58,7 +58,7 @@ const handleNext = async () => {
       cycleDays: Number(planStore.draft.cycleDays),
       cycleCount: Number(planStore.draft.cycleCount),
     });
-    
+
     const planId = res.id;
     hideToast();
 
@@ -71,11 +71,13 @@ const handleNext = async () => {
           phases: {
             high: { days: 1, proteinRatio: 1, carbRatio: 1.5, fatRatio: 0.8 },
             medium: { days: 1, proteinRatio: 1, carbRatio: 1, fatRatio: 1 },
-            low: { days: 1, proteinRatio: 1, carbRatio: 0.5, fatRatio: 1.2 }
-          }
+            low: { days: 1, proteinRatio: 1, carbRatio: 0.5, fatRatio: 1.2 },
+          },
         };
       }
-      Taro.navigateTo({ url: `/pages/carb-cycle-setup/index?planId=${planId}` });
+      Taro.navigateTo({
+        url: `/pages/carb-cycle-setup/index?planId=${planId}`,
+      });
     } else {
       // 常规流程：确保此时 carbType 是空的
       showLoading("正在生成日程...");
@@ -84,7 +86,7 @@ const handleNext = async () => {
         days.push({ dayNumber: i, carbType: null }); // 显式传 null
       }
       await planService.initPlanDays(planId, { days });
-      
+
       Taro.navigateTo({ url: `/pages/plan-templates/index?id=${planId}` });
     }
   } catch (e: any) {
@@ -98,15 +100,17 @@ const handleGoBack = () => Taro.navigateBack();
 
 const handleCancel = () => {
   Taro.showModal({
-    title: '确认取消',
-    content: '确定要放弃创建计划吗？',
-    success: (res) => { if (res.confirm) Taro.switchTab({ url: '/pages/plan/index' }); }
+    title: "确认取消",
+    content: "确定要放弃创建计划吗？",
+    success: (res) => {
+      if (res.confirm) Taro.switchTab({ url: "/pages/plan/index" });
+    },
   });
 };
 </script>
 
 <style scoped>
 .hero-title {
-  font-family: 'Noto Serif SC', serif;
+  font-family: "Noto Serif SC", serif;
 }
 </style>

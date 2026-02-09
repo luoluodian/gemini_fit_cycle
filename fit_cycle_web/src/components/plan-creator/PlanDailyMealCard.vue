@@ -43,9 +43,11 @@
       <view
         v-if="showAddButton"
         class="w-full py-3 border-[1rpx] border-dashed border-emerald-100 bg-emerald-50/10 rounded-xl flex items-center justify-center active:bg-emerald-50 transition-all mt-1"
-        @tap="$emit('add-meal')"
+        @click="$emit('add-meal')"
       >
-        <text class="text-[20rpx] font-black text-emerald-600/60">+ 添加自定义餐次</text>
+        <text class="text-[20rpx] font-black text-emerald-600/60"
+          >+ 添加自定义餐次</text
+        >
       </view>
     </BaseScrollView>
   </GlassCard>
@@ -94,7 +96,12 @@ const totalFoodsCount = computed(() => {
 });
 
 const getMealLabel = (type: string) => {
-  const map: any = { breakfast: "早餐", lunch: "午餐", dinner: "晚餐", snacks: "加餐" };
+  const map: any = {
+    breakfast: "早餐",
+    lunch: "午餐",
+    dinner: "晚餐",
+    snacks: "加餐",
+  };
   return map[type] || type;
 };
 

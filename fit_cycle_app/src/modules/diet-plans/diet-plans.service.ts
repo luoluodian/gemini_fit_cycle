@@ -156,11 +156,11 @@ export class DietPlansService {
 
       // 3. 重建树状结构
       const mealTypes = await this.dictRepo.find({ where: { category: 'MealType' } });
-      const mealTypeMap = new Map(mealTypes.map(m => [m.id, m]));
+      const mealTypeMap = new Map(mealTypes.map(m => [Number(m.id), m]));
 
       const newMeals: PlanMeal[] = [];
       for (const mealDto of dto.meals) {
-        const mealType = mealTypeMap.get(mealDto.mealTypeId);
+        const mealType = mealTypeMap.get(Number(mealDto.mealTypeId));
         if (!mealType) continue;
 
         const meal = this.planMealRepo.create({
@@ -217,7 +217,7 @@ export class DietPlansService {
       
       // 预加载所有需要的 MealType 字典，避免循环查询
       const mealTypes = await this.dictRepo.find({ where: { category: 'MealType' } });
-      const mealTypeMap = new Map(mealTypes.map(m => [m.id, m]));
+      const mealTypeMap = new Map(mealTypes.map(m => [Number(m.id), m]));
 
       for (const dayDto of dto.templates) {
         const day = this.planDayRepo.create({
@@ -232,7 +232,7 @@ export class DietPlansService {
         });
 
         for (const mealDto of dayDto.meals) {
-          const mealType = mealTypeMap.get(mealDto.mealTypeId);
+          const mealType = mealTypeMap.get(Number(mealDto.mealTypeId));
           // 如果找不到类型，跳过或报错？这里选择宽容跳过或使用默认，或报错
           if (!mealType) throw new NotFoundException(`餐次类型 ID ${mealDto.mealTypeId} 不存在`);
 

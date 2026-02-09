@@ -4,9 +4,9 @@
     <BaseNavBar title="饮食计划" subtitle="管理你的健康目标">
       <template #left>
         <view
-          class="flex items-center justify-center p-3 border-[1rpx] border-solid border-emerald-300 text-emerald-300 rounded-lg active:scale-95 transition-all ml-2 shadow-sm"
+          class="flex items-center justify-center p-3 border-[1rpx] border-solid border-emerald-600 text-emerald-600 rounded-lg active:scale-95 transition-all ml-2 shadow-sm"
           data-test-id="btn-nav-create"
-          @tap="createNewPlan"
+          @click="createNewPlan"
         >
           <Uploader font-size="18"></Uploader>
         </view>
@@ -22,7 +22,7 @@
             height="1000rpx"
             :is-empty="activePlans.length === 0"
             :finished="activePlans.length > 0"
-            content-class="space-y-3 pr-2 pt-2 pb-10 animate-fade-in"
+            content-class="space-y-3 pr-2 pt-2 animate-fade-in"
           >
             <template #empty>
               <EmptyPlanState
@@ -46,32 +46,13 @@
             height="1000rpx"
             :is-empty="completedPlans.length === 0"
             :finished="completedPlans.length > 0"
-            content-class="space-y-3 pr-2 pt-2 pb-10 animate-fade-in"
+            content-class="space-y-3 pr-2 pt-2  animate-fade-in"
           >
             <template #empty>
               <EmptyPlanState text="暂无已完成的计划" />
             </template>
             <PlanCard
               v-for="plan in completedPlans"
-              :key="plan.id"
-              :plan="plan"
-              @action="handlePlanAction"
-            />
-          </BaseScrollView>
-        </template>
-
-        <template #archived>
-          <BaseScrollView
-            height="1000rpx"
-            :is-empty="archivedPlans.length === 0"
-            :finished="archivedPlans.length > 0"
-            content-class="space-y-3 pr-2 pt-2 pb-10 animate-fade-in"
-          >
-            <template #empty>
-              <EmptyPlanState text="暂无归档计划" />
-            </template>
-            <PlanCard
-              v-for="plan in archivedPlans"
               :key="plan.id"
               :plan="plan"
               @action="handlePlanAction"
@@ -198,7 +179,8 @@ const newPlanInitialData = ref<Partial<any>>({});
 const activePlans = computed(() => {
   return formatPlans(
     allPlans.value.filter(
-      (p) => p.status === "active" || p.status === "paused" || p.status === "draft",
+      (p) =>
+        p.status === "active" || p.status === "paused" || p.status === "draft",
     ),
   );
 });
@@ -304,9 +286,13 @@ function formatPlans(plans: Plan[]) {
 
     // 生成操作按钮
     const actions: any[] = [];
-    if (plan.status === "active" || plan.status === "paused" || plan.status === "draft") {
+    if (
+      plan.status === "active" ||
+      plan.status === "paused" ||
+      plan.status === "draft"
+    ) {
       actions.push({
-        label: plan.status === 'draft' ? "继续配置" : "查看详情",
+        label: plan.status === "draft" ? "继续配置" : "查看详情",
         type: "view",
         class: "flex-1 bg-emerald-600 text-white hover:bg-emerald-700",
       });
@@ -474,13 +460,15 @@ const handleCreatePlan = async (formData: any) => {
 let isNavigating = false;
 const handlePlanAction = async (type: string, planId: string | number) => {
   if (isNavigating) return;
-  
+
   switch (type) {
     case "view":
       isNavigating = true;
-      Taro.navigateTo({ 
+      Taro.navigateTo({
         url: `/pages/plan-detail/index?id=${planId}`,
-        complete: () => { isNavigating = false; }
+        complete: () => {
+          isNavigating = false;
+        },
       });
       break;
     case "activate":
@@ -507,14 +495,14 @@ const handlePlanAction = async (type: string, planId: string | number) => {
               showLoading("生成分享码...");
               const { code } = await planService.sharePlan(Number(planId));
               Taro.showModal({
-                title: '分享成功',
+                title: "分享成功",
                 content: `分享码: ${code}\n复制此码发给好友即可导入计划。`,
-                confirmText: '复制码',
+                confirmText: "复制码",
                 success: (mRes) => {
                   if (mRes.confirm) {
                     Taro.setClipboardData({ data: code });
                   }
-                }
+                },
               });
             } catch (e) {
               showError("生成分享码失败");
@@ -566,7 +554,7 @@ onMounted(() => {
 
 // 暴露给自动化测试
 defineExpose({
-  createNewPlan
+  createNewPlan,
 });
 </script>
 

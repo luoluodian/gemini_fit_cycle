@@ -9,7 +9,7 @@
           type === 'pills' ? 'px-4 py-2 rounded-lg' : 'px-4 py-2 rounded-xxl',
           getTabClass(tab.key),
         ]"
-        @tap="handleTabClick(tab.key)"
+        @click="handleTabClick(tab.key)"
       >
         {{ tab.label || tab.name }}
       </view>
@@ -46,8 +46,8 @@ const emit = defineEmits<{
 const getTabClass = (key: string) => {
   const isActive = props.activeTab === key;
   if (props.type === "pills") {
-    return isActive 
-      ? "bg-emerald-600 text-white border-emerald-600 shadow-sm" 
+    return isActive
+      ? "bg-emerald-600 text-white border-emerald-600 shadow-sm"
       : "bg-gray-50 text-gray-500 border-gray-100";
   } else if (props.type === "line") {
     return isActive

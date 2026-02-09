@@ -6,7 +6,7 @@
   >
     <template #nav-right>
       <view
-        @tap="handleShowOptions"
+        @click="handleShowOptions"
         class="w-10 h-10 flex items-center justify-center rounded-xl active:bg-black/5 transition-colors"
       >
         <view class="flex flex-col space-y-0.5 items-center">
@@ -82,7 +82,7 @@
           <view
             v-if="plan.status === 'active'"
             class="mb-5 px-4 py-3 bg-emerald-600 rounded-2xl flex items-center justify-between active:opacity-80 transition-all shadow-md shadow-emerald-100"
-            @tap="handleViewToday"
+            @click="handleViewToday"
           >
             <view class="flex items-center">
               <view
@@ -152,7 +152,7 @@
                       'aspect-square rounded-lg flex items-center justify-center text-xs font-black relative transition-all active:scale-95',
                       getDayStyles(c, d).class,
                     ]"
-                    @tap="handleViewDay(c, d)"
+                    @click="handleViewDay(c, d)"
                   >
                     {{ (c - 1) * plan.cycleDays + d }}
                     <!-- 碳循环小点 -->
@@ -318,18 +318,17 @@
 
     <template #footer v-if="plan">
       <view class="flex space-x-3 w-full">
-        <BaseButton 
-          class="flex-1" 
-          type="secondary" 
-          @tap="handleBack"
-        >返回上一页</BaseButton>
-        
-        <BaseButton 
-          v-if="plan.status !== 'active'" 
-          class="flex-[2]" 
-          type="primary" 
-          @tap="handleActivate"
-        >激活此计划</BaseButton>
+        <BaseButton class="flex-1" type="secondary" @click="handleBack"
+          >返回上一页</BaseButton
+        >
+
+        <BaseButton
+          v-if="plan.status !== 'active'"
+          class="flex-[2]"
+          type="primary"
+          @click="handleActivate"
+          >激活此计划</BaseButton
+        >
       </view>
     </template>
   </PageLayout>
@@ -381,16 +380,23 @@ const fetchDetail = async () => {
 
 const totalDays = computed(() => {
   if (!plan.value) return 0;
-  return (Number(plan.value.cycleDays) || 0) * (Number(plan.value.cycleCount) || 0);
+  return (
+    (Number(plan.value.cycleDays) || 0) * (Number(plan.value.cycleCount) || 0)
+  );
 });
 
 const progressPercent = computed(() => {
   if (!plan.value || !totalDays.value) return 0;
-  return Math.min(100, Math.round(((Number(plan.value.completedDays) || 0) / totalDays.value) * 100));
+  return Math.min(
+    100,
+    Math.round(
+      ((Number(plan.value.completedDays) || 0) / totalDays.value) * 100,
+    ),
+  );
 });
 
 const remainingDaysText = computed(() => {
-  if (!plan.value) return '加载中...';
+  if (!plan.value) return "加载中...";
   const remaining = totalDays.value - (Number(plan.value.completedDays) || 0);
   return `还剩 ${Math.max(0, remaining)} 天`;
 });
@@ -630,9 +636,11 @@ const handleViewDay = (c: number, d: number) => {
   // 如果 planDays 存储的是 1 到 cycleDays 的模板，则直接查找 d
   // 如果 planDays 展开了所有周期 (例如 1-28)，则需要 (c-1)*cycleDays + d
   // 根据 V7 设计，planDays 只存储一个周期的模板 (1-cycleDays)
-  const dayInCycle = d; 
-  const day = plan.value.planDays?.find((pd: any) => pd.dayNumber === dayInCycle);
-  
+  const dayInCycle = d;
+  const day = plan.value.planDays?.find(
+    (pd: any) => pd.dayNumber === dayInCycle,
+  );
+
   if (day) {
     Taro.navigateTo({
       url: `/pages/edit-template/index?planId=${planId}&dayId=${day.id}&mode=edit`,

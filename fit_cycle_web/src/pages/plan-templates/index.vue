@@ -1,9 +1,5 @@
 <template>
-  <PageLayout 
-    v-if="planData" 
-    title="配置日模板" 
-    :use-scroll-view="false"
-  >
+  <PageLayout v-if="planData" title="配置日模板" :use-scroll-view="false">
     <!-- 1. 顶部固定区：计划摘要与进度 (Sticky) -->
     <template #fixed-top>
       <view class="px-4 pt-4">
@@ -35,13 +31,13 @@
     <template #footer>
       <view class="flex space-x-3">
         <view
-          @tap="handleBack"
+          @click="handleBack"
           class="flex-1 bg-gray-100 text-gray-700 py-3.5 rounded-xl font-black active:bg-gray-200 transition-colors text-center"
         >
           上一步
         </view>
         <view
-          @tap="handleSave"
+          @click="handleSave"
           class="flex-1 bg-emerald-600 text-white py-3.5 rounded-xl font-black active:bg-emerald-700 transition-colors text-center shadow-sm"
         >
           确认计划
@@ -88,8 +84,8 @@ const handleBack = () => Taro.navigateBack();
 const handleEditTemplate = (index: number) => {
   const day = planData.value.planDays[index];
   if (!day) return;
-  Taro.navigateTo({ 
-    url: `/pages/edit-template/index?dayId=${day.id}&planId=${planId}` 
+  Taro.navigateTo({
+    url: `/pages/edit-template/index?dayId=${day.id}&planId=${planId}`,
   });
 };
 
@@ -98,11 +94,11 @@ const handleAddTemplate = async () => {
     Taro.showToast({ title: "已达到周期天数上限", icon: "none" });
     return;
   }
-  
+
   try {
     showLoading("正在添加...");
-    await planService.createPlanDay(planId, { 
-      dayNumber: planData.value.planDays.length + 1 
+    await planService.createPlanDay(planId, {
+      dayNumber: planData.value.planDays.length + 1,
     });
     loadData();
   } catch (e) {
@@ -117,7 +113,7 @@ const handleCopyTemplate = async () => {
 const handleDeleteTemplate = async (index: number) => {
   const day = planData.value.planDays[index];
   if (!day) return;
-  
+
   if (planData.value.planDays.length <= 1) {
     Taro.showToast({ title: "至少保留一天", icon: "none" });
     return;
@@ -150,7 +146,7 @@ const handleSave = async () => {
   try {
     showLoading("正在提交...");
     await planService.updatePlan(planId, {
-      status: 'configured' as any
+      status: "configured" as any,
     });
     showSuccess("计划配置完成！");
     planStore.resetDraft();

@@ -3,7 +3,7 @@
     :visible="visible"
     :show-header="false"
     content-class="w-[90vw] max-w-md"
-    body-class="p-2"
+    body-class="p-6"
     @update:visible="(val) => emit('update:visible', val)"
     @close="handleClose"
   >
@@ -13,7 +13,7 @@
         <text class="text-lg font-bold text-gray-900">添加计划</text>
         <view
           class="text-gray-400 active:bg-gray-100 rounded-full transition-colors"
-          @tap="handleClose"
+          @click="handleClose"
         >
           <Close font-size="20"></Close>
         </view>
@@ -24,7 +24,7 @@
         <!-- 创建新计划 -->
         <view
           class="w-full flex items-center p-4 bg-emerald-50/80 border border-emerald-100 rounded-2xl active:bg-emerald-100 active:scale-[0.98] transition-all duration-200 shadow-sm"
-          @tap="handleCreate"
+          @click="handleCreate"
         >
           <view
             class="w-12 h-12 bg-emerald-500 rounded-2xl flex items-center justify-center mr-4 shadow-emerald-200 shadow-md flex-shrink-0"
@@ -69,7 +69,7 @@
         <!-- 导入计划 -->
         <view
           class="w-full flex items-center p-4 bg-blue-50/80 border border-blue-100 rounded-2xl active:bg-blue-100 active:scale-[0.98] transition-all duration-200 shadow-sm"
-          @tap="handleImport"
+          @click="handleImport"
         >
           <view
             class="w-12 h-12 bg-blue-500 rounded-2xl flex items-center justify-center mr-4 shadow-blue-200 shadow-md flex-shrink-0"

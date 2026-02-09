@@ -3,7 +3,7 @@
     <BaseNavBar title="食材库">
       <template #left>
         <view
-          class="flex items-center justify-center p-3 border-[1rpx] border-solid border-emerald-300 text-emerald-300 rounded-lg active:scale-95 transition-all ml-2 shadow-sm"
+          class="flex items-center justify-center p-3 border-[1rpx] border-solid border-emerald-600 text-emerald-600 rounded-lg active:scale-95 transition-all ml-2 shadow-sm"
           @click="handleCreateCustomFood"
         >
           <Uploader font-size="18"></Uploader>
@@ -40,12 +40,21 @@
       >
         <view class="flex items-center justify-between mb-2">
           <text class="text-sm font-black text-gray-700">热门食材</text>
-          <text v-if="!isPopularLoading && popularFoods.length > 0" class="text-xs text-gray-400 font-bold">滑动查看</text>
+          <text
+            v-if="!isPopularLoading && popularFoods.length > 0"
+            class="text-xs text-gray-400 font-bold"
+            >滑动查看</text
+          >
         </view>
 
         <view style="height: 200rpx">
-          <view v-if="isPopularLoading" class="h-full flex items-center justify-center">
-             <view class="w-5 h-5 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></view>
+          <view
+            v-if="isPopularLoading"
+            class="h-full flex items-center justify-center"
+          >
+            <view
+              class="w-5 h-5 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"
+            ></view>
           </view>
           <BaseScrollView
             v-else-if="popularFoods.length > 0"
@@ -199,7 +208,7 @@ const fetchPopular = async () => {
     let category: string | undefined = undefined;
     let type: string | undefined = undefined;
     const specialKeys = ["all", "favorites", "custom", "system"];
-    
+
     if (selectedCategory.value === "system") {
       type = "system";
     } else if (selectedCategory.value === "custom") {
@@ -207,7 +216,7 @@ const fetchPopular = async () => {
     } else if (!specialKeys.includes(selectedCategory.value)) {
       category = selectedCategory.value;
     }
-    
+
     const res = await getPopularFoodItems(category, type);
     popularFoods.value = res;
   } catch (e) {

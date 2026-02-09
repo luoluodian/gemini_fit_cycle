@@ -1,11 +1,13 @@
 <template>
   <view class="quantity-stepper">
     <!-- 步进器主控 -->
-    <view class="flex items-center justify-between bg-gray-50 rounded-2xl p-1 border border-solid border-gray-100">
+    <view
+      class="flex items-center justify-between bg-gray-50 rounded-2xl p-1 border border-solid border-gray-100"
+    >
       <!-- 减号 -->
-      <view 
+      <view
         class="w-12 h-12 flex items-center justify-center bg-white rounded-xl shadow-sm text-gray-400 active:scale-90 transition-transform"
-        @tap="handleStep(-1)"
+        @click="handleStep(-1)"
       >
         <text class="text-2xl font-black mb-1">-</text>
       </view>
@@ -25,9 +27,9 @@
       </view>
 
       <!-- 加号 -->
-      <view 
+      <view
         class="w-12 h-12 flex items-center justify-center bg-white rounded-xl shadow-sm text-emerald-600 active:scale-90 transition-transform"
-        @tap="handleStep(1)"
+        @click="handleStep(1)"
       >
         <text class="text-2xl font-black mb-1">+</text>
       </view>
@@ -35,11 +37,11 @@
 
     <!-- 快捷选项 -->
     <view class="flex justify-between mt-3 space-x-2">
-      <view 
-        v-for="preset in presets" 
+      <view
+        v-for="preset in presets"
         :key="preset"
         class="flex-1 py-2 bg-gray-50 rounded-lg text-center text-xs font-black text-gray-500 active:bg-emerald-50 active:text-emerald-600 border border-transparent active:border-emerald-100 transition-colors"
-        @tap="handlePreset(preset)"
+        @click="handlePreset(preset)"
       >
         {{ preset }}{{ unit }}
       </view>
@@ -74,8 +76,8 @@ const dynamicStep = computed(() => {
 });
 
 const presets = computed(() => {
-  if (props.unit === 'g') return [50, 100, 150, 200];
-  if (props.unit === 'ml') return [100, 200, 250, 500];
+  if (props.unit === "g") return [50, 100, 150, 200];
+  if (props.unit === "ml") return [100, 200, 250, 500];
   const smallUnits = ["个", "枚", "片", "根", "块", "勺", "瓶", "罐"];
   if (smallUnits.includes(props.unit)) return [0.5, 1, 2, 3];
   return [1, 2, 5, 10];

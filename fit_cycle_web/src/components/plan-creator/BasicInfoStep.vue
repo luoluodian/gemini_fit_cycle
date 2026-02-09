@@ -36,7 +36,7 @@
                   ? 'bg-emerald-50 border-emerald-500 text-emerald-700 shadow-sm'
                   : 'border-gray-300 bg-white text-gray-700'
               "
-              @tap="emit('update:formData', { type: 'custom' })"
+              @click="emit('update:formData', { type: 'custom' })"
             >
               常规
             </view>
@@ -51,7 +51,7 @@
                   ? 'bg-emerald-50 border-emerald-500 text-emerald-700 shadow-sm'
                   : 'border-gray-300 bg-white text-gray-700'
               "
-              @tap="emit('update:formData', { type: 'carb-cycle' })"
+              @click="emit('update:formData', { type: 'carb-cycle' })"
             >
               <text>碳循环</text>
               <text

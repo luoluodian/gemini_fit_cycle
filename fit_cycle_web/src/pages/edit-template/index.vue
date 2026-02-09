@@ -1,12 +1,12 @@
 <template>
-  <PageLayout 
-    v-if="localTemplate" 
-    :title="'编辑第 ' + (localTemplate.dayNumber || '-') + ' 天'" 
+  <PageLayout
+    v-if="localTemplate"
+    :title="'编辑第 ' + (localTemplate.dayNumber || '-') + ' 天'"
     :use-scroll-view="false"
   >
     <template #nav-right>
-      <view 
-        @tap="handleShowMenu" 
+      <view
+        @click="handleShowMenu"
         class="w-10 h-10 flex items-center justify-center rounded-xl active:bg-black/5 transition-colors"
       >
         <view class="flex flex-col space-y-0.5 items-center">
@@ -22,31 +22,43 @@
       <view class="px-4 pt-4 space-y-2">
         <!-- 模板名称 -->
         <view class="animate-fade-in-up">
-          <GlassCard 
-            background="#ffffff" 
+          <GlassCard
+            background="#ffffff"
             card-class="p-4 border-[1rpx] border-solid border-gray-200 shadow-sm"
             radius="xl"
             :border="false"
           >
             <view class="flex items-center">
-              <view class="w-10 h-10 rounded-full bg-orange-50 flex items-center justify-center mr-3 flex-shrink-0">
+              <view
+                class="w-10 h-10 rounded-full bg-orange-50 flex items-center justify-center mr-3 flex-shrink-0"
+              >
                 <text class="text-lg">🏷️</text>
               </view>
               <view class="flex-1 min-w-0 relative">
-                <text class="text-[20rpx] font-black text-gray-400 block mb-0.5 tracking-widest uppercase">模板名称</text>
-                <input 
-                  type="text" 
+                <text
+                  class="text-[20rpx] font-black text-gray-400 block mb-0.5 tracking-widest uppercase"
+                  >模板名称</text
+                >
+                <input
+                  type="text"
                   v-model="localTemplate.name"
                   maxlength="6"
-                  class="w-full py-1 text-base font-black text-gray-800 transition-all border-b-[1rpx] border-solid border-transparent focus:border-emerald-500" 
+                  class="w-full py-1 text-base font-black text-gray-800 transition-all border-b-[1rpx] border-solid border-transparent focus:border-emerald-500"
                   placeholder="例如：练腿日"
                   placeholder-class="text-gray-300 font-bold"
                 />
               </view>
-              <view class="ml-4 flex flex-col items-center justify-center bg-gray-50 px-2 py-1 rounded-lg border border-solid border-gray-100">
-                <text class="text-[18rpx] text-gray-400 font-black leading-none">{{ localTemplate.name?.length || 0 }}</text>
+              <view
+                class="ml-4 flex flex-col items-center justify-center bg-gray-50 px-2 py-1 rounded-lg border border-solid border-gray-100"
+              >
+                <text
+                  class="text-[18rpx] text-gray-400 font-black leading-none"
+                  >{{ localTemplate.name?.length || 0 }}</text
+                >
                 <view class="w-3 h-[2rpx] bg-gray-200 my-0.5"></view>
-                <text class="text-[16rpx] text-gray-300 font-black leading-none">6</text>
+                <text class="text-[16rpx] text-gray-300 font-black leading-none"
+                  >6</text
+                >
               </view>
             </view>
           </GlassCard>
@@ -54,7 +66,7 @@
 
         <!-- 营养进度对比 -->
         <view class="animate-fade-in-up delay-100">
-          <NutritionProgress 
+          <NutritionProgress
             :target="targetNutrition"
             :current="currentNutrition"
             :carb-type="localTemplate.carbType"
@@ -65,7 +77,9 @@
     </template>
 
     <!-- 2. 中间内容区：当日餐单 (Flex-1 + Scroll) -->
-    <view class="flex-1 min-h-0 flex flex-col p-4 animate-fade-in-up delay-200 h-full">
+    <view
+      class="flex-1 min-h-0 flex flex-col p-4 animate-fade-in-up delay-200 h-full"
+    >
       <PlanDailyMealCard
         :meal-order="mealOrder"
         :meals="localTemplate.meals"
@@ -82,13 +96,13 @@
     <template #footer>
       <view class="flex space-x-3">
         <view
-          @tap="handleBack"
+          @click="handleBack"
           class="flex-1 bg-gray-100 text-gray-700 py-3.5 rounded-xl font-black active:bg-gray-200 transition-colors text-center"
         >
           取消
         </view>
         <view
-          @tap="handleSave"
+          @click="handleSave"
           class="flex-1 bg-emerald-600 text-white py-3.5 rounded-xl font-black active:bg-emerald-700 transition-colors text-center shadow-sm"
         >
           保存配置
@@ -104,19 +118,29 @@
     >
       <view class="p-4">
         <view class="mb-6">
-          <text class="text-xs font-black text-gray-400 block mb-2">餐次名称</text>
-          <input 
-            type="text" 
+          <text class="text-xs font-black text-gray-400 block mb-2"
+            >餐次名称</text
+          >
+          <input
+            type="text"
             v-model="newMealName"
             maxlength="10"
-            class="w-full h-12 px-4 bg-gray-50 border border-solid border-gray-100 rounded-xl text-base font-black text-gray-800" 
+            class="w-full h-12 px-4 bg-gray-50 border border-solid border-gray-100 rounded-xl text-base font-black text-gray-800"
             placeholder="例如：训练后补充、夜宵"
             focus
           />
         </view>
         <view class="flex space-x-3">
-          <view @tap="showAddMealModal = false" class="flex-1 py-3 bg-gray-100 text-gray-500 rounded-xl font-black text-center text-sm">取消</view>
-          <view @tap="confirmAddMeal" class="flex-1 py-3 bg-emerald-600 text-white rounded-xl font-black text-center text-sm shadow-md">确认添加</view>
+          <view
+            @click="showAddMealModal = false"
+            class="flex-1 py-3 bg-gray-100 text-gray-500 rounded-xl font-black text-center text-sm"
+            >取消</view
+          >
+          <view
+            @click="confirmAddMeal"
+            class="flex-1 py-3 bg-emerald-600 text-white rounded-xl font-black text-center text-sm shadow-md"
+            >确认添加</view
+          >
         </view>
       </view>
     </BaseModal>
@@ -142,11 +166,11 @@ const planId = Number(router.params.planId);
 
 // 使用本地副本
 const localTemplate = ref<any>(null);
-const mealOrder = ref(['breakfast', 'lunch', 'dinner', 'snacks']);
+const mealOrder = ref(["breakfast", "lunch", "dinner", "snacks"]);
 
 // --- 1. 本地缓存防丢逻辑 (V7 Auto-save) ---
 const CACHE_KEY = computed(() => `draft_day_${dayId}`);
-const CACHE_VERSION = 'v1.0';
+const CACHE_VERSION = "v1.0";
 
 const saveToCache = (data: any) => {
   if (!dayId) return;
@@ -155,7 +179,7 @@ const saveToCache = (data: any) => {
     timestamp: Date.now(),
     planId,
     data: JSON.parse(JSON.stringify(data)),
-    mealOrder: mealOrder.value
+    mealOrder: mealOrder.value,
   };
   Taro.setStorage({ key: CACHE_KEY.value, data: cacheObj });
 };
@@ -164,7 +188,10 @@ const loadFromCache = () => {
   try {
     const cached: any = Taro.getStorageSync(CACHE_KEY.value);
     if (cached && cached.version === CACHE_VERSION) {
-      if (Date.now() - cached.timestamp < 24 * 3600 * 1000 && cached.planId === planId) {
+      if (
+        Date.now() - cached.timestamp < 24 * 3600 * 1000 &&
+        cached.planId === planId
+      ) {
         return cached;
       }
     }
@@ -177,9 +204,13 @@ const clearCache = () => {
 };
 
 // 监听数据变化实时同步缓存
-watch([localTemplate, mealOrder], () => {
-  if (localTemplate.value) saveToCache(localTemplate.value);
-}, { deep: true });
+watch(
+  [localTemplate, mealOrder],
+  () => {
+    if (localTemplate.value) saveToCache(localTemplate.value);
+  },
+  { deep: true },
+);
 
 // --- 2. 数据初始化与加载 ---
 onMounted(() => {
@@ -191,11 +222,11 @@ const initData = async () => {
   const cached = loadFromCache();
   if (cached) {
     const res = await Taro.showModal({
-      title: '恢复进度',
-      content: '检测到您有上次未保存的编辑内容，是否恢复？',
-      confirmText: '恢复',
-      cancelText: '丢弃',
-      confirmColor: '#10b981'
+      title: "恢复进度",
+      content: "检测到您有上次未保存的编辑内容，是否恢复？",
+      confirmText: "恢复",
+      cancelText: "丢弃",
+      confirmColor: "#10b981",
     });
     if (res.confirm) {
       localTemplate.value = cached.data;
@@ -217,25 +248,31 @@ const fetchDetail = async () => {
     showLoading("加载详情...");
     const res: any = await planService.getDayDetail(dayId);
     const dayData = res.data || res;
-    
+
     // 结构适配：后端数组 -> 前端 UI 对象
     const mealsObj: any = { breakfast: [], lunch: [], dinner: [], snacks: [] };
     const order: string[] = [];
-    
+
     if (dayData.planMeals) {
       dayData.planMeals.forEach((m: any) => {
-        const typeMap: any = { 1: 'breakfast', 2: 'lunch', 3: 'dinner', 4: 'snacks' };
+        const typeMap: any = {
+          1: "breakfast",
+          2: "lunch",
+          3: "dinner",
+          4: "snacks",
+        };
         const key = typeMap[m.mealType?.id] || `custom_${m.id}`;
         order.push(key);
-        mealsObj[key] = m.mealItems?.map((mi: any) => ({
-          name: mi.customName,
-          quantity: mi.quantity,
-          unit: mi.unit,
-          calories: mi.calories,
-          protein: mi.protein,
-          fat: mi.fat,
-          carbs: mi.carbs
-        })) || [];
+        mealsObj[key] =
+          m.mealItems?.map((mi: any) => ({
+            name: mi.customName,
+            quantity: mi.quantity,
+            unit: mi.unit,
+            calories: mi.calories,
+            protein: mi.protein,
+            fat: mi.fat,
+            carbs: mi.carbs,
+          })) || [];
       });
     }
 
@@ -250,7 +287,7 @@ const fetchDetail = async () => {
 
 // --- 3. 交互逻辑 ---
 const isCarbCycle = computed(() => {
-  return localTemplate.value?.plan?.type === 'carb-cycle';
+  return localTemplate.value?.plan?.type === "carb-cycle";
 });
 
 // 处理从 meal-config 返回的数据同步
@@ -278,29 +315,34 @@ const currentNutrition = computed(() => {
   if (!localTemplate.value?.meals) return total;
   Object.values(localTemplate.value.meals).forEach((foods: any) => {
     foods.forEach((f: any) => {
-      total.calories += (f.calories || 0);
-      total.protein += (f.protein || 0);
-      total.fat += (f.fat || 0);
-      total.carbs += (f.carbs || 0);
+      total.calories += f.calories || 0;
+      total.protein += f.protein || 0;
+      total.fat += f.fat || 0;
+      total.carbs += f.carbs || 0;
     });
   });
   return total;
 });
 
 const getMealLabel = (type: string) => {
-  const map: any = { breakfast: '早餐', lunch: '午餐', dinner: '晚餐', snacks: '加餐' };
-  return map[type] || localTemplate.value?.customLabels?.[type] || '自定义餐次';
+  const map: any = {
+    breakfast: "早餐",
+    lunch: "午餐",
+    dinner: "晚餐",
+    snacks: "加餐",
+  };
+  return map[type] || localTemplate.value?.customLabels?.[type] || "自定义餐次";
 };
 
 const goToMealConfig = (mealType: string) => {
   // 构建桥接数据，兼容 meal-config 的 store 依赖
   const tempTemplate = {
     ...localTemplate.value,
-    meals: JSON.parse(JSON.stringify(localTemplate.value.meals))
+    meals: JSON.parse(JSON.stringify(localTemplate.value.meals)),
   };
-  planStore.templates = [tempTemplate]; 
+  planStore.templates = [tempTemplate];
   planStore.currentMealType = mealType;
-  Taro.navigateTo({ url: '/pages/meal-config/index' });
+  Taro.navigateTo({ url: "/pages/meal-config/index" });
 };
 
 const handleDeleteFood = (mealType: string, index: number) => {
@@ -311,9 +353,12 @@ const handleDeleteFood = (mealType: string, index: number) => {
 
 const handleBack = () => {
   Taro.showModal({
-    title: '退出编辑',
-    content: '有未保存的修改，退出将丢弃本次编辑内容（下次进入可恢复），确定吗？',
-    success: (res) => { if (res.confirm) Taro.navigateBack(); }
+    title: "退出编辑",
+    content:
+      "有未保存的修改，退出将丢弃本次编辑内容（下次进入可恢复），确定吗？",
+    success: (res) => {
+      if (res.confirm) Taro.navigateBack();
+    },
   });
 };
 
@@ -321,7 +366,7 @@ const handleSave = async () => {
   try {
     showLoading("正在保存...");
     const typeIdMap: any = { breakfast: 1, lunch: 2, dinner: 3, snacks: 4 };
-    const mealsDto = mealOrder.value.map(key => ({
+    const mealsDto = mealOrder.value.map((key) => ({
       mealTypeId: typeIdMap[key] || 4,
       items: (localTemplate.value.meals[key] || []).map((f: any) => ({
         customName: f.name,
@@ -330,13 +375,13 @@ const handleSave = async () => {
         calories: f.calories,
         protein: f.protein,
         fat: f.fat,
-        carbs: f.carbs
-      }))
+        carbs: f.carbs,
+      })),
     }));
 
     await planService.updateDayFull(dayId, {
       isConfigured: true,
-      meals: mealsDto
+      meals: mealsDto,
     });
 
     clearCache();
@@ -352,22 +397,32 @@ const handleSave = async () => {
 // 菜单、删除等逻辑 (略，保持原有功能)
 const handleShowMenu = () => {
   Taro.showActionSheet({
-    itemList: ['放弃修改'],
-    success: (res) => { if (res.tapIndex === 0) { clearCache(); Taro.navigateBack(); } }
+    itemList: ["放弃修改"],
+    success: (res) => {
+      if (res.tapIndex === 0) {
+        clearCache();
+        Taro.navigateBack();
+      }
+    },
   });
 };
 
 const handleMealMenu = (mealType: string) => {
-  const options = ['清空食材'];
+  const options = ["清空食材"];
   Taro.showActionSheet({
     itemList: options,
-    success: (res) => { if (res.tapIndex === 0) localTemplate.value.meals[mealType] = []; }
+    success: (res) => {
+      if (res.tapIndex === 0) localTemplate.value.meals[mealType] = [];
+    },
   });
 };
 
 const showAddMealModal = ref(false);
 const newMealName = ref("");
-const handleShowAddMeal = () => { newMealName.value = ""; showAddMealModal.value = true; };
+const handleShowAddMeal = () => {
+  newMealName.value = "";
+  showAddMealModal.value = true;
+};
 const confirmAddMeal = () => {
   const name = newMealName.value.trim();
   if (!name) return;
@@ -381,9 +436,26 @@ const confirmAddMeal = () => {
 </script>
 
 <style scoped lang="scss">
-.hero-title { font-family: 'Noto Serif SC', serif; }
-@keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-.animate-fade-in-up { animation: fadeInUp 0.6s ease-out forwards; }
-.delay-100 { animation-delay: 0.1s; }
-.delay-200 { animation-delay: 0.2s; }
+.hero-title {
+  font-family: "Noto Serif SC", serif;
+}
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+.delay-100 {
+  animation-delay: 0.1s;
+}
+.delay-200 {
+  animation-delay: 0.2s;
+}
 </style>

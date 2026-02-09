@@ -2,11 +2,11 @@
   <view
     :class="[
       'plan-card bg-white rounded-xl p-4 shadow-sm border-[1rpx] border-solid transition-all duration-300 active:scale-[0.98]',
-      plan.isActive 
-        ? 'border-emerald-500 ring-1 ring-emerald-100' 
-        : 'border-gray-100'
+      plan.isActive
+        ? 'border-emerald-500 ring-1 ring-emerald-100'
+        : 'border-gray-100',
     ]"
-    @tap="handleAction('view', plan.id)"
+    @click="handleAction('view', plan.id)"
   >
     <view class="flex items-start justify-between mb-3">
       <view class="flex-1">
@@ -18,7 +18,10 @@
             <span
               v-for="tag in plan.tags"
               :key="tag"
-              :class="['ml-1.5 px-2 py-0.5 text-[18rpx] font-black rounded-full', getTagClass(tag)]"
+              :class="[
+                'ml-1.5 px-2 py-0.5 text-[18rpx] font-black rounded-full',
+                getTagClass(tag),
+              ]"
             >
               {{ tag }}
             </span>
@@ -29,27 +32,36 @@
           <span class="mx-2 opacity-30">|</span>
           {{ plan.targets }}
         </p>
-        
+
         <!-- Linear Progress Bar -->
         <view v-if="plan.progress !== undefined" class="flex items-center">
-          <view class="flex-1 bg-gray-50 rounded-full h-1.5 mr-3 overflow-hidden">
-            <view 
-              class="h-full rounded-full transition-all duration-1000" 
-              :style="{ width: plan.progress + '%', backgroundColor: plan.progressColor || '#10b981' }"
+          <view
+            class="flex-1 bg-gray-50 rounded-full h-1.5 mr-3 overflow-hidden"
+          >
+            <view
+              class="h-full rounded-full transition-all duration-1000"
+              :style="{
+                width: plan.progress + '%',
+                backgroundColor: plan.progressColor || '#10b981',
+              }"
             ></view>
           </view>
-          <span class="text-[20rpx] font-black text-gray-400">{{ plan.progress }}%</span>
+          <span class="text-[20rpx] font-black text-gray-400"
+            >{{ plan.progress }}%</span
+          >
         </view>
-        <view v-else class="text-[20rpx] font-black text-gray-300">{{ plan.progressText }}</view>
+        <view v-else class="text-[20rpx] font-black text-gray-300">{{
+          plan.progressText
+        }}</view>
       </view>
     </view>
-    
+
     <!-- Actions -->
     <view class="flex space-x-2 mt-3 pt-3 border-t border-solid border-gray-50">
       <view
         v-for="action in plan.actions"
         :key="action.label"
-        @tap.stop="handleAction(action.type, plan.id)"
+        @click.stop="handleAction(action.type, plan.id)"
         :class="[
           'py-2 px-4 rounded-xl text-xs font-black transition-all active:scale-95 text-center',
           action.class || 'bg-gray-100 text-gray-700 active:bg-gray-200',
