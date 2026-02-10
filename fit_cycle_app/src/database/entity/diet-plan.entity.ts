@@ -12,8 +12,6 @@ import {
 import { User } from './user.entity';
 import { PlanDay } from './plan-day.entity';
 import { DailyRecord } from './daily-record.entity';
-import { DailyGoal } from './daily-goal.entity';
-import { PlanTemplate } from './plan-template.entity';
 
 export enum PlanType {
   FAT_LOSS = 'fat-loss',
@@ -148,10 +146,4 @@ export class DietPlan {
 
   @OneToMany(() => DailyRecord, (record) => record.plan)
   dailyRecords: DailyRecord[];
-
-  @OneToMany(() => DailyGoal, (goal) => goal.plan)
-  dailyGoals: DailyGoal[];
-
-  @OneToMany(() => PlanTemplate, (tpl) => tpl.originalPlan)
-  planTemplates: PlanTemplate[];
 }

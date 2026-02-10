@@ -4,20 +4,13 @@
     
     <view class="px-4 py-6 pb-20">
       <!-- 1. 日期导航 -->
-      <DateNavigation 
-        v-model="currentDate" 
-        :plan-id="currentRecord?.planId" 
-      />
+      <DateNavigation v-model="currentDate" :plan-id="currentRecord?.planId" />
 
       <!-- 2. 营养汇总 -->
-      <view v-if="isLoading" class="animate-pulse space-y-4 mb-6">
-        <view class="h-48 bg-white rounded-2xl"></view>
+      <view v-if="isLoading" class="animate-pulse mb-6">
+        <view class="h-48 bg-white rounded-2xl shadow-sm"></view>
       </view>
-      <DailyGoalsOverview
-        v-else-if="currentRecord"
-        :goals="currentRecord"
-        :consumed="summary"
-      />
+      <DailyGoalsOverview v-else-if="currentRecord" :goals="currentRecord" :consumed="summary" />
 
       <!-- 3. 餐次列表 -->
       <view class="space-y-4 mb-6 mt-6">
@@ -28,16 +21,24 @@
           :meal-type="type.key"
           :meals="getMealsByType(type.key)"
           :date="currentDate"
-          @add="handleAddFood"
-          @refresh="loadData"
+          @add="handleShowPicker"
+          @edit="handleShowEditor"
+          @delete="handlePerformDelete"
         />
       </view>
     </view>
 
-    <!-- 食物选择弹窗 -->
-    <FoodPicker
-      v-model:visible="foodPickerVisible"
-      @select="handleFoodPicked"
+    <!-- 弹窗：新增选择器 -->
+    <FoodPicker v-model:visible="foodPickerVisible" @select="handleFoodPicked" />
+
+    <!-- 弹窗：修改编辑器 -->
+    <FoodDetailModal
+      :visible="editorVisible"
+      :food="editingLog"
+      mode="edit"
+      :quantity="editingLog?.quantity"
+      @close="editorVisible = false"
+      @confirm="handleUpdateLog"
     />
   </view>
 </template>
@@ -52,22 +53,17 @@ import DateNavigation from "@/components/home/DateNavigation.vue";
 import DailyGoalsOverview from "@/components/home/DailyGoalsOverview.vue";
 import MealCard from "@/components/home/HomeMealCard.vue";
 import FoodPicker from "@/components/food/FoodPicker.vue";
+import FoodDetailModal from "@/components/food/FoodDetailModal.vue";
 import { useNavigationStore } from "@/stores/navigation";
 import "./index.scss";
 
-// --- 核心逻辑归口 ---
-const { 
-  currentRecord, 
-  isLoading, 
-  summary, 
-  getMealsByType, 
-  fetchRecord 
-} = useNutritionStats();
-
+const { currentRecord, isLoading, summary, getMealsByType, fetchRecord } = useNutritionStats();
 const recordStore = useRecordStore();
-const currentDate = ref<string>(getTodayString());
+const currentDate = ref(getTodayString());
 const foodPickerVisible = ref(false);
-const currentMealType = ref<string>("");
+const editorVisible = ref(false);
+const editingLog = ref<any>(null);
+const currentMealType = ref("");
 const isSubmitting = ref(false);
 const navStore = useNavigationStore();
 
@@ -78,54 +74,75 @@ const mealTypes = [
   { key: 'snacks', label: '加餐' }
 ];
 
-const loadData = async (date: string) => {
-  try {
-    await fetchRecord(date);
-  } catch (e) {
-    console.error("Load failed", e);
-  }
-};
-
-const handleAddFood = (type: string) => {
+const handleShowPicker = (type: string) => {
   currentMealType.value = type;
   foodPickerVisible.value = true;
 };
 
-/**
- * I-4.1: 处理打卡保存
- */
+const handleShowEditor = (log: any) => {
+  editingLog.value = log;
+  editorVisible.value = true;
+};
+
+const handlePerformDelete = async (food: any) => {
+  if (!food.id) return;
+  Taro.showModal({
+    title: '确认删除',
+    content: `确定要删除 ${food.foodName || '这项记录'} 吗？`,
+    success: async (res) => {
+      if (res.confirm) {
+        try {
+          await recordStore.removeMealAction(food.id);
+          Taro.showToast({ title: '已删除', icon: 'success' });
+        } catch (e) {
+          Taro.showToast({ title: '删除失败', icon: 'none' });
+        }
+      }
+    }
+  });
+};
+
 const handleFoodPicked = async (payload: { food: any; quantity: number }) => {
   if (isSubmitting.value) return;
-  
   try {
     isSubmitting.value = true;
     Taro.showLoading({ title: '记录中...', mask: true });
-    
     await recordStore.addMealLogAction({
       date: currentDate.value,
       mealType: currentMealType.value,
-      foodId: payload.food.id,
-      quantity: payload.quantity
+      foodId: Number(payload.food.id),
+      quantity: Number(payload.quantity)
     });
-    
-    Taro.showToast({ title: '记录成功', icon: 'success' });
     foodPickerVisible.value = false;
+    Taro.showToast({ title: '记录成功', icon: 'success' });
   } catch (e: any) {
-    Taro.showToast({ 
-      title: e.message || '记录失败，请重试', 
-      icon: 'none' 
-    });
+    Taro.showToast({ title: '保存失败', icon: 'none' });
   } finally {
     isSubmitting.value = false;
     Taro.hideLoading();
   }
 };
 
+const handleUpdateLog = async (result: { quantity: number }) => {
+  if (!editingLog.value?.id) return;
+  try {
+    Taro.showLoading({ title: '更新中...', mask: true });
+    await recordStore.updateMealAction(editingLog.value.id, {
+      quantity: Number(result.quantity)
+    });
+    editorVisible.value = false;
+    Taro.showToast({ title: '修改成功', icon: 'success' });
+  } catch (e: any) {
+    Taro.showToast({ title: '更新失败', icon: 'none' });
+  } finally {
+    Taro.hideLoading();
+  }
+};
+
 useDidShow(() => {
   navStore.setActiveTab(0);
+  fetchRecord(currentDate.value);
 });
 
-watch(currentDate, (newDate) => {
-  loadData(newDate);
-}, { immediate: true });
+watch(currentDate, (newDate) => fetchRecord(newDate));
 </script>

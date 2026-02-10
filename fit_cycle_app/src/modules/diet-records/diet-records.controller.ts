@@ -15,7 +15,8 @@ export class DietRecordsController {
    */
   @Get(':date')
   async getRecord(@Req() req: any, @Param('date') date: string) {
-    const userId = req.user.id;
+    // 关键修正：从 JwtStrategy 转换后的 user 对象中提取 userId
+    const userId = req.user.userId;
     return this.dietRecordsService.getDailyRecordView(userId, date);
   }
 
@@ -24,7 +25,7 @@ export class DietRecordsController {
    */
   @Post('meal')
   async addMeal(@Req() req: any, @Body() dto: CreateMealLogDto) {
-    const userId = req.user.id;
+    const userId = req.user.userId;
     return this.dietRecordsService.addMealLog(userId, dto);
   }
 
@@ -33,7 +34,7 @@ export class DietRecordsController {
    */
   @Post('meal/sync')
   async syncFromPlan(@Req() req: any, @Body() dto: SyncMealDto) {
-    const userId = req.user.id;
+    const userId = req.user.userId;
     return this.dietRecordsService.syncMealFromPlan(userId, dto);
   }
 
@@ -46,7 +47,7 @@ export class DietRecordsController {
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateMealLogDto,
   ) {
-    const userId = req.user.id;
+    const userId = req.user.userId;
     return this.dietRecordsService.updateMealLog(userId, id, dto);
   }
 
@@ -55,7 +56,7 @@ export class DietRecordsController {
    */
   @Delete('meal/:id')
   async removeMeal(@Req() req: any, @Param('id', ParseIntPipe) id: number) {
-    const userId = req.user.id;
+    const userId = req.user.userId;
     return this.dietRecordsService.removeMealLog(userId, id);
   }
 }

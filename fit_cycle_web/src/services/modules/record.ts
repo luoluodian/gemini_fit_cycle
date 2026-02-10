@@ -77,6 +77,16 @@ export async function syncMealFromPlan(data: {
 }
 
 /**
+ * 更新餐食记录 (R-3)
+ */
+export async function updateMealLog(
+  id: number | string,
+  data: { quantity: number },
+): Promise<MealLog> {
+  return httpRequest.put(`/records/meal/${id}`, data);
+}
+
+/**
  * 删除餐食记录 (R-3)
  */
 export async function removeMealLog(id: number): Promise<any> {

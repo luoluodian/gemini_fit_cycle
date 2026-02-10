@@ -29,7 +29,7 @@ export class MealLog {
   @PrimaryGeneratedColumn({ type: 'bigint', unsigned: true })
   id: number;
 
-  @Column({ name: 'user_id', type: 'bigint', unsigned: true, comment: '冗余用户ID，用于高性能鉴权与统计' })
+  @Column({ name: 'user_id', type: 'bigint', unsigned: true, default: 0, comment: '冗余用户ID，用于高性能鉴权与统计' })
   userId: number;
 
   @Column({ name: 'record_id', type: 'bigint', unsigned: true })

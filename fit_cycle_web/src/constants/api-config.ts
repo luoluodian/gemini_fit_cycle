@@ -32,7 +32,7 @@ export const API_BASE_CONFIG = {
  */
 export const AUTH_ROUTES = [
   /\/user\//,
-  /\/diet-logs\//,
+  /\/records\//,
   /\/diet-plans\//,
   /\/food-items/,
   /\/dict\//,
@@ -66,7 +66,7 @@ export function needAuth(url: string): boolean {
 
   // 2. 检查是否包含认证关键词 (只要路径包含即匹配，增强兼容性)
   // 去除结尾斜杠以支持 /food-items?q=... 这种形式
-  const authKeywords = ['/user/', '/diet-logs', '/diet-plans', '/food-items', '/dict/'];
+  const authKeywords = ['/user/', '/records', '/diet-plans', '/food-items', '/dict/'];
   return authKeywords.some(keyword => url.includes(keyword));
 }
 

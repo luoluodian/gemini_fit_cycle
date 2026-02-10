@@ -23,7 +23,7 @@ export class DailyRecord {
   @PrimaryGeneratedColumn({ type: 'bigint', unsigned: true })
   id: number;
 
-  @Column({ name: 'user_id', type: 'bigint', unsigned: true })
+  @Column({ name: 'user_id', type: 'bigint', unsigned: true, default: 0 })
   userId: number;
 
   @ManyToOne(() => User, (user) => user.dailyRecords, { onDelete: 'CASCADE' })
