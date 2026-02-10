@@ -77,7 +77,6 @@
     <FoodDetailModal
       :visible="!!currentFood"
       :food="currentFood"
-      mode="edit"
       @close="currentFood = null"
       @confirm="confirmSelection"
     />

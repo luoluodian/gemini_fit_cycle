@@ -41,9 +41,6 @@ export class DietRecordsService {
     return this.calculateDefaultRecord(userId, date);
   }
 
-  /**
-   * 最终加固：使用原生 QueryBuilder 插入，彻底封堵 user_id 丢失问题
-   */
   async addMealLog(userId: number, dto: CreateMealLogDto) {
     const { date, foodId, quantity, mealType } = dto;
     const food = await this.foodItemRepo.findOne({ where: { id: foodId } });
@@ -53,18 +50,18 @@ export class DietRecordsService {
       const record = await this.getOrCreateDailyRecord(manager, userId, date);
       const ratio = quantity / 100;
       
-      // 🚀 核心修复：原生 SQL 插入
       const result = await manager.createQueryBuilder()
         .insert()
         .into(MealLog)
         .values({
-          userId: userId, // 显式匹配字段名
+          userId: userId,
           recordId: record.id,
           mealType: mealType,
           foodId: foodId,
           foodName: food.name,
           quantity: quantity,
           unit: food.unit || 'g',
+          baseCount: food.baseCount || 100,
           calories: Math.round(food.calories * ratio),
           protein: Number((food.protein * ratio).toFixed(4)),
           fat: Number((food.fat * ratio).toFixed(4)),
@@ -73,7 +70,8 @@ export class DietRecordsService {
           baseProtein: food.protein,
           baseFat: food.fat,
           baseCarbs: food.carbs,
-          isPlanned: false
+          isPlanned: false,
+          isRecorded: true
         })
         .execute();
 
@@ -112,10 +110,11 @@ export class DietRecordsService {
         fat: Number(item.fat) || 0,
         carbs: Number(item.carbs) || 0,
         baseCalories: Math.round((Number(item.calories) || 0) / (Number(item.quantity) / 100)),
-        baseProtein: item.protein, // 简化处理
+        baseProtein: item.protein,
         baseFat: item.fat,
         baseCarbs: item.carbs,
-        isPlanned: true
+        isPlanned: true,
+        isRecorded: true
       }));
 
       const res = await manager.createQueryBuilder().insert().into(MealLog).values(logs).execute();
@@ -143,16 +142,28 @@ export class DietRecordsService {
   async updateMealLog(userId: number, id: number, dto: UpdateMealLogDto) {
     const log = await this.mealLogRepo.findOne({ where: { id, userId } });
     if (!log) throw new NotFoundException('记录不存在');
+    
     if (dto.quantity !== undefined) {
       const ratio = dto.quantity / 100;
       log.quantity = dto.quantity;
       log.calories = Math.round(log.baseCalories * ratio);
+      log.protein = Number((log.baseProtein * ratio).toFixed(4));
+      log.fat = Number((log.baseFat * ratio).toFixed(4));
+      log.carbs = Number((log.baseCarbs * ratio).toFixed(4));
+      
+      // 策略：人工修改克数后，默认回滚为未记录状态
+      log.isRecorded = false;
     }
+
+    // 🚀 核心补全：允许显式通过打卡动作恢复状态
+    if (dto.isRecorded !== undefined) {
+      log.isRecorded = dto.isRecorded;
+    }
+
     return await this.mealLogRepo.save(log);
   }
 
   async removeMealLog(userId: number, id: number) {
-    // 采用原生删除，确保鉴权与物理物理 ID 匹配
     const result = await this.mealLogRepo
       .createQueryBuilder()
       .delete()
@@ -166,7 +177,6 @@ export class DietRecordsService {
 
   private async calculateDefaultRecord(userId: number, date: string): Promise<RecordInfoResponse> {
     const activePlan = await this.dietPlansService.findActivePlan(userId);
-    // 初始值全为 0，不再猜测用户目标
     const defaultData: RecordInfoResponse = {
       record: { id: undefined, userId, date, targetCalories: 0, targetProtein: 0, targetFat: 0, targetCarbs: 0, planId: undefined },
       meals: [],
@@ -188,7 +198,6 @@ export class DietRecordsService {
       }
     }
 
-    // 若无计划，尝试从个人档案获取 BMR/TDEE
     const user = await this.userService.findUserById(userId);
     if (user && user.healthProfile) {
       const profile = user.healthProfile;

@@ -1,16 +1,17 @@
-import { IsEnum, IsNumber, IsOptional, IsPositive } from 'class-validator';
+import { IsInt, IsOptional, IsEnum, IsNumber, IsBoolean } from 'class-validator';
 import { MealType } from '@/database/entity/meal-log.entity';
 
-/**
- * 更新餐食记录请求 DTO
- */
 export class UpdateMealLogDto {
-  @IsEnum(MealType)
   @IsOptional()
+  @IsEnum(MealType)
   mealType?: MealType;
 
-  @IsNumber({ maxDecimalPlaces: 4 })
-  @IsPositive()
   @IsOptional()
+  @IsNumber()
   quantity?: number;
+
+  // 🚀 核心补全：允许手动切换记录状态
+  @IsOptional()
+  @IsBoolean()
+  isRecorded?: boolean;
 }

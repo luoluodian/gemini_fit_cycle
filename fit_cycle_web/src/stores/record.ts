@@ -4,6 +4,7 @@ import {
   addMealLog, 
   removeMealLog, 
   updateMealLog, 
+  syncMealFromPlan,
   type DailyRecord, 
   type MealLog, 
   type RecordInfoResponse 
@@ -33,7 +34,8 @@ export const useRecordStore = defineStore("record", {
       const logs = state.mealLogs || [];
       const res = { calories: 0, protein: 0, fat: 0, carbs: 0 };
       logs.forEach(log => {
-        if (!log) return;
+        // 关键逻辑：未记录的项 (isRecorded: false) 不计入总热量
+        if (!log || log.isRecorded === false) return;
         res.calories += Number(log.calories) || 0;
         res.protein += Number(log.protein) || 0;
         res.fat += Number(log.fat) || 0;
@@ -97,10 +99,17 @@ export const useRecordStore = defineStore("record", {
     async addMealLogAction(data: any) {
       console.log("[Store] Adding log...", data);
       const newLog = await addMealLog(data);
-      if (this.mealLogs) {
-        this.mealLogs = [...this.mealLogs, newLog];
-      }
+      this.mealLogs = [...this.mealLogs, newLog];
       return newLog;
+    },
+
+    async syncFromPlanAction(data: { date: string; mealType: string }) {
+      console.log("[Store] Syncing from plan...", data);
+      const newLogs = await syncMealFromPlan(data);
+      if (newLogs && newLogs.length > 0) {
+        this.mealLogs = [...this.mealLogs, ...newLogs];
+      }
+      return newLogs;
     },
 
     async updateMealAction(id: string | number, data: { quantity: number }) {

@@ -59,6 +59,7 @@ declare module 'vue' {
     NewPlanModal: typeof import('./src/components/plan/NewPlanModal.vue')['default']
     NutPopup: typeof import('@nutui/nutui-taro')['Popup']
     NutritionMacro: typeof import('./src/components/food/NutritionMacro.vue')['default']
+    NutritionMacroSmall: typeof import('./src/components/food/NutritionMacroSmall.vue')['default']
     NutritionProgress: typeof import('./src/components/plan-creator/NutritionProgress.vue')['default']
     NutritionTargets: typeof import('./src/components/daily-plan/NutritionTargets.vue')['default']
     PageHeader: typeof import('./src/components/common/PageHeader.vue')['default']

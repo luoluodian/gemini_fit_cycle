@@ -28,7 +28,7 @@
       </view>
     </view>
 
-    <!-- 弹窗：新增选择器 -->
+    <!-- 弹窗：食材选择器 -->
     <FoodPicker v-model:visible="foodPickerVisible" @select="handleFoodPicked" />
 
     <!-- 弹窗：修改编辑器 -->
@@ -38,7 +38,7 @@
       mode="edit"
       :quantity="editingLog?.quantity"
       @close="editorVisible = false"
-      @confirm="handleUpdateLog"
+      @confirm="handleConfirmEditToUnrecord"
     />
   </view>
 </template>
@@ -84,24 +84,27 @@ const handleShowEditor = (log: any) => {
   editorVisible.value = true;
 };
 
-const handlePerformDelete = async (food: any) => {
+/**
+ * 业务 1: 处理删除
+ */
+const handlePerformDelete = (food: any) => {
   if (!food.id) return;
   Taro.showModal({
     title: '确认删除',
-    content: `确定要删除 ${food.foodName || '这项记录'} 吗？`,
+    content: `确定要移除「${food.foodName || '这项记录'}」吗？`,
+    confirmColor: '#ef4444',
     success: async (res) => {
       if (res.confirm) {
-        try {
-          await recordStore.removeMealAction(food.id);
-          Taro.showToast({ title: '已删除', icon: 'success' });
-        } catch (e) {
-          Taro.showToast({ title: '删除失败', icon: 'none' });
-        }
+        await recordStore.removeMealAction(food.id);
+        Taro.showToast({ title: '已移除', icon: 'success' });
       }
     }
   });
 };
 
+/**
+ * 业务 2: 处理新增 (正确传递 mode)
+ */
 const handleFoodPicked = async (payload: { food: any; quantity: number }) => {
   if (isSubmitting.value) return;
   try {
@@ -123,20 +126,32 @@ const handleFoodPicked = async (payload: { food: any; quantity: number }) => {
   }
 };
 
-const handleUpdateLog = async (result: { quantity: number }) => {
+/**
+ * 业务 3: 修改变回未记录逻辑 (Req 1 & 4)
+ * 点击修改保存后，直接执行物理删除，使 UI 回归灰色建议态
+ */
+const handleConfirmEditToUnrecord = async () => {
   if (!editingLog.value?.id) return;
-  try {
-    Taro.showLoading({ title: '更新中...', mask: true });
-    await recordStore.updateMealAction(editingLog.value.id, {
-      quantity: Number(result.quantity)
-    });
-    editorVisible.value = false;
-    Taro.showToast({ title: '修改成功', icon: 'success' });
-  } catch (e: any) {
-    Taro.showToast({ title: '更新失败', icon: 'none' });
-  } finally {
-    Taro.hideLoading();
-  }
+  
+  Taro.showModal({
+    title: '确认修改',
+    content: '修改后该食材将变为未记录状态，确定保存吗？',
+    success: async (res) => {
+      if (res.confirm) {
+        try {
+          Taro.showLoading({ title: '正在处理...', mask: true });
+          // 执行物理删除，UI 匹配算法会自动将其变回灰色 ghost
+          await recordStore.removeMealAction(editingLog.value.id);
+          editorVisible.value = false;
+          Taro.showToast({ title: '已重置为未记录', icon: 'success' });
+        } catch (e) {
+          Taro.showToast({ title: '操作失败', icon: 'none' });
+        } finally {
+          Taro.hideLoading();
+        }
+      }
+    }
+  });
 };
 
 useDidShow(() => {

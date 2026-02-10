@@ -20,23 +20,23 @@ interface Props {
 }
 
 interface Emits {
-  (e: "delete", id: number): void;
+  (e: "delete", food: any): void;
   (e: "edit", food: any): void;
   (e: "click", food: any): void;
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  status: 'custom'
+  status: undefined // 关键修复：移除默认值
 });
 
 const emit = defineEmits<Emits>();
 
-const handleRemove = () => {
-  if (props.food.id) emit("delete", props.food.id);
+const handleRemove = (food: any) => {
+  emit("delete", food);
 };
 
-const handleEdit = () => {
-  emit("edit", props.food);
+const handleEdit = (food: any) => {
+  emit("edit", food);
 };
 
 const handleClick = () => {

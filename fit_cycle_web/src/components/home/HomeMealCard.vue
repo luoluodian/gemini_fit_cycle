@@ -11,6 +11,7 @@
       </view>
     </view>
 
+    <!-- 混合列表：基于 isRecorded 驱动视觉状态 -->
     <view v-if="mergedMeals.length > 0" class="space-y-1">
       <FoodItemAdapter
         v-for="(item, idx) in mergedMeals"
@@ -29,7 +30,7 @@
 
     <view class="flex gap-3 mt-2">
       <view class="flex-1 bg-emerald-100 text-emerald-700 py-2.5 rounded-xl text-sm font-black text-center active:scale-95" @click="onSyncPlan">
-        按计划同步
+        全部记录
       </view>
       <view class="flex-1 bg-gray-50 text-gray-600 py-2.5 rounded-xl text-sm font-black text-center active:scale-95 border border-solid border-gray-100" @click="onAdd">
         + 添加食物
@@ -64,19 +65,33 @@ const mergedMeals = computed(() => {
   const plannedItems = template?.meals?.[props.mealType] || [];
   const result: any[] = [];
 
+  // 1. 处理计划项
   plannedItems.forEach((pItem: any) => {
     if (!pItem) return;
-    const matchIdx = actualLogs.findIndex(log => log && String(log.foodId) === String(pItem.foodId) && log.isPlanned);
+    // 匹配规则：找到 foodId 匹配 且 处于“已记录(isRecorded)”状态的计划项
+    const matchIdx = actualLogs.findIndex(log => 
+      log && log.isRecorded && log.isPlanned && String(log.foodId) === String(pItem.foodId)
+    );
+    
     if (matchIdx > -1) {
+      // 命中且已打卡：显示淡绿色
       result.push({ ...actualLogs[matchIdx], status: 'completed' });
       actualLogs.splice(matchIdx, 1);
     } else {
+      // 未命中或未打卡：显示灰色建议
       result.push({ ...pItem, status: 'ghost' });
     }
   });
 
+  // 2. 处理剩余记录 (包括手动添加项 和 被修改后回滚为未记录的项)
   actualLogs.forEach(log => {
-    result.push({ ...log, status: 'custom' });
+    if (log) {
+      // 核心业务：只有 isRecorded 为 true 才是淡绿色，否则统统变灰
+      result.push({ 
+        ...log, 
+        status: log.isRecorded ? 'completed' : 'ghost' 
+      });
+    }
   });
 
   return result;
@@ -84,10 +99,11 @@ const mergedMeals = computed(() => {
 
 const mealEmojiMap: Record<string, string> = { breakfast: "🌅", lunch: "☀️", dinner: "🌙", snacks: "🍎" };
 const mealEmoji = computed(() => mealEmojiMap[props.mealType] || "🍽️");
+// 仅统计 isRecorded 的热量
 const totalCalories = computed(() => {
   if (!props.meals) return 0;
   return Math.round(props.meals.reduce((sum, item) => {
-    return sum + (item && item.calories ? Number(item.calories) : 0);
+    return sum + (item && item.isRecorded ? (Number(item.calories) || 0) : 0);
   }, 0));
 });
 
@@ -95,24 +111,30 @@ const onAdd = () => emit("add", props.mealType);
 
 const onSyncPlan = async () => {
   try {
-    Taro.showLoading({ title: '同步中...', mask: true });
+    Taro.showLoading({ title: '记录中...', mask: true });
     await recordStore.syncFromPlanAction({ date: props.date, mealType: props.mealType });
     Taro.showToast({ title: '同步成功', icon: 'success' });
   } catch (e) {
-    Taro.showToast({ title: '计划暂无内容', icon: 'none' });
+    Taro.showToast({ title: '当前餐次无计划内容', icon: 'none' });
   } finally {
     Taro.hideLoading();
   }
 };
 
 const handleItemClick = (item: any) => {
+  // 无论是 ghost 占位还是被回滚的记录，点击都触发“记录/打卡”动作
   if (item.status === 'ghost') {
-    recordStore.addMealLogAction({
-      date: props.date,
-      mealType: props.mealType,
-      foodId: item.foodId,
-      quantity: item.quantity
-    });
+    // 如果是已有 ID 的回滚项，直接更新 isRecorded
+    if (item.id) {
+      recordStore.updateMealAction(item.id, { isRecorded: true, quantity: item.quantity });
+    } else {
+      recordStore.addMealLogAction({
+        date: props.date,
+        mealType: props.mealType,
+        foodId: item.foodId,
+        quantity: item.quantity
+      });
+    }
   }
 };
 </script>
