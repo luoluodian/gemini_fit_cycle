@@ -1,9 +1,14 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { useUserStore } from './user';
+import { useRecordStore } from './record';
 
 export const usePlanStore = defineStore('plan', () => {
   const userStore = useUserStore();
+  const recordStore = useRecordStore();
+
+  // 当前激活的计划数据 (实际开发中由 getActivePlan 获取)
+  const activePlan = ref<any>(null);
 
   // 正在创建的计划草稿
   const draft = ref({
@@ -30,15 +35,9 @@ export const usePlanStore = defineStore('plan', () => {
 
   const resetDraft = () => {
     draft.value = {
-      name: "",
-      type: "custom",
-      setActive: true,
-      cycleDays: 7,
-      cycleCount: 3,
-      templates: [],
+      name: "", type: "custom", setActive: true, cycleDays: 7, cycleCount: 3, templates: [],
       carbCycleConfig: {
-        weight: 70,
-        baseRatios: { protein: 2.0, carbs: 3.0, fat: 0.8 },
+        weight: 70, baseRatios: { protein: 2.0, carbs: 3.0, fat: 0.8 },
         phases: {
           high: { days: 2, proteinRatio: 1.0, carbRatio: 1.5, fatRatio: 0.7 },
           medium: { days: 3, proteinRatio: 1.0, carbRatio: 1.0, fatRatio: 1.0 },
@@ -49,13 +48,28 @@ export const usePlanStore = defineStore('plan', () => {
     currentDayIndex.value = 0;
     currentMealType.value = "";
     templates.value = [];
+    recordStore.invalidateAllCache();
+  };
+
+  /**
+   * I-4.5: 根据日期获取匹配的日模板
+   */
+  const getTemplateByDate = (dateStr: string) => {
+    if (!activePlan.value || !activePlan.value.startDate) return null;
+    if (dateStr < activePlan.value.startDate) return null;
+
+    const s = new Date(activePlan.value.startDate);
+    const e = new Date(dateStr);
+    const dayOffset = Math.floor((e.getTime() - s.getTime()) / (1000 * 60 * 60 * 24));
+    const targetDayNum = (dayOffset % activePlan.value.cycleDays) + 1;
+
+    return activePlan.value.planDays?.find((d: any) => d.dayNumber === targetDayNum) || null;
   };
 
   const initTemplates = (sequence?: any[]) => {
     const list = [];
     const isCarbCycle = draft.value.type === "carb-cycle";
     
-    // 如果有算法生成的序列 (碳循环模式)，直接使用
     if (isCarbCycle && sequence && sequence.length > 0) {
       draft.value.templates = sequence.map((item, i) => ({
         tempId: "temp_" + Date.now() + i,
@@ -70,13 +84,12 @@ export const usePlanStore = defineStore('plan', () => {
       return;
     }
 
-    // 常规模式初始化：尝试基于用户 TDEE 计算，否则为 0
     const tdee = userStore.healthProfile?.tdee || 0;
     const initialTargets = tdee > 0 ? {
       calories: Math.round(tdee),
-      protein: Math.round(tdee * 0.25 / 4), // 25% 蛋白
-      fat: Math.round(tdee * 0.25 / 9),     // 25% 脂肪
-      carbs: Math.round(tdee * 0.5 / 4)     // 50% 碳水
+      protein: Math.round(tdee * 0.25 / 4),
+      fat: Math.round(tdee * 0.25 / 9),
+      carbs: Math.round(tdee * 0.5 / 4)
     } : { calories: 0, protein: 0, fat: 0, carbs: 0 };
 
     const initialCount = isCarbCycle ? draft.value.cycleDays : 1;
@@ -96,64 +109,19 @@ export const usePlanStore = defineStore('plan', () => {
     draft.value.templates = list;
   };
 
-  const batchUpdateTargets = (targets: { calories: number, protein: number, fat: number, carbs: number }) => {
-    draft.value.templates.forEach(temp => {
-      temp.targetCalories = targets.calories;
-      temp.targetProtein = targets.protein;
-      temp.targetFat = targets.fat;
-      temp.targetCarbs = targets.carbs;
-      temp.isConfigured = true;
-    });
+  const onPlanUpdated = () => {
+    recordStore.invalidateAllCache();
   };
 
-  const addTemplate = () => {
-    // 复用 initTemplates 中的逻辑计算默认值
-    const tdee = userStore.healthProfile?.tdee || 0;
-    draft.value.templates.push({
-      tempId: 'temp_' + Date.now(),
-      targetCalories: tdee > 0 ? Math.round(tdee) : 0,
-      targetProtein: tdee > 0 ? Math.round(tdee * 0.25 / 4) : 0,
-      targetFat: tdee > 0 ? Math.round(tdee * 0.25 / 9) : 0,
-      targetCarbs: tdee > 0 ? Math.round(tdee * 0.5 / 4) : 0,
-      isConfigured: tdee > 0,
-      meals: {
-        breakfast: [],
-        lunch: [],
-        dinner: [],
-        snacks: []
-      },
-      carbType: 'medium'
-    });
+  return { 
+    activePlan,
+    draft, 
+    resetDraft, 
+    initTemplates, 
+    onPlanUpdated,
+    getTemplateByDate,
+    templates, 
+    currentDayIndex, 
+    currentMealType 
   };
-
-  const copyTemplate = (index: number) => {
-    const source = JSON.parse(JSON.stringify(draft.value.templates[index]));
-    source.tempId = "temp_" + Date.now();
-    if (source.name) {
-      if (!source.name.includes("(复)")) {
-        source.name = source.name.substring(0, 4) + "(复)";
-      }
-    } else {
-      source.name = "";
-    }
-    draft.value.templates.push(source);
-  };
-
-  const deleteTemplate = (index: number) => {
-    draft.value.templates.splice(index, 1);
-  };
-
-  const updateTemplate = (index: number, data: any) => {
-    if (draft.value.templates[index]) {
-      draft.value.templates[index] = { ...draft.value.templates[index], ...data };
-    }
-  };
-
-  const reorderTemplate = (fromIndex: number, toIndex: number) => {
-    if (toIndex < 0 || toIndex >= draft.value.templates.length) return;
-    const item = draft.value.templates.splice(fromIndex, 1)[0];
-    draft.value.templates.splice(toIndex, 0, item);
-  };
-
-  return { draft, resetDraft, initTemplates, batchUpdateTargets, addTemplate, copyTemplate, deleteTemplate, updateTemplate, reorderTemplate, templates, currentDayIndex, currentMealType };
 });

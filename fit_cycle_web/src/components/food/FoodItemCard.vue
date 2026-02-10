@@ -1,32 +1,39 @@
 <template>
   <view
-    class="flex items-center p-3 bg-white rounded-2xl active:bg-gray-50 transition-all mb-2 border border-solid border-gray-100 shadow-sm"
+    class="flex items-center p-3 rounded-2xl active:bg-gray-50 transition-all mb-2 border border-solid shadow-sm"
+    :class="[
+      status === 'ghost' ? 'bg-gray-50 border-dashed border-gray-200 opacity-60 grayscale' : 'bg-white border-gray-100',
+      status === 'completed' ? 'bg-emerald-50 border-emerald-100' : ''
+    ]"
     @click="$emit('click', food)"
   >
     <!-- 1. Emoji/Icon Section -->
     <view
       class="w-12 h-12 rounded-xl flex items-center justify-center mr-3 flex-shrink-0"
-      :class="getCategoryBg(food.category)"
+      :class="status === 'ghost' ? 'bg-gray-200' : getCategoryBg(food.category)"
     >
       <text class="text-2xl leading-none">{{ food.imageUrl || food.emoji || "🥗" }}</text>
     </view>
 
     <!-- 2. Content Section -->
     <view class="flex-1 min-w-0 flex flex-col justify-center">
-      <!-- Top Row: Name + Weight/Cal -->
+      <!-- Top Row -->
       <view class="flex items-center justify-between">
         <view class="flex items-center gap-1.5 min-w-0 flex-1 pr-3">
-          <text class="font-black text-gray-800 text-sm truncate">{{ food.name || food.foodName }}</text>
-          <text
-            v-if="!isSnapshot && !quantity"
-            class="px-1 py-0.5 text-[14rpx] rounded font-bold bg-gray-100 text-gray-400 flex-shrink-0"
+          <text 
+            class="font-black text-sm truncate"
+            :class="status === 'completed' ? 'text-emerald-700' : 'text-gray-800'"
           >
-            {{ food.type === "system" ? "系统" : "我的" }}
+            {{ food.name || food.foodName || '未知食材' }}
           </text>
+          <text
+            v-if="status === 'ghost'"
+            class="px-1 py-0.5 text-[14rpx] rounded font-bold bg-gray-200 text-gray-500"
+          >推荐</text>
         </view>
         
         <view class="flex items-center gap-2 flex-shrink-0 ml-auto">
-           <text class="text-[20rpx] font-black" :class="quantity || isSnapshot ? 'text-emerald-600' : 'text-gray-400'">
+           <text class="text-[20rpx] font-black" :class="status === 'completed' ? 'text-emerald-600' : 'text-gray-400'">
              {{ displayQuantity }}
            </text>
            <text class="text-[20rpx] font-black text-gray-800 whitespace-nowrap">{{ displayNutrition.calories }}<text class="text-[14rpx] font-bold text-gray-400 ml-0.5">kcal</text></text>
@@ -53,7 +60,7 @@
     </view>
 
     <!-- 3. Actions Section -->
-    <view v-if="showEdit || showDelete || $slots['right-extra']" class="flex items-center gap-1.5 ml-3" @click.stop>
+    <view v-if="status !== 'ghost' && (showEdit || showDelete)" class="flex items-center gap-1.5 ml-3" @click.stop>
       <view 
         v-if="showDelete"
         class="w-7 h-7 flex items-center justify-center bg-red-50 rounded-lg active:bg-red-100 transition-colors"
@@ -68,7 +75,9 @@
       >
         <Edit font-size="12" color="#9ca3af"></Edit>
       </view>
-      <slot name="right-extra"></slot>
+    </view>
+    <view v-else-if="status === 'ghost'" class="ml-3">
+      <view class="px-2 py-1 bg-emerald-500 text-white text-[18rpx] rounded-lg font-bold">打卡</view>
     </view>
   </view>
 </template>
@@ -83,25 +92,23 @@ interface Props {
   quantity?: number;
   showEdit?: boolean;
   showDelete?: boolean;
-  isSnapshot?: boolean; // 新增：是否为快照模式
+  isSnapshot?: boolean;
+  status?: 'ghost' | 'completed' | 'custom'; // 新增状态支持
 }
 
 const props = withDefaults(defineProps<Props>(), {
   showEdit: false,
   showDelete: false,
   isSnapshot: false,
+  status: 'custom'
 });
 
 defineEmits(["click", "edit", "delete"]);
 
-/**
- * 核心逻辑：根据模式决定展示数值
- */
 const displayNutrition = computed(() => {
-  const { food, quantity, isSnapshot } = props;
+  const { food, quantity, isSnapshot, status } = props;
   
-  // 快照模式：直接读取后端计算好的值
-  if (isSnapshot) {
+  if (isSnapshot || status === 'ghost') {
     return {
       calories: Math.round(food.calories || 0),
       protein: Number(food.protein || 0).toFixed(1),
@@ -110,7 +117,6 @@ const displayNutrition = computed(() => {
     };
   }
 
-  // 库搜索模式：实时计算比例
   const baseCount = food.baseCount || 100;
   const ratio = quantity ? (quantity / baseCount) : 1;
 
@@ -123,8 +129,8 @@ const displayNutrition = computed(() => {
 });
 
 const displayQuantity = computed(() => {
-  const { food, quantity, isSnapshot } = props;
-  if (isSnapshot) return `${food.quantity}${food.unit || 'g'}`;
+  const { food, quantity, isSnapshot, status } = props;
+  if (isSnapshot || status === 'ghost') return `${food.quantity || food.baseCount || 100}${food.unit || 'g'}`;
   return quantity ? `${quantity}${food.unit || 'g'}` : `${food.baseCount || 100}${food.unit || 'g'}`;
 });
 
@@ -133,9 +139,3 @@ const getCategoryBg = (cat: string) => {
   return target ? target.theme.bg : "bg-gray-50";
 };
 </script>
-
-<style scoped lang="scss">
-.active\:scale-95:active {
-  transform: scale(0.95);
-}
-</style>

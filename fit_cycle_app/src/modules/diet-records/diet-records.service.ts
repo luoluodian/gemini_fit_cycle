@@ -4,11 +4,17 @@ import { Repository, DataSource } from 'typeorm';
 import { DailyRecord } from '@/database/entity/daily-record.entity';
 import { MealLog, MealType } from '@/database/entity/meal-log.entity';
 import { FoodItem } from '@/database/entity/food-item.entity';
+import { DietPlan } from '@/database/entity/diet-plan.entity';
 import { DietPlansService } from '../diet-plans/diet-plans.service';
-import { HealthProfileService } from '../user/health-profile.service';
+import { UserService } from '../user/user.service';
 import { CreateMealLogDto } from '@/dtos/create-meal-log.dto';
 import { UpdateMealLogDto } from '@/dtos/update-meal-log.dto';
 import { SyncMealDto } from '@/dtos/sync-meal.dto';
+
+export interface RecordInfoResponse {
+  record: Partial<DailyRecord>;
+  meals: MealLog[];
+}
 
 @Injectable()
 export class DietRecordsService {
@@ -19,15 +25,17 @@ export class DietRecordsService {
     private readonly mealLogRepo: Repository<MealLog>,
     @InjectRepository(FoodItem)
     private readonly foodItemRepo: Repository<FoodItem>,
+    @InjectRepository(DietPlan)
+    private readonly planRepo: Repository<DietPlan>,
     private readonly dietPlansService: DietPlansService,
-    private readonly healthProfileService: HealthProfileService,
+    private readonly userService: UserService,
     private readonly dataSource: DataSource,
   ) {}
 
   /**
    * 获取指定日期的饮食记录视图 (R-2)
    */
-  async getDailyRecordView(userId: number, date: string) {
+  async getDailyRecordView(userId: number, date: string): Promise<RecordInfoResponse> {
     const record = await this.dailyRecordRepo.findOne({
       where: { userId, date },
       relations: ['meals'],
@@ -78,13 +86,22 @@ export class DietRecordsService {
   async syncMealFromPlan(userId: number, dto: SyncMealDto) {
     const { date, mealType } = dto;
     
-    // 1. 获取激活计划
-    const activePlan = await this.dietPlansService.findActivePlan(userId);
+    const activePlan = await this.planRepo.findOne({
+      where: { userId, status: 'active' as any },
+      relations: {
+        planDays: {
+          planMeals: {
+            mealType: true,
+            mealItems: true
+          }
+        }
+      }
+    });
+
     if (!activePlan || !activePlan.startDate) {
       throw new BadRequestException('当前没有激活中的饮食计划');
     }
 
-    // 2. 定位当日模板
     if (date < activePlan.startDate) {
       throw new BadRequestException('查询日期早于计划开始日期');
     }
@@ -92,41 +109,42 @@ export class DietRecordsService {
     const targetDayNum = (dayOffset % activePlan.cycleDays) + 1;
     
     const planDay = activePlan.planDays?.find(d => d.dayNumber === targetDayNum);
-    const planMeal = planDay?.planMeals?.find(m => m.mealType === mealType);
+    const planMeal = planDay?.planMeals?.find(m => m.mealType?.code === mealType);
     const items = planMeal?.mealItems || [];
 
-    // 3. 前置校验：若计划中该餐次没配食物，直接返回空
     if (items.length === 0) return [];
 
-    // 4. 执行批量转换与落库
     return await this.dataSource.transaction(async (manager) => {
       const record = await this.getOrCreateDailyRecord(manager, userId, date);
       
-      const newLogs = items.map(item => manager.create(MealLog, {
-        userId,
-        recordId: record.id,
-        mealType: mealType as any,
-        foodId: item.foodId,
-        foodName: item.foodName || item.customName,
-        quantity: item.quantity,
-        unit: item.unit || 'g',
-        calories: item.calories,
-        protein: item.protein,
-        fat: item.fat,
-        carbs: item.carbs,
-        baseCalories: item.baseCalories,
-        baseProtein: item.baseProtein,
-        baseFat: item.baseFat,
-        baseCarbs: item.baseCarbs,
-      }));
+      const logsToCreate = items.map(item => {
+        const qty = Number(item.quantity) || 100;
+        const ratio = qty / 100;
+        
+        return {
+          userId,
+          recordId: record.id,
+          mealType: mealType as MealType,
+          foodId: undefined, // 兼容类型
+          foodName: item.customName || '未知食物',
+          quantity: qty,
+          unit: item.unit || 'g',
+          calories: Math.round(Number(item.calories) || 0),
+          protein: Number(item.protein) || 0,
+          fat: Number(item.fat) || 0,
+          carbs: Number(item.carbs) || 0,
+          baseCalories: Math.round((Number(item.calories) || 0) / ratio),
+          baseProtein: Number(((Number(item.protein) || 0) / ratio).toFixed(4)),
+          baseFat: Number(((Number(item.fat) || 0) / ratio).toFixed(4)),
+          baseCarbs: Number(((Number(item.carbs) || 0) / ratio).toFixed(4)),
+        };
+      });
 
-      return await manager.save(newLogs);
+      const mealLogs = manager.create(MealLog, logsToCreate);
+      return await manager.save(mealLogs);
     });
   }
 
-  /**
-   * 内部方法：获取或创建每日记录总表 (R-3/R-6 共用)
-   */
   private async getOrCreateDailyRecord(manager: any, userId: number, date: string): Promise<DailyRecord> {
     let record = await manager.findOne(DailyRecord, { where: { userId, date } });
     if (!record) {
@@ -166,10 +184,10 @@ export class DietRecordsService {
     return { success: true };
   }
 
-  private async calculateDefaultRecord(userId: number, date: string) {
+  private async calculateDefaultRecord(userId: number, date: string): Promise<RecordInfoResponse> {
     const activePlan = await this.dietPlansService.findActivePlan(userId);
-    const defaultData = {
-      record: { id: null, userId, date, targetCalories: 2000, targetProtein: 100, targetFat: 60, targetCarbs: 250, planId: null },
+    const defaultData: RecordInfoResponse = {
+      record: { id: undefined, userId, date, targetCalories: 2000, targetProtein: 100, targetFat: 60, targetCarbs: 250, planId: undefined },
       meals: [],
     };
 
@@ -187,10 +205,11 @@ export class DietRecordsService {
       }
     }
 
-    const healthProfile = await this.healthProfileService.findByUserId(userId);
-    if (healthProfile) {
-      const bmr = healthProfile.bmr || 1500;
-      defaultData.record.targetCalories = healthProfile.tdee || Math.round(bmr * 1.2);
+    const user = await this.userService.findUserById(userId);
+    if (user && user.healthProfile) {
+      const profile = user.healthProfile;
+      const bmr = profile.bmr || 1500;
+      defaultData.record.targetCalories = profile.tdee || Math.round(bmr * 1.2);
       defaultData.record.targetProtein = Number((defaultData.record.targetCalories * 0.25 / 4).toFixed(2));
       defaultData.record.targetFat = Number((defaultData.record.targetCalories * 0.25 / 9).toFixed(2));
       defaultData.record.targetCarbs = Number((defaultData.record.targetCalories * 0.5 / 4).toFixed(2));

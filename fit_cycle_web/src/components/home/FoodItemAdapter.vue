@@ -1,32 +1,38 @@
 <template>
   <FoodItemCard 
     :food="food" 
+    :status="status"
     is-snapshot
-    show-delete
+    :show-delete="status !== 'ghost'"
     @delete="handleRemove" 
+    @click="handleClick"
   />
 </template>
 
 <script setup lang="ts">
 import FoodItemCard from "@/components/food/FoodItemCard.vue";
-import type { MealLog } from "@/services/modules/record";
 
-/**
- * 记录项适配器
- * 将 MealLog 实体适配到通用的 FoodItemCard 展示组件
- */
 interface Props {
-  food: MealLog;
+  food: any;
+  status?: 'ghost' | 'completed' | 'custom';
 }
 
 interface Emits {
   (e: "delete", id: number): void;
+  (e: "click", food: any): void;
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  status: 'custom'
+});
+
 const emit = defineEmits<Emits>();
 
 const handleRemove = () => {
-  emit("delete", props.food.id);
+  if (props.food.id) emit("delete", props.food.id);
+};
+
+const handleClick = () => {
+  emit("click", props.food);
 };
 </script>

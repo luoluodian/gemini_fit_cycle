@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Put, Delete, Param, Body, Req, UseGuards, ParseIntPipe } from '@nestjs/common';
 import { DietRecordsService } from './diet-records.service';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../auth/jwt.guard';
 import { CreateMealLogDto } from '@/dtos/create-meal-log.dto';
 import { UpdateMealLogDto } from '@/dtos/update-meal-log.dto';
 import { SyncMealDto } from '@/dtos/sync-meal.dto';

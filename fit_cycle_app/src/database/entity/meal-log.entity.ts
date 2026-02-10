@@ -140,6 +140,9 @@ export class MealLog {
   })
   baseCarbs: number;
 
+  @Column({ name: 'is_planned', type: 'boolean', default: false, comment: '是否来源于计划推荐' })
+  isPlanned: boolean;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 

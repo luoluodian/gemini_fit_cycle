@@ -9,7 +9,6 @@ import { DietPlan } from './entity/diet-plan.entity';
 import { PlanDay } from './entity/plan-day.entity';
 import { PlanMeal } from './entity/plan-meal.entity';
 import { PlanMealItem } from './entity/plan-meal-item.entity';
-import { DietLog } from './entity/diet-log.entity';
 import { FoodItem } from './entity/food-item.entity';
 import { ExerciseLog } from './entity/exercise-log.entity';
 import { ExerciseType } from './entity/exercise-type.entity';
@@ -22,10 +21,9 @@ import { TemplateLike } from './entity/template-like.entity';
 import { TemplateFavorite } from './entity/template-favorite.entity';
 import { TemplateComment } from './entity/template-comment.entity';
 import { Badge } from './entity/badge.entity';
-import { UserBadge } from './user-badge.entity';
+import { UserBadge } from './entity/user-badge.entity';
 import { DailyCheckin } from './entity/daily-checkin.entity';
 import { Reminder } from './entity/reminder.entity';
-import { PlanDetail } from './entity/plan-detail.entity';
 import { DailyGoal } from './entity/daily-goal.entity';
 import { UserFavoriteFood } from './entity/user-favorite-food.entity';
 import { HealthProfile } from './entity/health-profile.entity';
@@ -50,7 +48,6 @@ import { MealLog } from './entity/meal-log.entity';
       PlanDay,
       PlanMeal,
       PlanMealItem,
-      DietLog,
       FoodItem,
       ExerciseLog,
       ExerciseType,
@@ -66,7 +63,6 @@ import { MealLog } from './entity/meal-log.entity';
       UserBadge,
       DailyCheckin,
       Reminder,
-      PlanDetail,
       DailyGoal,
       UserFavoriteFood,
       PlanShare,

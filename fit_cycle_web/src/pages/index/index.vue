@@ -9,7 +9,7 @@
         :plan-id="currentRecord?.planId" 
       />
 
-      <!-- 2. 营养汇总 (由 Store 驱动) -->
+      <!-- 2. 营养汇总 -->
       <view v-if="isLoading" class="animate-pulse space-y-4 mb-6">
         <view class="h-48 bg-white rounded-2xl"></view>
       </view>
@@ -44,9 +44,10 @@
 
 <script setup lang="ts">
 import { ref, watch } from "vue";
-import { useDidShow } from "@tarojs/taro";
+import Taro, { useDidShow } from "@tarojs/taro";
 import { getTodayString } from "@/utils";
 import { useNutritionStats } from "@/composables/useNutritionStats";
+import { useRecordStore } from "@/stores/record";
 import DateNavigation from "@/components/home/DateNavigation.vue";
 import DailyGoalsOverview from "@/components/home/DailyGoalsOverview.vue";
 import MealCard from "@/components/home/HomeMealCard.vue";
@@ -54,7 +55,7 @@ import FoodPicker from "@/components/food/FoodPicker.vue";
 import { useNavigationStore } from "@/stores/navigation";
 import "./index.scss";
 
-// --- 核心逻辑归口：使用 Composable ---
+// --- 核心逻辑归口 ---
 const { 
   currentRecord, 
   isLoading, 
@@ -63,9 +64,11 @@ const {
   fetchRecord 
 } = useNutritionStats();
 
+const recordStore = useRecordStore();
 const currentDate = ref<string>(getTodayString());
 const foodPickerVisible = ref(false);
 const currentMealType = ref<string>("");
+const isSubmitting = ref(false);
 const navStore = useNavigationStore();
 
 const mealTypes = [
@@ -79,7 +82,7 @@ const loadData = async (date: string) => {
   try {
     await fetchRecord(date);
   } catch (e) {
-    // 错误处理已在 Store 中包含通用逻辑，此处可根据需要补充 UI 反馈
+    console.error("Load failed", e);
   }
 };
 
@@ -88,15 +91,40 @@ const handleAddFood = (type: string) => {
   foodPickerVisible.value = true;
 };
 
-const handleFoodPicked = async (payload: any) => {
-  // 记录保存逻辑将由 R-3 最终对接
+/**
+ * I-4.1: 处理打卡保存
+ */
+const handleFoodPicked = async (payload: { food: any; quantity: number }) => {
+  if (isSubmitting.value) return;
+  
+  try {
+    isSubmitting.value = true;
+    Taro.showLoading({ title: '记录中...', mask: true });
+    
+    await recordStore.addMealLogAction({
+      date: currentDate.value,
+      mealType: currentMealType.value,
+      foodId: payload.food.id,
+      quantity: payload.quantity
+    });
+    
+    Taro.showToast({ title: '记录成功', icon: 'success' });
+    foodPickerVisible.value = false;
+  } catch (e: any) {
+    Taro.showToast({ 
+      title: e.message || '记录失败，请重试', 
+      icon: 'none' 
+    });
+  } finally {
+    isSubmitting.value = false;
+    Taro.hideLoading();
+  }
 };
 
 useDidShow(() => {
   navStore.setActiveTab(0);
 });
 
-// 日期切换触发全量加载
 watch(currentDate, (newDate) => {
   loadData(newDate);
 }, { immediate: true });

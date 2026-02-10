@@ -314,6 +314,16 @@ export class DietPlansService {
   }
 
   /**
+   * 获取用户当前激活的计划 (含日模板)
+   */
+  async findActivePlan(userId: number): Promise<DietPlan | null> {
+    return this.planRepo.findOne({
+      where: { userId, status: PlanStatus.ACTIVE },
+      relations: { planDays: true }
+    });
+  }
+
+  /**
    * 创建新的饮食计划。
    */
   async createPlan(userId: number, dto: CreateDietPlanDto) {

@@ -35,6 +35,7 @@ export interface MealLog {
   protein: number;
   fat: number;
   carbs: number;
+  isPlanned: boolean;
 }
 
 /**

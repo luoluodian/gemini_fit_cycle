@@ -9,7 +9,6 @@ import {
 } from 'typeorm';
 import { DailyCheckin } from './daily-checkin.entity';
 import { DietPlan } from './diet-plan.entity';
-import { DietLog } from './diet-log.entity';
 import { ExerciseLog } from './exercise-log.entity';
 import { PlanTemplate } from './plan-template.entity';
 import { Reminder } from './reminder.entity';

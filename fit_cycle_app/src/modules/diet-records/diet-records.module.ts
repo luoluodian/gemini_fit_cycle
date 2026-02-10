@@ -5,12 +5,13 @@ import { DietRecordsController } from './diet-records.controller';
 import { DailyRecord } from '@/database/entity/daily-record.entity';
 import { MealLog } from '@/database/entity/meal-log.entity';
 import { FoodItem } from '@/database/entity/food-item.entity';
+import { DietPlan } from '@/database/entity/diet-plan.entity';
 import { DietPlansModule } from '../diet-plans/diet-plans.module';
 import { UserModule } from '../user/user.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([DailyRecord, MealLog, FoodItem]),
+    TypeOrmModule.forFeature([DailyRecord, MealLog, FoodItem, DietPlan]),
     DietPlansModule,
     UserModule,
   ],
