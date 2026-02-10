@@ -20,6 +20,7 @@ import { UserBadge } from './user-badge.entity';
 import { WeightRecord } from './weight-record.entity';
 import { DailyGoal } from './daily-goal.entity';
 import { HealthProfile } from './health-profile.entity';
+import { DailyRecord } from './daily-record.entity';
 
 @Entity('users')
 export class User {
@@ -60,9 +61,6 @@ export class User {
   @OneToMany(() => DietPlan, (dietPlan) => dietPlan.user)
   dietPlans: DietPlan[];
 
-  @OneToMany(() => DietLog, (dietLog) => dietLog.user)
-  dietLogs: DietLog[];
-
   @OneToMany(() => ExerciseLog, (exerciseLog) => exerciseLog.user)
   exerciseLogs: ExerciseLog[];
 
@@ -89,4 +87,7 @@ export class User {
 
   @OneToMany(() => DailyGoal, (dailyGoal) => dailyGoal.user)
   dailyGoals: DailyGoal[];
+
+  @OneToMany(() => DailyRecord, (dailyRecord) => dailyRecord.user)
+  dailyRecords: DailyRecord[];
 }

@@ -9,9 +9,8 @@ import { AuthModule } from './modules/auth/auth.module';
 import { UserModule } from './modules/user/user.module';
 import { DictModule } from './modules/dict/dict.module';
 import { DietPlansModule } from './modules/diet-plans/diet-plans.module';
-import { DietLogsModule } from './modules/diet-logs/diet-logs.module';
-// TODO: TodayDietModule 模块待完善，目前暂时禁用
-// import { TodayDietModule } from './modules/today-diet/today-diet.module';
+import { DietRecordsModule } from './modules/diet-records/diet-records.module';
+import { DietLogsModule } from './modules/diet-logs/diet-logs.module'; // 暂时保留以防编译错，后续物理清理
 import { ShareModule } from './modules/share/share.module';
 
 import { FoodItemModule } from './modules/food-items/food-items.module';
@@ -34,7 +33,7 @@ import { TrimInterceptor } from './common/interceptors/trim.interceptor';
     UserModule,
     DictModule,
     DietPlansModule,
-    DietLogsModule,
+    DietRecordsModule,
     ShareModule,
     FoodItemModule,
     LoggerModule,

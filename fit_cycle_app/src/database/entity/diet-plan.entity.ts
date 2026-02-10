@@ -11,7 +11,7 @@ import {
 } from 'typeorm';
 import { User } from './user.entity';
 import { PlanDay } from './plan-day.entity';
-import { DietLog } from './diet-log.entity';
+import { DailyRecord } from './daily-record.entity';
 import { DailyGoal } from './daily-goal.entity';
 import { PlanTemplate } from './plan-template.entity';
 
@@ -146,8 +146,8 @@ export class DietPlan {
   @OneToMany(() => PlanDay, (day) => day.plan, { cascade: true })
   planDays: PlanDay[];
 
-  @OneToMany(() => DietLog, (log) => log.plan)
-  dietLogs: DietLog[];
+  @OneToMany(() => DailyRecord, (record) => record.plan)
+  dailyRecords: DailyRecord[];
 
   @OneToMany(() => DailyGoal, (goal) => goal.plan)
   dailyGoals: DailyGoal[];

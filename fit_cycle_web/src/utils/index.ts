@@ -14,3 +14,6 @@ export * from "./toast";
 
 // 环境变量工具
 export * from "./env";
+
+// 日期工具
+export * from "./date";

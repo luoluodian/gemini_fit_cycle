@@ -13,12 +13,12 @@
 
     <!-- 2. Content Section -->
     <view class="flex-1 min-w-0 flex flex-col justify-center">
-      <!-- Top Row: Name + Weight/Cal (Always aligned right to fill space) -->
+      <!-- Top Row: Name + Weight/Cal -->
       <view class="flex items-center justify-between">
         <view class="flex items-center gap-1.5 min-w-0 flex-1 pr-3">
-          <text class="font-black text-gray-800 text-sm truncate">{{ food.name }}</text>
+          <text class="font-black text-gray-800 text-sm truncate">{{ food.name || food.foodName }}</text>
           <text
-            v-if="!quantity"
+            v-if="!isSnapshot && !quantity"
             class="px-1 py-0.5 text-[14rpx] rounded font-bold bg-gray-100 text-gray-400 flex-shrink-0"
           >
             {{ food.type === "system" ? "系统" : "我的" }}
@@ -26,8 +26,8 @@
         </view>
         
         <view class="flex items-center gap-2 flex-shrink-0 ml-auto">
-           <text class="text-[20rpx] font-black" :class="quantity ? 'text-emerald-600' : 'text-gray-400'">
-             {{ quantity ? `${quantity}${food.unit || 'g'}` : `${food.baseCount || 100}${food.unit || 'g'}` }}
+           <text class="text-[20rpx] font-black" :class="quantity || isSnapshot ? 'text-emerald-600' : 'text-gray-400'">
+             {{ displayQuantity }}
            </text>
            <text class="text-[20rpx] font-black text-gray-800 whitespace-nowrap">{{ displayNutrition.calories }}<text class="text-[14rpx] font-bold text-gray-400 ml-0.5">kcal</text></text>
         </view>
@@ -83,17 +83,34 @@ interface Props {
   quantity?: number;
   showEdit?: boolean;
   showDelete?: boolean;
+  isSnapshot?: boolean; // 新增：是否为快照模式
 }
 
 const props = withDefaults(defineProps<Props>(), {
   showEdit: false,
   showDelete: false,
+  isSnapshot: false,
 });
 
 defineEmits(["click", "edit", "delete"]);
 
+/**
+ * 核心逻辑：根据模式决定展示数值
+ */
 const displayNutrition = computed(() => {
-  const { food, quantity } = props;
+  const { food, quantity, isSnapshot } = props;
+  
+  // 快照模式：直接读取后端计算好的值
+  if (isSnapshot) {
+    return {
+      calories: Math.round(food.calories || 0),
+      protein: Number(food.protein || 0).toFixed(1),
+      fat: Number(food.fat || 0).toFixed(1),
+      carbs: Number(food.carbs || 0).toFixed(1),
+    };
+  }
+
+  // 库搜索模式：实时计算比例
   const baseCount = food.baseCount || 100;
   const ratio = quantity ? (quantity / baseCount) : 1;
 
@@ -103,6 +120,12 @@ const displayNutrition = computed(() => {
     fat: (Math.round((food.fat || 0) * ratio * 10) / 10).toFixed(1),
     carbs: (Math.round((food.carbs || 0) * ratio * 10) / 10).toFixed(1),
   };
+});
+
+const displayQuantity = computed(() => {
+  const { food, quantity, isSnapshot } = props;
+  if (isSnapshot) return `${food.quantity}${food.unit || 'g'}`;
+  return quantity ? `${quantity}${food.unit || 'g'}` : `${food.baseCount || 100}${food.unit || 'g'}`;
 });
 
 const getCategoryBg = (cat: string) => {

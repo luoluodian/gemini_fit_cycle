@@ -1,73 +1,83 @@
 /**
- * 记录服务
- * 提供饮食记录相关的API接口调用
+ * 饮食记录服务 (Record Domain)
+ * 基于 V7 全链路持久化架构重构
  */
 
 import { httpRequest } from "../http";
 
 /**
- * 计划信息
+ * 每日记录总表快照 (对齐后端 DailyRecord 实体)
  */
-export interface PlanInfo {
-  planId: string;
-  planName: string;
-  currentDay: number;
-  cycleDays: number;
-  recordId: string;
+export interface DailyRecord {
+  id: number | null;
+  userId: number;
+  date: string;
+  targetCalories: number;
+  targetProtein: number;
+  targetFat: number;
+  targetCarbs: number;
+  planId: number | null;
 }
 
 /**
- * 营养目标
+ * 餐食记录明细 (对齐后端 MealLog 实体)
  */
-export interface NutritionGoals {
-  calories: number;
-  protein: number;
-  fat: number;
-  carbs: number;
-}
-
-/**
- * 餐次食物详情
- */
-export interface MealFoodDetail {
-  mealFoodId: string;
-  foodId: string;
+export interface MealLog {
+  id: number;
+  recordId: number;
+  mealType: 'breakfast' | 'lunch' | 'dinner' | 'snacks';
+  foodId: number | null;
   foodName: string;
+  customName: string | null;
+  quantity: number;
+  unit: string;
   calories: number;
   protein: number;
   fat: number;
   carbs: number;
-  consumedAmount: number;
-  baseUnit: string;
-  baseCount?: number;
-  isRecorded: number;
-  isPlanned: number;
 }
 
 /**
- * 餐次记录
- */
-export interface MealRecord {
-  meal_type: string;
-  meal_type_label: string;
-  details: MealFoodDetail[];
-}
-
-/**
- * 记录信息响应
+ * 首页仪表盘聚合响应结构 (R-2)
  */
 export interface RecordInfoResponse {
-  date: string;
-  plan: PlanInfo;
-  nutritionGoals: NutritionGoals;
-  mealRecords: MealRecord[];
+  record: DailyRecord;
+  meals: MealLog[];
 }
 
 /**
- * 获取记录信息
+ * 获取指定日期的饮食记录
+ * 契约：GET /records/:date
  */
-export async function getRecordInfo(date?: string): Promise<RecordInfoResponse> {
-  return httpRequest.get("/api/record/getInfo", { date });
+export async function getDailyRecord(date: string): Promise<RecordInfoResponse> {
+  return httpRequest.get(`/records/${date}`);
 }
 
+/**
+ * 添加餐食记录 (R-3)
+ */
+export async function addMealLog(data: {
+  date: string;
+  mealType: string;
+  foodId: number;
+  quantity: number;
+}): Promise<MealLog> {
+  return httpRequest.post('/records/meal', data);
+}
 
+/**
+ * 按计划同步餐食记录 (R-6)
+ */
+export async function syncMealFromPlan(data: {
+  date: string;
+  mealType: string;
+}): Promise<MealLog[]> {
+  return httpRequest.post('/records/meal/sync', data);
+}
+
+/**
+ * 删除餐食记录 (R-3)
+ */
+export async function removeMealLog(id: number): Promise<any> {
+  return httpRequest.delete(`/records/meal/${id}`);
+}

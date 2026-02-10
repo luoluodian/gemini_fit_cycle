@@ -22,15 +22,17 @@ import { TemplateLike } from './entity/template-like.entity';
 import { TemplateFavorite } from './entity/template-favorite.entity';
 import { TemplateComment } from './entity/template-comment.entity';
 import { Badge } from './entity/badge.entity';
-import { UserBadge } from './entity/user-badge.entity';
+import { UserBadge } from './user-badge.entity';
 import { DailyCheckin } from './entity/daily-checkin.entity';
 import { Reminder } from './entity/reminder.entity';
-import { MealRecord } from './entity/meal-record.entity';
 import { PlanDetail } from './entity/plan-detail.entity';
 import { DailyGoal } from './entity/daily-goal.entity';
 import { UserFavoriteFood } from './entity/user-favorite-food.entity';
 import { HealthProfile } from './entity/health-profile.entity';
 import { PlanShare } from './entity/plan-share.entity';
+// R-1 新增实体
+import { DailyRecord } from './entity/daily-record.entity';
+import { MealLog } from './entity/meal-log.entity';
 
 /**
  * 统一实体模块：
@@ -64,11 +66,12 @@ import { PlanShare } from './entity/plan-share.entity';
       UserBadge,
       DailyCheckin,
       Reminder,
-      MealRecord,
       PlanDetail,
       DailyGoal,
       UserFavoriteFood,
       PlanShare,
+      DailyRecord,
+      MealLog,
     ]),
   ],
   exports: [TypeOrmModule],
