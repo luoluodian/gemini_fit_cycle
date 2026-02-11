@@ -11,7 +11,7 @@
 <script setup lang="ts">
 import BaseTabs from "../common/BaseTabs.vue";
 
-const props = defineProps<{
+defineProps<{
   currentMeal: "breakfast" | "lunch" | "dinner" | "snacks";
 }>();
 

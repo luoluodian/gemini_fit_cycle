@@ -324,16 +324,6 @@ const currentNutrition = computed(() => {
   return total;
 });
 
-const getMealLabel = (type: string) => {
-  const map: any = {
-    breakfast: "早餐",
-    lunch: "午餐",
-    dinner: "晚餐",
-    snacks: "加餐",
-  };
-  return map[type] || localTemplate.value?.customLabels?.[type] || "自定义餐次";
-};
-
 const goToMealConfig = (mealType: string) => {
   // 构建桥接数据，兼容 meal-config 的 store 依赖
   const tempTemplate = {

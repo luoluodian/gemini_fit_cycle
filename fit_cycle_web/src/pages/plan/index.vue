@@ -189,7 +189,7 @@ const completedPlans = computed(() => {
   return formatPlans(allPlans.value.filter((p) => p.status === "completed"));
 });
 
-const archivedPlans = computed(() => {
+const _archivedPlans = computed(() => {
   return formatPlans(allPlans.value.filter((p) => p.status === "archived"));
 });
 
@@ -434,7 +434,7 @@ const handleImportPlan = async (shareCode: string) => {
   }
 };
 
-const showPlanTypes = () => {
+const _showPlanTypes = () => {
   showSuccess("推荐计划已显示在页面下方");
 };
 
@@ -453,7 +453,7 @@ const closeNewPlanModal = () => {
   showNewPlanModal.value = false;
 };
 
-const handleCreatePlan = async (formData: any) => {
+const handleCreatePlan = async (_formData: any) => {
   // ... (existing handleCreatePlan code)
 };
 
@@ -531,7 +531,7 @@ const handlePlanAction = async (type: string, planId: string | number) => {
 // ... (existing methods)
 
 // 创建推荐计划
-const handleCreateRecommendedPlan = (type: string) => {
+const _handleCreateRecommendedPlan = (_type: string) => {
   planStore.resetDraft();
   // 模拟原型：根据类型预设部分数据
   const presets: any = {
@@ -540,11 +540,11 @@ const handleCreateRecommendedPlan = (type: string) => {
     balanced: { name: "均衡营养计划", type: "custom", cycleDays: 1 },
   };
 
-  if (presets[type]) {
-    Object.assign(planStore.draft, presets[type]);
+  if (presets[_type]) {
+    Object.assign(planStore.draft, presets[_type]);
   }
 
-  Taro.navigateTo({ url: `/pages/plan-creator/index?type=${type}` });
+  Taro.navigateTo({ url: `/pages/plan-creator/index?type=${_type}` });
 };
 
 // 页面加载时初始化
@@ -582,3 +582,4 @@ defineExpose({
   animation: fadeIn 0.3s ease-out forwards;
 }
 </style>
+

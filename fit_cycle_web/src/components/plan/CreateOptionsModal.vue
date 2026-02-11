@@ -129,7 +129,7 @@ interface Emits {
   (e: "import"): void;
 }
 
-const props = defineProps<Props>();
+defineProps<Props>();
 const emit = defineEmits<Emits>();
 
 const handleClose = () => {

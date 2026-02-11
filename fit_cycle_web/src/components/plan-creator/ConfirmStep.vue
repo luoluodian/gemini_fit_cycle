@@ -84,7 +84,7 @@ interface Emits {
   (e: "update:confirmed", value: boolean): void;
 }
 
-const props = defineProps<Props>();
+defineProps<Props>();
 const emit = defineEmits<Emits>();
 
 const handleConfirmChange = (value: boolean) => {

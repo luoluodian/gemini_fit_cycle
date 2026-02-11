@@ -19,7 +19,7 @@ interface Emits {
   (e: "change", filter: string): void;
 }
 
-const props = defineProps<Props>();
+defineProps<Props>();
 const emit = defineEmits<Emits>();
 
 const filters = [

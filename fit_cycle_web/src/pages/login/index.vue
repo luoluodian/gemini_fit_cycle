@@ -53,7 +53,7 @@ import { ref } from "vue";
 import Taro from "@tarojs/taro";
 import { setStorage } from "@/utils/storage";
 import { showSuccess, showModal } from "@/utils/toast";
-import { navigateTo, useRouterParams, reLaunch } from "@/router";
+import { useRouterParams, reLaunch } from "@/router";
 import { useUserStore } from "@/stores/user";
 import LogoHeader from "@/components/login/LogoHeader.vue";
 import WelcomeCard from "@/components/login/WelcomeCard.vue";
@@ -149,7 +149,7 @@ const handleWechatLogin = async (): Promise<void> => {
 /**
  * 处理免登录体验 (游客模式)
  */
-const handleGuestMode = async (): Promise<void> => {
+const _handleGuestMode = async (): Promise<void> => {
   Taro.showModal({
     title: "提示",
     content: "免登录体验模式下，数据将仅保存在本地。确定要继续吗？",

@@ -141,7 +141,6 @@ import DayCard from "@/components/daily-list/DayCard.vue";
 import StatsCard from "@/components/daily-list/StatsCard.vue";
 import FilterButtons from "@/components/daily-list/FilterButtons.vue";
 import BatchModal from "@/components/daily-list/BatchModal.vue";
-import { navigateBack } from "@/router";
 import { getStorage, setStorage } from "@/utils/storage";
 import { showError, showSuccess, showModal } from "@/utils/toast";
 import { useRouterParams } from "@/router/hooks";
@@ -176,7 +175,6 @@ const planId = ref<string>(routerParams.planId || "1");
 const plan = ref<Plan | null>(null);
 const currentFilter = ref<string>("all");
 const sortOrder = ref<"asc" | "desc">("asc");
-const currentDate = ref<Date>(new Date());
 const batchModalVisible = ref(false);
 
 const planName = computed(() => plan.value?.name || "饮食计划");
@@ -198,16 +196,6 @@ const configuredCount = computed(() => {
 const remainingCount = computed(() => {
   if (!plan.value) return 0;
   return plan.value.totalDays - configuredCount.value;
-});
-
-const progressText = computed(() => {
-  if (!plan.value) return "0/0";
-  return `${completedCount.value}/${plan.value.totalDays}`;
-});
-
-const progressPercent = computed(() => {
-  if (!plan.value || plan.value.totalDays === 0) return 0;
-  return (completedCount.value / plan.value.totalDays) * 100;
 });
 
 const filteredDays = computed(() => {
@@ -301,10 +289,6 @@ const isToday = (date: Date) => {
   return date.toDateString() === today.toDateString();
 };
 
-const handleGoBack = () => {
-  navigateBack();
-};
-
 const handleFilterChange = (filter: string) => {
   currentFilter.value = filter;
 };
@@ -313,7 +297,7 @@ const handleToggleSortOrder = () => {
   sortOrder.value = sortOrder.value === "asc" ? "desc" : "asc";
 };
 
-const handleEditDay = (dayId: string) => {
+const handleEditDay = (_dayId: string) => {
   // TODO: 跳转到每日计划页面
   // navigateTo(ROUTES.DAILY_PLAN, { planId: planId.value, dayId });
   showError("每日计划页面开发中...");

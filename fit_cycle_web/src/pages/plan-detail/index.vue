@@ -347,7 +347,7 @@ import { showSuccess, showError, showLoading, hideToast } from "@/utils/toast";
 
 const router = useRouter();
 const planId = Number(router.params.id);
-const planStore = usePlanStore();
+const _planStore = usePlanStore();
 
 const plan = ref<any>(null);
 

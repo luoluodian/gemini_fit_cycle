@@ -179,7 +179,7 @@ const handleCloseImportPlanModal = () => {
   importPlanModalVisible.value = false;
 };
 
-const handleImportPlan = async (code: string) => {
+const handleImportPlan = async (_code: string) => {
   await showSuccess("计划导入成功！");
   setTimeout(() => {
     navigateTo("/pages/plan/index");

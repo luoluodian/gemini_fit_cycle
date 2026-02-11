@@ -27,7 +27,7 @@ interface Emits {
   (e: "change", tab: string): void;
 }
 
-const props = defineProps<Props>();
+defineProps<Props>();
 const emit = defineEmits<Emits>();
 
 const tabs = [

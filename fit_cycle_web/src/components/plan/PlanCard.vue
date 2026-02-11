@@ -99,7 +99,7 @@ interface Emits {
   (e: "action", type: string, planId: string): void;
 }
 
-const props = defineProps<{
+defineProps<{
   plan: Plan;
 }>();
 

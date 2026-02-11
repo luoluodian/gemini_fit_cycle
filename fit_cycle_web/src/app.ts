@@ -28,7 +28,7 @@ const App = createApp({
       }
     });
   },
-  onShow(options) {},
+  onShow(_options) {},
 });
 
 App.use(createPinia());

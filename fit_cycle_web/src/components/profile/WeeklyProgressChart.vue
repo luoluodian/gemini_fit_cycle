@@ -55,7 +55,7 @@ interface WeeklyStats {
   weeklyChange: string;
 }
 
-const props = defineProps<{
+defineProps<{
   stats: WeeklyStats;
 }>();
 

@@ -243,7 +243,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from "vue";
+import { computed, watch } from "vue";
 import Taro, { useRouter } from "@tarojs/taro";
 import PageLayout from "@/components/common/PageLayout.vue";
 import BaseButton from "@/components/common/BaseButton.vue";

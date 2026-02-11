@@ -8,7 +8,7 @@ import Components from "unplugin-vue-components/vite";
 const path = require("path");
 
 // https://taro-docs.jd.com/docs/next/config#defineconfig-辅助函数
-export default defineConfig<"vite">(async (merge, { command, mode }) => {
+export default defineConfig<"vite">(async (merge, { command: _command, mode: _mode }) => {
   const baseConfig: UserConfigExport<"vite"> = {
     projectName: "fit_cycle_taro",
     date: "2026-1-4",

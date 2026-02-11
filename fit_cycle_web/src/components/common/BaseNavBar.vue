@@ -75,7 +75,7 @@ interface Props {
   customBackground?: string;
 }
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
   title: "",
   showBack: false,
   transparent: false,

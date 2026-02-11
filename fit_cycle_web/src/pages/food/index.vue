@@ -162,7 +162,6 @@ import {
   deleteFoodItem,
 } from "@/services/modules/food";
 import type { FoodItem } from "@/services/modules/food";
-import { FOOD_CATEGORIES } from "@/constants/food-categories";
 import GlassCard from "@/components/common/GlassCard.vue";
 import BaseScrollView from "@/components/common/BaseScrollView.vue";
 import SearchBar from "@/components/common/SearchBar.vue";

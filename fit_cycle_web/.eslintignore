@@ -1,0 +1,5 @@
+dist
+node_modules
+components.d.ts
+src/custom-tab-bar/index.js
+src/utils/__tests__/carb-cycle-algo.test.js

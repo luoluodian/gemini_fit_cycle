@@ -96,7 +96,7 @@ const handleNext = async () => {
   }
 };
 
-const handleGoBack = () => Taro.navigateBack();
+const _handleGoBack = () => Taro.navigateBack();
 
 const handleCancel = () => {
   Taro.showModal({

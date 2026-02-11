@@ -57,7 +57,6 @@
 
 <script setup lang="ts">
 import FoodItemCard from "../food/FoodItemCard.vue";
-import GlassCard from "./GlassCard.vue";
 
 interface Food {
   name: string;
@@ -69,7 +68,7 @@ interface Food {
   carbs: number;
 }
 
-const props = defineProps<{
+defineProps<{
   mealName: string;
   mealCalories: number;
   foods: Food[];
@@ -83,10 +82,6 @@ const emit = defineEmits<{
 
 const handleAddFood = () => {
   emit("add-food");
-};
-
-const handleEditFood = (index: number) => {
-  emit("edit-food", index);
 };
 
 const handleRemoveFood = (index: number) => {

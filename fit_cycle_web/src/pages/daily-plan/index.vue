@@ -83,7 +83,6 @@ import FoodPicker from "@/components/food/FoodPicker.vue";
 import TargetsModal from "@/components/daily-plan/TargetsModal.vue";
 import { navigateBack } from "@/router";
 import { useRouterParams } from "@/router/hooks";
-import { getStorage, setStorage } from "@/utils/storage";
 import { showSuccess, showError, showModal } from "@/utils/toast";
 import "./index.scss";
 
@@ -91,13 +90,6 @@ interface Food {
   name: string;
   quantity: number;
   unit: string;
-  calories: number;
-  protein: number;
-  fat: number;
-  carbs: number;
-}
-
-interface Nutrition {
   calories: number;
   protein: number;
   fat: number;
@@ -133,7 +125,6 @@ interface Plan {
 }
 
 const routerParams = useRouterParams<{ planId?: string; dayId?: string }>();
-const planId = ref<string>(routerParams.planId || "");
 const dayId = ref<string>(routerParams.dayId || "");
 const plan = ref<Plan | null>(null);
 const day = ref<DayPlan | null>(null);
@@ -369,7 +360,7 @@ const handleAddFood = () => {
   foodModalVisible.value = true;
 };
 
-const handleEditFood = (index: number) => {
+const handleEditFood = (_index: number) => {
   showError("编辑食物功能开发中...");
 };
 
@@ -486,7 +477,6 @@ const handleSaveAndNext = () => {
   const nextIndex = currentIndex + 1;
 
   if (nextIndex < plan.value.dailyPlans.length) {
-    const nextDay = plan.value.dailyPlans[nextIndex];
     showSuccess("已保存，跳转到下一天");
     setTimeout(() => {
       // TODO: 使用路由跳转到下一天

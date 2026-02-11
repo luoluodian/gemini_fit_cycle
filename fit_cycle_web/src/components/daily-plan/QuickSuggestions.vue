@@ -23,7 +23,6 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
 
 interface Food {
   name: string;
@@ -35,7 +34,7 @@ interface Food {
   carbs: number;
 }
 
-const props = defineProps<{
+defineProps<{
   suggestions: Food[];
 }>();
 

@@ -107,7 +107,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from "vue";
+import { computed, watch } from "vue";
 import { ArrowDown } from "@nutui/icons-vue-taro";
 import FoodItemCard from "../food/FoodItemCard.vue";
 

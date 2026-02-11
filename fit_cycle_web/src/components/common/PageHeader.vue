@@ -88,7 +88,7 @@ interface Props {
   actions?: HeaderAction[];
 }
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
   showBack: true,
   actions: () => [],
 });

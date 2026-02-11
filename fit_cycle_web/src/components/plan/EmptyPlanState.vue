@@ -41,7 +41,7 @@ interface Emits {
   (e: "action"): void;
 }
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
   text: "暂无计划",
   actionText: "",
   dataTestId: "",

@@ -77,7 +77,7 @@ export function getErrorType(error: any): ErrorType {
 /**
  * 显示错误提示
  */
-export function showErrorToast(message: string, code?: number): void {
+export function showErrorToast(message: string, _code?: number): void {
   try {
     Taro.showToast({
       title: message,
@@ -140,14 +140,14 @@ function handleAuthError(error: ApiError): void {
 /**
  * 处理网络错误
  */
-function handleNetworkError(error: ApiError): void {
+function handleNetworkError(_error: ApiError): void {
   showErrorToast("网络连接失败，请检查网络后重试");
 }
 
 /**
  * 处理超时错误
  */
-function handleTimeoutError(error: ApiError): void {
+function handleTimeoutError(_error: ApiError): void {
   showErrorToast("请求超时，请稍后重试");
 }
 
@@ -164,7 +164,7 @@ function handleBusinessError(error: ApiError): void {
 /**
  * 处理服务器错误
  */
-function handleServerError(error: ApiError): void {
+function handleServerError(_error: ApiError): void {
   showErrorToast("服务器繁忙，请稍后再试");
 }
 
