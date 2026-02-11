@@ -2,7 +2,7 @@
   <view
     class="flex items-center p-3 rounded-2xl active:bg-gray-50 transition-all mb-2 border border-solid shadow-sm"
     :class="{
-      'bg-gray-50 border-dashed border-gray-200 grayscale': status === 'ghost',
+      'bg-gray-50 border-dashed border-gray-200 grayscale': status === 'ghost' || status === 'draft',
       'bg-emerald-50 border-emerald-100': status === 'completed',
       'bg-white border-gray-100': !status || status === 'custom'
     }"
@@ -11,7 +11,7 @@
     <!-- 1. Icon -->
     <view
       class="w-12 h-12 rounded-xl flex items-center justify-center mr-3 flex-shrink-0"
-      :class="status === 'ghost' ? 'bg-gray-200' : getCategoryBg(food.category)"
+      :class="(status === 'ghost' || status === 'draft') ? 'bg-gray-200' : getCategoryBg(food.category)"
     >
       <text class="text-2xl leading-none">{{ food.imageUrl || food.emoji || "🥗" }}</text>
     </view>
@@ -22,7 +22,7 @@
         <view class="flex items-center gap-1.5 min-w-0 flex-1 pr-3">
           <text 
             class="font-black text-sm truncate"
-            :class="status === 'ghost' ? 'text-gray-500' : 'text-emerald-700'"
+            :class="(status === 'ghost' || status === 'draft') ? 'text-gray-500' : 'text-emerald-700'"
           >
             {{ food.name || food.foodName || '未知食材' }}
           </text>
@@ -30,10 +30,14 @@
             v-if="status === 'ghost'"
             class="px-1 py-0.5 text-[14rpx] rounded font-bold bg-gray-200 text-gray-500"
           >计划建议</text>
+          <text
+            v-else-if="status === 'draft'"
+            class="px-1 py-0.5 text-[14rpx] rounded font-bold bg-orange-100 text-orange-500"
+          >未记录</text>
         </view>
         
         <view class="flex items-center gap-2 flex-shrink-0 ml-auto">
-           <text class="text-[20rpx] font-black" :class="status === 'ghost' ? 'text-gray-400' : 'text-emerald-600'">
+           <text class="text-[20rpx] font-black" :class="(status === 'ghost' || status === 'draft') ? 'text-gray-400' : 'text-emerald-600'">
              {{ displayQuantity }}
            </text>
            <text class="text-[20rpx] font-black text-gray-800 whitespace-nowrap">{{ displayNutrition.calories }}<text class="text-[14rpx] font-bold text-gray-400 ml-0.5">kcal</text></text>
@@ -49,7 +53,7 @@
       </view>
     </view>
 
-    <!-- 3. Actions -->
+    <!-- 3. Actions: 草稿态允许删除 -->
     <view v-if="status !== 'ghost' && (showEdit || showDelete)" class="flex items-center gap-1.5 ml-3" @click.stop>
       <view 
         v-if="showDelete"
@@ -59,14 +63,14 @@
         <Del font-size="12" color="#ef4444"></Del>
       </view>
       <view 
-        v-if="showEdit"
+        v-if="showEdit && status === 'completed'"
         class="w-7 h-7 flex items-center justify-center bg-gray-100 rounded-lg active:bg-gray-200 transition-colors border border-solid border-gray-200"
         @click="$emit('edit', food)"
       >
         <Edit font-size="12" color="#9ca3af"></Edit>
       </view>
     </view>
-    <view v-else-if="status === 'ghost'" class="ml-3">
+    <view v-if="status === 'ghost' || status === 'draft'" class="ml-3">
       <view class="px-2 py-1 bg-emerald-500 text-white text-[18rpx] rounded-lg font-bold">打卡</view>
     </view>
   </view>
@@ -84,21 +88,21 @@ interface Props {
   showEdit?: boolean;
   showDelete?: boolean;
   isSnapshot?: boolean;
-  status?: 'ghost' | 'completed' | 'custom';
+  status?: 'ghost' | 'completed' | 'custom' | 'draft';
 }
 
 const props = withDefaults(defineProps<Props>(), {
   showEdit: false,
   showDelete: false,
   isSnapshot: false,
-  status: undefined // 关键修复：移除默认值，防止误判为记录项
+  status: undefined
 });
 
 defineEmits(["click", "edit", "delete"]);
 
 const displayNutrition = computed(() => {
   const { food, isSnapshot, status } = props;
-  if (isSnapshot || status === 'ghost') {
+  if (isSnapshot || status === 'ghost' || status === 'draft') {
     return {
       calories: Math.round(food.calories || 0),
       protein: Number(food.protein || 0).toFixed(1),
@@ -110,9 +114,8 @@ const displayNutrition = computed(() => {
 });
 
 const displayQuantity = computed(() => {
-  const { food, status } = props;
+  const { food } = props;
   const qty = food.quantity || food.baseCount || 100;
-  // 防御性逻辑：物理去除单位中可能存在的 100 字样
   const cleanUnit = (food.unit || 'g').replace(/[0-9]/g, '');
   return `${qty}${cleanUnit}`;
 });

@@ -4,7 +4,7 @@
     :status="status"
     is-snapshot
     :show-delete="status !== 'ghost'"
-    :show-edit="status !== 'ghost'"
+    :show-edit="status === 'completed'"
     @delete="handleRemove" 
     @edit="handleEdit"
     @click="handleClick"
@@ -16,7 +16,7 @@ import FoodItemCard from "@/components/food/FoodItemCard.vue";
 
 interface Props {
   food: any;
-  status?: 'ghost' | 'completed' | 'custom';
+  status?: 'ghost' | 'completed' | 'custom' | 'draft';
 }
 
 interface Emits {
@@ -25,21 +25,10 @@ interface Emits {
   (e: "click", food: any): void;
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  status: undefined // 关键修复：移除默认值
-});
-
+const props = defineProps<Props>();
 const emit = defineEmits<Emits>();
 
-const handleRemove = (food: any) => {
-  emit("delete", food);
-};
-
-const handleEdit = (food: any) => {
-  emit("edit", food);
-};
-
-const handleClick = () => {
-  emit("click", props.food);
-};
+const handleRemove = (food: any) => emit("delete", food);
+const handleEdit = (food: any) => emit("edit", food);
+const handleClick = () => emit("click", props.food);
 </script>

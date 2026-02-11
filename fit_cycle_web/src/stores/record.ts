@@ -34,8 +34,8 @@ export const useRecordStore = defineStore("record", {
       const logs = state.mealLogs || [];
       const res = { calories: 0, protein: 0, fat: 0, carbs: 0 };
       logs.forEach(log => {
-        // 关键逻辑：未记录的项 (isRecorded: false) 不计入总热量
-        if (!log || log.isRecorded === false) return;
+        // 关键修复：使用隐式转换判定状态，兼容 0/1 和 false
+        if (!log || !log.isRecorded) return;
         res.calories += Number(log.calories) || 0;
         res.protein += Number(log.protein) || 0;
         res.fat += Number(log.fat) || 0;
