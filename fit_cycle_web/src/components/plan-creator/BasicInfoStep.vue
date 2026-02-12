@@ -1,7 +1,6 @@
 <template>
   <GlassCard
     card-class="p-6 border-[1rpx] border-solid border-gray-200"
-    radius="xl"
     :border="false"
   >
     <h3 class="text-lg font-semibold text-gray-800 mb-4">基础信息</h3>

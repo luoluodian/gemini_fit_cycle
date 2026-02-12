@@ -34,8 +34,7 @@
 
       <!-- 2.2 Popular Foods -->
       <GlassCard
-        card-class="px-4 pt-4 mb-4 flex-shrink-0"
-        shadow="lg"
+        card-class="pt-0 mb-4 flex-shrink-0"
         class="animate-fade-in-up delay-200"
       >
         <view class="flex items-center justify-between mb-2">
@@ -88,8 +87,7 @@
 
       <!-- 2.3 Food List -->
       <GlassCard
-        card-class="py-3 px-4 flex flex-col flex-1 min-h-0"
-        shadow="lg"
+        card-class="flex flex-col flex-1 min-h-0"
         class="animate-fade-in-up delay-300 flex-1 min-h-0"
       >
         <view class="flex items-center justify-between mb-3 flex-shrink-0">

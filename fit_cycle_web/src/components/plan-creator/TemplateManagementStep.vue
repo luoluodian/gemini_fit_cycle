@@ -5,7 +5,6 @@
       <GlassCard
         background="#ffffff"
         card-class="p-6 border-[1rpx] border-solid border-gray-200"
-        radius="xl"
         :border="false"
       >
         <view class="flex items-center justify-between">
@@ -96,7 +95,6 @@
       <GlassCard
         background="#ffffff"
         card-class="p-6 border-[1rpx] border-solid border-gray-200 flex-1 flex flex-col min-h-0 h-full"
-        radius="2xl"
         :border="false"
       >
         <view class="flex items-center justify-between mb-6 flex-shrink-0">

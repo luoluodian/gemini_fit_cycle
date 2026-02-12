@@ -1,5 +1,5 @@
 <template>
-  <GlassCard card-class="p-4 shadow-lg">
+  <GlassCard>
     <text class="text-lg font-semibold text-gray-800 mb-4 block">设置</text>
     <view class="space-y-1">
       <MenuItem 

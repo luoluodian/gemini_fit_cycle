@@ -1,5 +1,5 @@
 <template>
-  <GlassCard card-class="p-4 shadow-lg">
+  <GlassCard>
     <view class="flex items-center justify-between mb-4">
       <text class="text-lg font-semibold text-gray-800">导入计划</text>
       <BaseButton

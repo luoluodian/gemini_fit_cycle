@@ -1,6 +1,6 @@
 <template>
   <GlassCard 
-    card-class="rounded-2xl p-4 shadow-lg border-[1rpx] border-solid border-white/30"
+    card-class="rounded-2xl border-[1rpx] border-solid border-white/30"
   >
     <BaseTabs
       :tabs="tabs"

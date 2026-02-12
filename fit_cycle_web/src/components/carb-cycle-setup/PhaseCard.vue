@@ -2,7 +2,6 @@
   <GlassCard
     background="#ffffff"
     :card-class="['p-5 border-[1rpx] border-solid relative overflow-hidden', styles.border]"
-    radius="xl"
     :border="false"
   >
     <!-- 侧边色条 -->

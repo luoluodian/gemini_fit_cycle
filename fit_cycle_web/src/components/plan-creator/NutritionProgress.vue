@@ -2,7 +2,6 @@
   <GlassCard
     background="#ffffff"
     card-class="p-3 border-[1rpx] border-solid border-gray-200"
-    radius="xl"
     :border="false"
   >
     <!-- 标题栏 -->

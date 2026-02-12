@@ -4,8 +4,7 @@
     <view class="animate-fade-in-up">
       <GlassCard
         background="#ffffff"
-        card-class="p-5 border-[1rpx] border-solid border-gray-200"
-        radius="xl"
+        card-class="border-[1rpx] border-solid border-gray-200"
         :border="false"
       >
         <view class="flex items-center justify-between">
@@ -43,8 +42,7 @@
     <view class="animate-fade-in-up delay-100">
       <GlassCard
         background="#ffffff"
-        card-class="p-5 border-[1rpx] border-solid border-gray-200"
-        radius="xl"
+        card-class="border-[1rpx] border-solid border-gray-200"
         :border="false"
       >
         <view class="flex items-center justify-between mb-4">

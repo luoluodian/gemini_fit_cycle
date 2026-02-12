@@ -2,10 +2,9 @@
   <GlassCard
     background="#ffffff"
     :card-class="[
-      'p-4 border-[1rpx] border-solid border-gray-200 flex flex-col min-h-0 shadow-sm',
+      'border-[1rpx] border-solid border-gray-200 flex flex-col min-h-0',
       flex ? 'flex-1 h-full' : '',
     ]"
-    radius="2xl"
     :border="false"
   >
     <!-- 头部 -->

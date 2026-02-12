@@ -1,5 +1,5 @@
 <template>
-  <GlassCard card-class="p-4 mb-6" shadow="lg">
+  <GlassCard card-class="mb-6">
     <view class="flex items-center justify-between mb-6">
       <text class="text-lg font-semibold text-gray-800">本周摄入趋势</text>
       <text class="text-sm text-emerald-600 font-medium active:opacity-60" @click="handleViewDetails">查看详情</text>

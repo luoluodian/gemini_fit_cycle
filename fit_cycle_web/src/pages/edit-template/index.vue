@@ -24,8 +24,7 @@
         <view class="animate-fade-in-up">
           <GlassCard
             background="#ffffff"
-            card-class="p-4 border-[1rpx] border-solid border-gray-200 shadow-sm"
-            radius="xl"
+            card-class="border-[1rpx] border-solid border-gray-200"
             :border="false"
           >
             <view class="flex items-center">

@@ -9,8 +9,7 @@
       <view class="px-4 pt-4">
         <GlassCard
           background="#ffffff"
-          card-class="p-4 shadow-sm border-[1rpx] border-solid border-gray-200"
-          radius="xl"
+          card-class="border-[1rpx] border-solid border-gray-200"
           :border="false"
         >
           <h3 class="text-sm font-black text-gray-800 mb-4 flex items-center">
@@ -74,8 +73,7 @@
     >
       <GlassCard
         background="#ffffff"
-        card-class="p-4 shadow-sm border-[1rpx] border-solid border-gray-200 flex-1 flex flex-col min-h-0 h-full"
-        radius="xl"
+        card-class="border-[1rpx] border-solid border-gray-200 flex-1 flex flex-col min-h-0 h-full"
         :border="false"
       >
         <view class="flex items-center justify-between mb-4 flex-shrink-0">

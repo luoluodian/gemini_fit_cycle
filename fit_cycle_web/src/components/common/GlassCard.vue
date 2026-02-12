@@ -3,20 +3,24 @@ interface Props {
   blur?: number;
   opacity?: number;
   border?: boolean;
-  shadow?: "none" | "sm" | "md" | "lg" | "xl";
-  radius?: "none" | "sm" | "md" | "lg" | "xl" | string;
+  borderColor?: string;
+  shadow?: "none" | "sm" | "md" | "lg" | "xl" | "2xl";
+  radius?: "none" | "sm" | "md" | "lg" | "xl" | "2xl" | string;
   cardClass?: string;
   background?: string;
+  clickable?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   blur: 10,
   opacity: 0.95,
   border: true,
-  shadow: "md",
+  borderColor: "border-emerald-300/50",
+  shadow: "lg",
   radius: "lg",
   cardClass: "",
   background: "",
+  clickable: false,
 });
 
 const radiusMap = {
@@ -25,6 +29,7 @@ const radiusMap = {
   md: "rounded-md",
   lg: "rounded-lg",
   xl: "rounded-xl",
+  "2xl": "rounded-2xl",
 };
 
 const shadowMap = {
@@ -33,22 +38,22 @@ const shadowMap = {
   md: "shadow-md",
   lg: "shadow-lg",
   xl: "shadow-xl",
+  "2xl": "shadow-2xl",
 };
 </script>
 
 <template>
   <view
     :class="[
-      border ? 'border-[1rpx] border-solid border-emerald-300' : '',
-      typeof radius === 'string' && radiusMap[radius] ? radiusMap[radius] : '',
-      typeof shadow === 'string' && shadowMap[shadow] ? shadowMap[shadow] : '',
+      'transition-all duration-300 p-4',
+      border ? `border-[1rpx] border-solid ${borderColor}` : '',
+      radiusMap[radius] || '',
+      shadowMap[shadow] || '',
+      clickable ? 'active:scale-[0.98] active:opacity-90 cursor-pointer' : '',
       cardClass,
     ]"
     :style="{
-      borderRadius:
-        typeof radius === 'string' && !radiusMap[radius]
-          ? radius
-          : undefined,
+      borderRadius: !radiusMap[radius] ? radius : undefined,
       backdropFilter: props.background ? 'none' : `blur(${blur}px)`,
       background: props.background || `rgba(255, 255, 255, ${opacity})`,
     }"
