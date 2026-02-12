@@ -19,13 +19,25 @@
     <!-- 2. Content -->
     <view class="flex-1 min-w-0 flex flex-col justify-center">
       <view class="flex items-center justify-between">
-        <view class="flex items-center gap-1.5 min-w-0 flex-1 pr-3">
+        <view class="flex items-center gap-1.5 min-w-0 flex-1 pr-3 flex-wrap">
           <text 
             class="font-black text-sm truncate"
             :class="(status === 'ghost' || status === 'draft') ? 'text-gray-500' : 'text-emerald-700'"
           >
             {{ food.name || food.foodName || '未知食材' }}
           </text>
+          
+          <!-- 核心修复：找回分类标签 -->
+          <text
+            v-if="!status || status === 'custom'"
+            :class="[
+              'px-1.5 py-0.5 text-[14rpx] rounded font-bold border border-solid',
+              getCategoryConfig(food.category).theme.bg,
+              getCategoryConfig(food.category).theme.text,
+              getCategoryConfig(food.category).theme.border,
+            ]"
+          >{{ getCategoryConfig(food.category).label }}</text>
+
           <text
             v-if="status === 'ghost'"
             class="px-1 py-0.5 text-[14rpx] rounded font-bold bg-gray-200 text-gray-500"
@@ -63,7 +75,7 @@
         <Del font-size="12" color="#ef4444"></Del>
       </view>
       <view 
-        v-if="showEdit && status === 'completed'"
+        v-if="showEdit && status !== 'ghost'"
         class="w-7 h-7 flex items-center justify-center bg-gray-100 rounded-lg active:bg-gray-200 transition-colors border border-solid border-gray-200"
         @click="$emit('edit', food)"
       >
@@ -79,7 +91,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { Edit, Del } from "@nutui/icons-vue-taro";
-import { FOOD_CATEGORIES } from "@/constants/food-categories";
+import { FOOD_CATEGORIES, getFoodCategoryConfig } from "@/constants/food-categories";
 import NutritionMacroSmall from "./NutritionMacroSmall.vue";
 
 interface Props {
@@ -100,24 +112,22 @@ const props = withDefaults(defineProps<Props>(), {
 
 defineEmits(["click", "edit", "delete"]);
 
+const getCategoryConfig = (cat: string) => getFoodCategoryConfig(cat);
+
 const displayNutrition = computed(() => {
-  const { food, isSnapshot, status } = props;
-  if (isSnapshot || status === 'ghost' || status === 'draft') {
-    return {
-      calories: Math.round(food.calories || 0),
-      protein: Number(food.protein || 0).toFixed(1),
-      fat: Number(food.fat || 0).toFixed(1),
-      carbs: Number(food.carbs || 0).toFixed(1),
-    };
-  }
-  return { calories: 0, protein: '0', fat: '0', carbs: '0' };
+  const { food } = props;
+  return {
+    calories: Math.round(food.calories || 0),
+    protein: Number(food.protein || 0).toFixed(1),
+    fat: Number(food.fat || 0).toFixed(1),
+    carbs: Number(food.carbs || 0).toFixed(1),
+  };
 });
 
 const displayQuantity = computed(() => {
   const { food } = props;
   const qty = food.quantity || food.baseCount || 100;
-  const cleanUnit = (food.unit || 'g').replace(/[0-9]/g, '');
-  return `${qty}${cleanUnit}`;
+  return `${qty}${food.unit || 'g'}`;
 });
 
 const getCategoryBg = (cat: string) => FOOD_CATEGORIES.find(c => c.key === cat)?.theme.bg || "bg-gray-50";

@@ -1,9 +1,12 @@
 <template>
-  <view class="h-screen flex flex-col overflow-hidden food-library-page">
-    <BaseNavBar title="食材库">
+  <view
+    class="h-screen flex flex-col overflow-hidden food-library-page bg-gradient-to-br from-emerald-50 to-teal-50"
+  >
+    <!-- 1. Header (Fixed) -->
+    <BaseNavBar title="食材库" back-mode="none" class="flex-shrink-0">
       <template #left>
         <view
-          class="flex items-center justify-center p-3 border-[1rpx] border-solid border-emerald-600 text-emerald-600 rounded-lg active:scale-95 transition-all ml-2 shadow-sm"
+          class="flex items-center justify-center p-3 border-[1rpx] border-solid border-emerald-600 text-emerald-600 rounded-lg active:scale-95 transition-all ml-2 shadow-sm bg-white/50"
           @click="handleCreateCustomFood"
         >
           <Uploader font-size="18"></Uploader>
@@ -11,8 +14,8 @@
       </template>
     </BaseNavBar>
 
-    <!-- Search Bar -->
-    <view class="px-4 mt-3 animate-fade-in-up w-[100vw] flex-shrink-0">
+    <!-- 2. Search Box (Fixed Row) -->
+    <view class="px-4 mt-4 flex-shrink-0 animate-fade-in-up">
       <SearchBar
         v-model="searchQuery"
         placeholder="搜索食材名称..."
@@ -20,33 +23,37 @@
       />
     </view>
 
-    <!-- 2. Main Content -->
+    <!-- 3. Body (Flex-1) -->
+    <!-- 修复点：通过 pb-[160rpx] 彻底避开底部导航栏，space-y-4 统一间距 -->
     <view
-      class="flex-1 flex flex-col min-h-0 py-4 px-4 overflow-hidden space-y-4"
+      class="flex-1 min-h-0 flex flex-col px-4 pt-1 overflow-hidden pb-[180rpx]"
     >
-      <!-- 2.1 Horizontal Categories -->
-      <view class="flex-shrink-0 -mb-4">
+      <!-- 3.1 Horizontal Categories -->
+      <view class="flex-shrink-0">
         <FoodCategoryBar
           v-model="selectedCategory"
           @update:model-value="handleCategoryChange"
         />
       </view>
 
-      <!-- 2.2 Popular Foods -->
+      <!-- 3.2 Popular Foods -->
       <GlassCard
-        card-class="pt-0 mb-4 flex-shrink-0"
-        class="animate-fade-in-up delay-200"
+        card-class="flex-shrink-0"
+        class="animate-fade-in-up delay-100"
       >
-        <view class="flex items-center justify-between mb-2">
-          <text class="text-sm font-black text-gray-700">热门食材</text>
+        <view class="flex items-center justify-between mb-3">
+          <view class="flex items-center gap-2">
+            <view class="w-1.5 h-3.5 bg-orange-500 rounded-full"></view>
+            <text class="text-sm font-black text-gray-700">热门食材</text>
+          </view>
           <text
             v-if="!isPopularLoading && popularFoods.length > 0"
-            class="text-xs text-gray-400 font-bold"
-            >滑动查看</text
+            class="text-[18rpx] text-gray-300 font-bold uppercase tracking-widest"
+            >Slide to view</text
           >
         </view>
 
-        <view style="height: 200rpx">
+        <view style="height: 180rpx">
           <view
             v-if="isPopularLoading"
             class="h-full flex items-center justify-center"
@@ -61,22 +68,19 @@
             :scroll-y="false"
             width="100%"
             height="100%"
-            content-class="flex space-x-3 pr-4 h-full items-center"
+            content-class="flex items-center space-x-3 pr-4 h-full"
           >
             <view
               v-for="food in popularFoods"
               :key="food.id"
-              class="flex-shrink-0 bg-white rounded-lg w-20 h-[150rpx] text-center shadow-sm active:scale-95 transition-all flex flex-col justify-between py-2 px-1"
-              style="border: 1rpx solid #f3f4f6"
+              class="flex-shrink-0 bg-white rounded-xl w-24 h-[140rpx] text-center shadow-sm active:scale-95 transition-all flex flex-col justify-center items-center py-2 px-1 border border-solid border-gray-50"
               @click="handleViewDetail(food)"
             >
-              <view class="text-2xl">{{ food.imageUrl || "🥗" }}</view>
-              <view class="flex flex-col items-center">
-                <text
-                  class="text-[20rpx] font-bold text-gray-800 block truncate w-full"
-                  >{{ food.name }}</text
-                >
-              </view>
+              <view class="text-2xl mb-1">{{ food.imageUrl || "🥗" }}</view>
+              <text
+                class="text-[20rpx] font-bold text-gray-800 block truncate w-full px-1"
+                >{{ food.name }}</text
+              >
             </view>
           </BaseScrollView>
           <view v-else class="h-full flex items-center justify-center">
@@ -85,54 +89,63 @@
         </view>
       </GlassCard>
 
-      <!-- 2.3 Food List -->
+      <!-- 3.3 Food List (Flex-1) -->
+      <!-- 修复点：flex-1 min-h-0 是 scroll-view 可滑动的必要条件 -->
       <GlassCard
-        card-class="flex flex-col flex-1 min-h-0"
-        class="animate-fade-in-up delay-300 flex-1 min-h-0"
+        card-class="flex-1 flex flex-col min-h-0 overflow-hidden"
+        class="animate-fade-in-up delay-200 flex-1 min-h-0 mt-4"
       >
-        <view class="flex items-center justify-between mb-3 flex-shrink-0">
-          <text class="text-sm font-black text-gray-700">食物列表</text>
-          <text class="text-xs text-gray-400 font-bold"
-            >共 {{ totalCount }} 种</text
+        <view class="flex items-center justify-between mb-4 flex-shrink-0">
+          <view class="flex items-center gap-2">
+            <view class="w-1.5 h-3.5 bg-emerald-500 rounded-full"></view>
+            <text class="text-sm font-black text-gray-700">全部食材</text>
+          </view>
+          <text
+            class="text-[18rpx] text-gray-300 font-black uppercase tracking-widest"
+            >{{ totalCount }} Items</text
           >
         </view>
 
         <BaseScrollView
           :is-empty="!isLoading && allFoods.length === 0"
           :loading="isLoading"
-          :finished="!isLoading && allFoods.length >= totalCount && totalCount > 0"
-          content-class="pr-2 space-y-2"
+          :finished="
+            !isLoading && allFoods.length >= totalCount && totalCount > 0
+          "
+          content-class="pr-2 space-y-2 "
+          scroll-view-class="flex-1 min-h-0"
         >
           <FoodItemCard
             v-for="item in allFoods"
             :key="item.id"
             :food="item"
-            :show-edit="item.type === 'custom'"
-            :show-delete="item.type === 'custom'"
+            :show-edit="false"
+            :show-delete="false"
             @click="handleViewDetail"
-            @edit="handleEditFood"
-            @delete="handleDeleteFood"
           />
         </BaseScrollView>
       </GlassCard>
     </view>
 
-    <!-- 3. Modals -->
+    <!-- 4. Modals -->
+    <!-- 系统食材详情弹窗 (带收藏) -->
     <FoodDetailModal
       :visible="showDetailModal"
       :food="selectedFood"
       :is-favorite="selectedFood?.isFavorite"
+      :show-confirm="false"
       @close="handleCloseDetailModal"
       @toggleFavorite="handleToggleFavorite"
-      @edit="handleEditFood"
-      @delete="handleDeleteFood"
     />
 
+    <!-- 自建食材编辑弹窗 -->
     <CustomFoodModal
       :visible="showCustomFoodModal"
       :editing-food="editingFood"
       @close="handleCloseCustomFoodModal"
       @submit="fetchInitialData"
+      @delete="handleDeleteFood"
+      @toggleFavorite="handleToggleFavorite"
     />
   </view>
 </template>
@@ -247,6 +260,11 @@ const handleCategoryChange = (key: string) => {
 };
 
 const handleViewDetail = (food: FoodItem) => {
+  // 核心逻辑：自建食物直接进编辑弹窗，系统食物进入详情弹窗
+  if (food.type === "custom") {
+    handleEditFood(food);
+    return;
+  }
   selectedFood.value = food;
   showDetailModal.value = true;
 };
@@ -261,7 +279,7 @@ const handleEditFood = (food: FoodItem) => {
   showDetailModal.value = false;
   setTimeout(() => {
     showCustomFoodModal.value = true;
-  }, 300);
+  }, 100);
 };
 
 const handleCreateCustomFood = () => {
@@ -275,6 +293,7 @@ const handleCloseCustomFoodModal = () => {
 };
 
 const handleToggleFavorite = async (food: any) => {
+  if (!food) return;
   try {
     if (food.isFavorite) {
       await unfavoriteFood(food.id);
@@ -285,6 +304,10 @@ const handleToggleFavorite = async (food: any) => {
       food.isFavorite = true;
       showSuccess("已收藏");
     }
+    // 同步更新列表中的状态
+    const target = allFoods.value.find((f) => f.id === food.id);
+    if (target) target.isFavorite = food.isFavorite;
+
     fetchPopular();
     if (selectedCategory.value === "favorites") fetchFoods();
   } catch (e: any) {
@@ -296,12 +319,18 @@ const handleDeleteFood = async (food: any) => {
   Taro.showModal({
     title: "确认删除",
     content: "确定要删除此食材吗？",
+    confirmColor: "#ef4444",
     success: async (res) => {
       if (res.confirm) {
-        await deleteFoodItem(food.id);
-        showSuccess("已删除");
-        showDetailModal.value = false;
-        fetchInitialData();
+        try {
+          await deleteFoodItem(food.id);
+          showSuccess("已删除");
+          showCustomFoodModal.value = false;
+          showDetailModal.value = false;
+          fetchInitialData();
+        } catch (e) {
+          showError("删除失败");
+        }
       }
     },
   });

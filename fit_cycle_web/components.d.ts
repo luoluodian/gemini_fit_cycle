@@ -29,7 +29,6 @@ declare module 'vue' {
     FloatingButtons: typeof import('./src/components/daily-plan/FloatingButtons.vue')['default']
     FoodCategoryBar: typeof import('./src/components/food/FoodCategoryBar.vue')['default']
     FoodDetailModal: typeof import('./src/components/food/FoodDetailModal.vue')['default']
-    FoodItemAdapter: typeof import('./src/components/home/FoodItemAdapter.vue')['default']
     FoodItemCard: typeof import('./src/components/food/FoodItemCard.vue')['default']
     FoodPicker: typeof import('./src/components/food/FoodPicker.vue')['default']
     GlassCard: typeof import('./src/components/common/GlassCard.vue')['default']

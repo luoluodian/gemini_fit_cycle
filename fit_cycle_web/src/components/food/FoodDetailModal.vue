@@ -8,7 +8,6 @@
     @update:visible="(val) => (modalVisible = val)"
     content-class="w-[85vw] overflow-x-hidden bg-white rounded-3xl"
   >
-    <!-- 头部：标题始终显示食材名称 -->
     <view class="flex items-center justify-between mb-4">
       <view class="w-10 h-10 flex items-center justify-center text-gray-400 active:opacity-60" @click="handleClose">
         <Close :size="18"></Close>
@@ -16,7 +15,16 @@
       <text class="text-base font-black text-gray-800 truncate px-2 flex-1 text-center">
         {{ food?.name || food?.foodName || "食物详情" }}
       </text>
-      <view class="w-10 h-10"></view>
+      <view class="w-10 h-10 flex items-center justify-center">
+        <view 
+          v-if="showFavorite" 
+          @click="$emit('toggleFavorite', food)"
+          class="transition-all active:scale-90"
+        >
+          <HeartFill v-if="isFavorite" :size="22" color="#ef4444"></HeartFill>
+          <Heart v-else :size="22" color="#d1d5db"></Heart>
+        </view>
+      </view>
     </view>
 
     <view v-if="food" class="pb-2">
@@ -42,19 +50,39 @@
       </view>
 
       <view class="space-y-6">
-        <view class="flex justify-center">
+        <!-- 只有在确认录入模式下显示步进器 -->
+        <view v-if="showConfirm" class="flex justify-center">
           <QuantityStepper v-model="localQuantity" :unit="food.unit || 'g'" />
         </view>
 
+        <!-- 食材库查看模式下的额外操作 (自建食物) -->
+        <view v-if="!showConfirm && isCustom" class="flex items-center justify-center gap-6 py-2">
+          <view class="flex flex-col items-center gap-1 active:opacity-60" @click="$emit('edit', food)">
+            <view class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center border border-solid border-gray-200">
+              <Edit :size="18" color="#6b7280"></Edit>
+            </view>
+            <text class="text-[20rpx] font-bold text-gray-500">修改</text>
+          </view>
+          <view class="flex flex-col items-center gap-1 active:opacity-60" @click="$emit('delete', food)">
+            <view class="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center border border-solid border-red-100">
+              <Del :size="18" color="#ef4444"></Del>
+            </view>
+            <text class="text-[20rpx] font-bold text-red-400">删除</text>
+          </view>
+        </view>
+
         <view class="flex gap-3">
-          <view class="flex-1 bg-gray-100 text-gray-600 py-3.5 rounded-2xl font-black text-center active:scale-95 transition-all" @click="handleClose">
-            取消
+          <view 
+            class="flex-1 bg-gray-100 text-gray-600 py-3.5 rounded-2xl font-black text-center active:scale-95 transition-all" 
+            @click="handleClose"
+          >
+            {{ showConfirm ? '取消' : '关闭' }}
           </view>
           <view 
+            v-if="showConfirm"
             class="flex-[2] bg-emerald-600 text-white py-3.5 rounded-2xl font-black text-center active:scale-95 transition-all shadow-lg shadow-emerald-100" 
             @click="handleConfirm"
           >
-            <!-- 修复按钮文案：区分新增与修改 -->
             {{ isEditMode ? '保存修改' : '新增食物' }}
           </view>
         </view>
@@ -68,7 +96,7 @@ import { ref, computed, watch } from "vue";
 import BaseModal from "../common/BaseModal.vue";
 import QuantityStepper from "./QuantityStepper.vue";
 import NutritionMacro from "./NutritionMacro.vue";
-import { Close } from "@nutui/icons-vue-taro";
+import { Close, Heart, HeartFill, Edit, Del } from "@nutui/icons-vue-taro";
 import { FOOD_CATEGORIES } from "@/constants/food-categories";
 
 interface Props {
@@ -76,13 +104,24 @@ interface Props {
   food: any | null;
   mode?: "view" | "edit";
   quantity?: number;
+  showConfirm?: boolean;
+  isFavorite?: boolean;
+  showFavorite?: boolean;
 }
 
-const props = withDefaults(defineProps<Props>(), { mode: "view" });
-const emit = defineEmits(["close", "confirm"]);
+const props = withDefaults(defineProps<Props>(), { 
+  mode: "view",
+  showConfirm: true,
+  isFavorite: false,
+  showFavorite: true
+});
+const emit = defineEmits(["close", "confirm", "toggleFavorite", "edit", "delete"]);
 
 const localQuantity = ref(100);
 const isEditMode = computed(() => props.mode === 'edit');
+
+// 是否为自定义食物（允许编辑/删除）
+const isCustom = computed(() => props.food?.type === 'custom' || props.food?.isCustom);
 
 watch([() => props.visible, () => props.food], ([newVis, newFood]) => {
   if (newVis && newFood) {

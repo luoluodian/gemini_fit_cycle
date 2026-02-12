@@ -1,8 +1,14 @@
 <template>
-  <view class="meal-card glass-card rounded-lg p-4 shadow-lg">
+  <GlassCard card-class="mb-4">
     <view class="flex items-center justify-between mb-4">
-      <text class="font-semibold text-gray-800">{{ mealName }}</text>
-      <text class="text-sm text-gray-600">{{ mealCalories }} kcal</text>
+      <view class="flex items-center gap-2">
+        <text class="text-xl">{{ mealEmoji }}</text>
+        <text class="font-black text-gray-800 text-base">{{ mealName }}</text>
+      </view>
+      <view class="bg-gray-50 px-2 py-1 rounded-lg border border-solid border-gray-100">
+        <text class="text-sm font-black text-emerald-600">{{ Math.round(mealCalories) }}</text>
+        <text class="text-[18rpx] text-gray-400 ml-0.5 font-bold">kcal</text>
+      </view>
     </view>
 
     <view class="space-y-2 mb-4">
@@ -12,50 +18,32 @@
         :food="food"
         :quantity="food.quantity"
         show-delete
+        is-snapshot
         @delete="handleRemoveFood(index)"
       />
-      <view v-if="foods.length === 0" class="text-center text-gray-500 py-8">
-        <svg
-          class="w-12 h-12 mx-auto mb-2 text-gray-300"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-          ></path>
-        </svg>
-        <text class="block">还没有添加食物</text>
-        <text class="text-sm block">点击下方按钮添加食物</text>
+      
+      <!-- Empty State -->
+      <view v-if="foods.length === 0" class="py-10 flex flex-col items-center justify-center bg-gray-50/50 rounded-2xl border border-dashed border-gray-200">
+        <view class="w-12 h-12 bg-white rounded-full flex items-center justify-center mb-2 shadow-sm">
+          <text class="text-2xl opacity-30">🥣</text>
+        </view>
+        <text class="text-xs text-gray-400 font-bold">还没有添加任何食物</text>
       </view>
     </view>
 
+    <!-- Action Button -->
     <view
-      class="w-full border-2 border-dashed border-gray-300 rounded-lg py-3 text-gray-500 hover:border-emerald-300 hover:text-emerald-600 transition-colors flex flex-col items-center justify-center cursor-pointer"
+      class="w-full bg-emerald-50/50 border-[1rpx] border-dashed border-emerald-200 rounded-xl py-3 flex items-center justify-center active:scale-[0.98] transition-all"
       @click="handleAddFood"
     >
-      <svg
-        class="w-6 h-6 mx-auto mb-1"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-        ></path>
-      </svg>
-      <text class="block text-center">添加食物</text>
+      <text class="text-xs font-black text-emerald-600">+ 添加食物</text>
     </view>
-  </view>
+  </GlassCard>
 </template>
 
 <script setup lang="ts">
+import { computed } from "vue";
+import GlassCard from "./GlassCard.vue";
 import FoodItemCard from "../food/FoodItemCard.vue";
 
 interface Food {
@@ -68,7 +56,7 @@ interface Food {
   carbs: number;
 }
 
-defineProps<{
+const props = defineProps<{
   mealName: string;
   mealCalories: number;
   foods: Food[];
@@ -80,12 +68,12 @@ const emit = defineEmits<{
   "remove-food": [index: number];
 }>();
 
-const handleAddFood = () => {
-  emit("add-food");
+const mealEmojiMap: Record<string, string> = { 
+  "早餐": "🌅", "午餐": "☀️", "晚餐": "🌙", "加餐": "🍎" 
 };
+const mealEmoji = computed(() => mealEmojiMap[props.mealName] || "🍽️");
 
-const handleRemoveFood = (index: number) => {
-  emit("remove-food", index);
-};
+const handleAddFood = () => emit("add-food");
+const handleRemoveFood = (index: number) => emit("remove-food", index);
 </script>
 

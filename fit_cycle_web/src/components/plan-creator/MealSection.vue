@@ -1,6 +1,8 @@
 <template>
-  <view
-    class="meal-section-item bg-white/80 rounded-2xl p-4 border-[2rpx] border-solid border-gray-200 transition-all mb-3 shadow-sm"
+  <GlassCard
+    background="rgba(255, 255, 255, 0.8)"
+    card-class="mb-3"
+    :border-color="'border-gray-200'"
   >
     <!-- 头部：餐次汇总信息 -->
     <view class="flex items-center justify-between mb-2">
@@ -100,15 +102,17 @@
         :food="food"
         :quantity="food.quantity"
         show-delete
+        is-snapshot
         @delete="$emit('delete-food', idx)"
       />
     </view>
-  </view>
+  </GlassCard>
 </template>
 
 <script setup lang="ts">
 import { computed, watch } from "vue";
 import { ArrowDown } from "@nutui/icons-vue-taro";
+import GlassCard from "../common/GlassCard.vue";
 import FoodItemCard from "../food/FoodItemCard.vue";
 
 interface Food {

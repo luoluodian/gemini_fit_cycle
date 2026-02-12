@@ -11,12 +11,27 @@
     @scrolltolower="onReachEnd"
   >
     <!-- 1. 空状态区域 -->
-    <view v-if="isEmpty" class="flex flex-col items-center justify-center w-full h-full py-16">
+    <view
+      v-if="isEmpty"
+      class="flex flex-col items-center justify-center w-full h-full py-16"
+    >
       <slot name="empty">
         <view class="flex flex-col items-center">
-          <view class="w-[120rpx] h-[120rpx] bg-gray-50 rounded-full flex items-center justify-center mb-6">
-            <svg class="w-10 h-10 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+          <view
+            class="w-[120rpx] h-[120rpx] bg-gray-50 rounded-full flex items-center justify-center mb-6"
+          >
+            <svg
+              class="w-10 h-10 text-gray-200"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="1.5"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+              ></path>
             </svg>
           </view>
           <text class="text-sm text-gray-400 font-medium">{{ emptyText }}</text>
@@ -25,23 +40,34 @@
     </view>
 
     <!-- 2. 正式内容区域 -->
-    <view 
-      v-else 
+    <view
+      v-else
       :class="[
-        scrollX ? 'inline-flex min-w-full h-full align-top' : 'block w-full min-h-full', 
-        contentClass
+        scrollX
+          ? 'inline-flex min-w-full h-full align-top'
+          : 'block w-full min-h-full',
+        contentClass,
       ]"
     >
       <slot></slot>
-      
+
       <!-- 3. 上拉加载状态区 (仅纵向滚动且非空时显示) -->
-      <view v-if="scrollY && !isEmpty" class="py-10 flex items-center justify-center gap-3">
+      <view
+        v-if="scrollY && !isEmpty"
+        class="py-5 flex items-center justify-center gap-3"
+      >
         <template v-if="loading">
-          <view class="w-7 h-7 border-[3rpx] border-solid border-emerald-500 border-t-transparent rounded-full animate-spin"></view>
-          <text class="text-[22rpx] text-gray-400 font-medium tracking-wider">正在加载更多...</text>
+          <view
+            class="w-7 h-7 border-[3rpx] border-solid border-emerald-500 border-t-transparent rounded-full animate-spin"
+          ></view>
+          <text class="text-[22rpx] text-gray-400 font-medium tracking-wider"
+            >正在加载更多...</text
+          >
         </template>
         <template v-else-if="finished">
-          <text class="text-[22rpx] text-gray-400 font-medium tracking-wider">{{ finishedText }}</text>
+          <text class="text-[22rpx] text-gray-400 font-medium tracking-wider">{{
+            finishedText
+          }}</text>
         </template>
       </view>
     </view>
@@ -101,7 +127,7 @@ const scrollStyle = computed<CSSProperties>(() => {
   // 核心修复：如果是纵向滚动且没有显式指定高度，使用 flex:1 确保高度继承
   if (props.scrollY && props.height === "100%") {
     styles.flex = "1";
-    styles.minHeight = "0"; 
+    styles.minHeight = "0";
   } else {
     styles.height = formatSize(props.height);
   }

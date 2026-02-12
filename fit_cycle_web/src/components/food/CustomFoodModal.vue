@@ -79,40 +79,36 @@
       </view>
 
       <!-- 分类标签在一行展示 -->
-
-      <view class="flex items-center gap-2 py-1">
+      <view class="flex items-center gap-2 py-1 overflow-hidden">
         <text class="text-sm font-medium text-gray-700 whitespace-nowrap"
           >标签</text
         >
-
-        <BaseScrollView
-          :scroll-x="true"
-          :scroll-y="false"
-          scroll-view-class="flex-1"
-          class="w-0"
-          height="60rpx"
-          content-class="flex items-center gap-2 pr-4"
-        >
-          <view
-            v-for="cat in categoryOptions"
-            :key="cat.key"
-            class="px-3 py-1 text-[22rpx] rounded-lg border border-solid transition-all whitespace-nowrap inline-flex items-center flex-shrink-0"
-            :style="
-              formData.category === cat.key
-                ? 'background-color: #10b981; color: #fff; border-color: #10b981;'
-                : 'background-color: #fff; color: #6b7280; border-color: #e5e7eb;'
-            "
-            @click="
-              formData.category = cat.key;
-
-              formData.imageUrl = cat.emoji;
-            "
+        <view class="flex-1 min-w-0">
+          <BaseScrollView
+            :scroll-x="true"
+            :scroll-y="false"
+            height="60rpx"
+            content-class="flex items-center gap-2 pr-4"
           >
-            <text class="mr-1">{{ cat.emoji }}</text>
-
-            <text>{{ cat.label }}</text>
-          </view>
-        </BaseScrollView>
+            <view
+              v-for="cat in categoryOptions"
+              :key="cat.key"
+              class="px-3 py-1 text-[22rpx] rounded-lg border border-solid transition-all whitespace-nowrap inline-flex items-center flex-shrink-0"
+              :style="
+                formData.category === cat.key
+                  ? 'background-color: #10b981; color: #fff; border-color: #10b981;'
+                  : 'background-color: #fff; color: #6b7280; border-color: #e5e7eb;'
+              "
+              @click="
+                formData.category = cat.key;
+                formData.imageUrl = cat.emoji;
+              "
+            >
+              <text class="mr-1">{{ cat.emoji }}</text>
+              <text>{{ cat.label }}</text>
+            </view>
+          </BaseScrollView>
+        </view>
       </view>
 
       <!-- 营养成分输入 -->

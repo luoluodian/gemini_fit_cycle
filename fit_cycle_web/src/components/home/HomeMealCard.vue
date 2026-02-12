@@ -1,52 +1,58 @@
 <template>
-  <view class="bg-white rounded-2xl p-4 shadow-sm mb-4 border border-solid border-gray-100">
+  <GlassCard card-class="mb-4">
     <view class="flex items-center justify-between mb-4">
       <view class="flex items-center gap-2">
         <text class="text-xl">{{ mealEmoji }}</text>
-        <text class="font-black text-gray-800">{{ title }}</text>
+        <text class="font-black text-gray-800 text-base">{{ title }}</text>
       </view>
-      <view class="bg-gray-50 px-2 py-1 rounded-lg">
-        <text class="text-sm font-black text-gray-800">{{ totalCalories }}</text>
-        <text class="text-[20rpx] text-gray-400 ml-0.5">kcal</text>
+      <view class="bg-gray-50 px-2 py-1 rounded-lg border border-solid border-gray-100">
+        <text class="text-sm font-black text-emerald-600">{{ totalCalories }}</text>
+        <text class="text-[20rpx] text-gray-400 ml-0.5 font-bold">kcal</text>
       </view>
     </view>
 
     <!-- 列表：智能区分虚态(ghost)、草稿(draft)与实态(completed) -->
     <view v-if="mergedMeals.length > 0" class="space-y-1">
-      <FoodItemAdapter
+      <FoodItemCard
         v-for="(item, idx) in mergedMeals"
         :key="item.id || `ghost-${idx}`"
         :food="item"
         :status="item.status"
+        is-snapshot
+        :show-delete="item.status !== 'ghost'"
+        :show-edit="item.status === 'completed'"
         @delete="(f) => $emit('delete', f)"
         @edit="(f) => $emit('edit', f)"
         @click="handleItemClick"
       />
     </view>
 
-    <view v-else class="py-6 flex flex-col items-center justify-center bg-gray-50 rounded-xl border border-dashed border-gray-200 mb-4">
-      <text class="text-xs text-gray-400 font-medium">还没有记录任何食物</text>
+    <view v-else class="py-10 flex flex-col items-center justify-center bg-gray-50/50 rounded-2xl border border-dashed border-gray-200 mb-4">
+      <view class="w-12 h-12 bg-white rounded-full flex items-center justify-center mb-2 shadow-sm">
+        <text class="text-2xl opacity-30">🥣</text>
+      </view>
+      <text class="text-xs text-gray-400 font-bold">还没有记录任何食物</text>
     </view>
 
     <view class="flex gap-3 mt-2">
       <view 
         v-if="hasUnrecordedItems"
-        class="flex-1 bg-emerald-100 text-emerald-700 py-2.5 rounded-xl text-sm font-black text-center active:scale-95" 
+        class="flex-1 bg-emerald-100 text-emerald-700 py-2.5 rounded-xl text-sm font-black text-center active:scale-95 shadow-sm shadow-emerald-100" 
         @click="onSyncPlan"
       >
-        全部记录
+        一键记录
       </view>
-      <view class="flex-1 bg-gray-50 text-gray-600 py-2.5 rounded-xl text-sm font-black text-center active:scale-95 border border-solid border-gray-100" @click="onAdd">
+      <view class="flex-1 bg-gray-50 text-gray-600 py-2.5 rounded-xl text-sm font-black text-center active:scale-95 border border-solid border-gray-100 shadow-sm" @click="onAdd">
         + 添加食物
       </view>
     </view>
-  </view>
+  </GlassCard>
 </template>
 
 <script setup lang="ts">
 import { computed } from "vue";
 import Taro from "@tarojs/taro";
-import FoodItemAdapter from "./FoodItemAdapter.vue";
+import FoodItemCard from "@/components/food/FoodItemCard.vue";
 import { useRecordStore } from "@/stores/record";
 import { usePlanStore } from "@/stores/plan";
 
@@ -66,20 +72,33 @@ const planStore = usePlanStore();
 const mergedMeals = computed(() => {
   const actualLogs = props.meals ? [...props.meals] : [];
   const template = planStore.getTemplateByDate(props.date);
-  const plannedItems = template?.meals?.[props.mealType] || [];
+  
+  // 🚀 兼容处理：优先从后端 planMeals 提取，否则尝试从 store draft.meals 提取
+  let plannedItems: any[] = [];
+  if (template?.planMeals) {
+    const typeIdMap: Record<string, number> = { breakfast: 1, lunch: 2, dinner: 3, snacks: 4 };
+    const targetTypeId = typeIdMap[props.mealType];
+    const meal = template.planMeals.find((m: any) => m.mealTypeId === targetTypeId || m.mealType?.id === targetTypeId);
+    plannedItems = meal?.mealItems || [];
+  } else if (template?.meals) {
+    plannedItems = template.meals[props.mealType] || [];
+  }
+
   const result: any[] = [];
 
   // 1. 处理计划项
   plannedItems.forEach((pItem: any) => {
     if (!pItem) return;
+    // 兼容后端字段 foodId vs 模板字段 foodId
+    const pFoodId = pItem.foodId || pItem.id; 
+    
     const matchIdx = actualLogs.findIndex(log => 
-      log && log.isPlanned && String(log.foodId) === String(pItem.foodId)
+      log && log.isPlanned && String(log.foodId) === String(pFoodId)
     );
     
     if (matchIdx > -1) {
       const log = actualLogs[matchIdx];
       const isRecorded = Number(log.isRecorded) === 1;
-      // 🚀 分化：已打卡(completed) 或 已回滚(draft)
       result.push({ 
         ...log, 
         status: isRecorded ? 'completed' : 'draft' 
@@ -87,7 +106,11 @@ const mergedMeals = computed(() => {
       actualLogs.splice(matchIdx, 1);
     } else {
       // 物理占位：虚态(ghost)
-      result.push({ ...pItem, status: 'ghost' });
+      result.push({ 
+        ...pItem, 
+        foodId: pFoodId, // 统一字段名
+        status: 'ghost' 
+      });
     }
   });
 
@@ -126,9 +149,9 @@ const onSyncPlan = async () => {
     Taro.showLoading({ title: '正在记录...', mask: true });
     const targets = mergedMeals.value.filter(m => m.status === 'ghost' || m.status === 'draft');
     for (const item of targets) {
-      if (item.id) {
+      if (item.status === 'draft' && item.id) {
         await recordStore.updateMealAction(item.id, { isRecorded: true });
-      } else {
+      } else if (item.status === 'ghost') {
         await recordStore.addMealLogAction({
           date: props.date,
           mealType: props.mealType,
@@ -151,9 +174,9 @@ const handleItemClick = async (item: any) => {
   if (item.status === 'ghost' || item.status === 'draft') {
     try {
       Taro.showLoading({ title: '记录中...', mask: true });
-      if (item.id) {
+      if (item.status === 'draft' && item.id) {
         await recordStore.updateMealAction(item.id, { isRecorded: true });
-      } else {
+      } else if (item.status === 'ghost') {
         await recordStore.addMealLogAction({
           date: props.date,
           mealType: props.mealType,
