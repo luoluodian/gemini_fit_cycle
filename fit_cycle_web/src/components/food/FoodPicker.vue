@@ -44,29 +44,18 @@
           </view>
 
           <BaseScrollView
-            height="550rpx"
-            :enhanced="true"
             :is-empty="!loading && foodsList.length === 0"
-            :finished="!loading && foodsList.length > 0"
+            :loading="loading"
+            :finished="!hasMore && foodsList.length > 0"
             content-class="pr-2 space-y-2"
-            @load-more="handleLoadMore"
+            @reach-end="handleLoadMore"
           >
-            <view
-              v-if="loading && foodsList.length === 0"
-              class="py-10 text-center"
-            >
-              <text class="text-sm text-gray-400 font-bold"
-                >正在获取食材数据...</text
-              >
-            </view>
-            <template v-else>
-              <FoodItemCard
-                v-for="item in foodsList"
-                :key="item.id"
-                :food="item"
-                @click="handleOpenDetail"
-              />
-            </template>
+            <FoodItemCard
+              v-for="item in foodsList"
+              :key="item.id"
+              :food="item"
+              @click="handleOpenDetail"
+            />
           </BaseScrollView>
         </GlassCard>
       </view>

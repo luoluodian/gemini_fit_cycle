@@ -107,8 +107,6 @@
         </view>
 
         <BaseScrollView
-          :flex="true"
-          scroll-view-class="flex-1 min-h-0"
           content-class="space-y-4 pb-4"
         >
           <view

@@ -5,7 +5,7 @@
     width="100%"
     height="100rpx"
     scroll-view-class="pb-2"
-    content-class="inline-block min-w-max pr-4"
+    content-class="flex items-center space-x-2 pr-4"
   >
     <view
       v-for="cat in unifiedCategories"

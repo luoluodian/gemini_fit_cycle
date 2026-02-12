@@ -14,14 +14,12 @@
     </BaseNavBar>
 
     <!-- Main Content -->
-    <view class="px-4 py-4 pb-5 flex-shrink-0">
+    <view class="px-4 py-4 pb-5 flex-1 min-h-0 flex flex-col">
       <!-- Plan Categories -->
-      <PlanTabs :active-tab="currentTab" @change="handleTabChange">
+      <PlanTabs :active-tab="currentTab" @change="handleTabChange" class="flex-1 min-h-0 flex flex-col">
         <template #active>
           <BaseScrollView
-            height="1000rpx"
             :is-empty="activePlans.length === 0"
-            :finished="activePlans.length > 0"
             content-class="space-y-3 pr-2 pt-2 animate-fade-in"
           >
             <template #empty>
@@ -43,9 +41,7 @@
 
         <template #completed>
           <BaseScrollView
-            height="1000rpx"
             :is-empty="completedPlans.length === 0"
-            :finished="completedPlans.length > 0"
             content-class="space-y-3 pr-2 pt-2  animate-fade-in"
           >
             <template #empty>

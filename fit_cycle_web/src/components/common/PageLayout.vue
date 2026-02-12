@@ -1,8 +1,7 @@
 <template>
   <view
-    class="page-layout flex flex-col overflow-hidden"
+    class="page-layout flex flex-col h-screen overflow-hidden"
     :class="bgClass"
-    style="height: 100vh"
   >
     <!-- 1. 顶部：导航栏 (固定) -->
     <BaseNavBar 
@@ -22,11 +21,10 @@
     </view>
 
     <!-- 3. 中间：内容区 (Flex 自适应) -->
-    <view class="flex-1 min-h-0 relative flex flex-col overflow-hidden">
+    <view class="flex-1 min-h-0 relative flex flex-col">
       <!-- 模式 A: 自动开启滚动 (适用于标准表单、简单列表) -->
       <BaseScrollView
         v-if="useScrollView"
-        :flex="true"
         :scroll-view-class="scrollContainerClass"
         :content-class="scrollContentClass"
       >
@@ -34,7 +32,7 @@
       </BaseScrollView>
 
       <!-- 模式 B: 自定义布局 (适用于需要内部精确控制滚动的复杂页面，如 meal-config) -->
-      <view v-else class="h-full flex flex-col overflow-hidden">
+      <view v-else class="flex-1 min-h-0 flex flex-col overflow-hidden">
         <slot />
       </view>
     </view>

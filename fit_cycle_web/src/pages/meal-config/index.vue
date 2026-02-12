@@ -90,8 +90,6 @@
         </view>
 
         <BaseScrollView
-          flex
-          scroll-view-class="flex-1 min-h-0"
           content-class="pb-4"
         >
           <!-- 1. 列表有内容时的展示模式 -->

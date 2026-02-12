@@ -88,9 +88,9 @@
 
       <!-- 2.3 Food List -->
       <GlassCard
-        card-class="py-3 px-4 flex flex-col "
+        card-class="py-3 px-4 flex flex-col flex-1 min-h-0"
         shadow="lg"
-        class="animate-fade-in-up delay-300"
+        class="animate-fade-in-up delay-300 flex-1 min-h-0"
       >
         <view class="flex items-center justify-between mb-3 flex-shrink-0">
           <text class="text-sm font-black text-gray-700">食物列表</text>
@@ -100,32 +100,21 @@
         </view>
 
         <BaseScrollView
-          height="620rpx"
-          :enhanced="true"
           :is-empty="!isLoading && allFoods.length === 0"
-          :finished="!isLoading && allFoods.length > 0"
-          content-class="pr-2 space-y-2 "
+          :loading="isLoading"
+          :finished="!isLoading && allFoods.length >= totalCount && totalCount > 0"
+          content-class="pr-2 space-y-2"
         >
-          <view
-            v-if="isLoading && allFoods.length === 0"
-            class="py-10 text-center"
-          >
-            <text class="text-sm text-gray-400 font-bold"
-              >正在获取食材数据...</text
-            >
-          </view>
-          <template v-else>
-            <FoodItemCard
-              v-for="item in allFoods"
-              :key="item.id"
-              :food="item"
-              :show-edit="item.type === 'custom'"
-              :show-delete="item.type === 'custom'"
-              @click="handleViewDetail"
-              @edit="handleEditFood"
-              @delete="handleDeleteFood"
-            />
-          </template>
+          <FoodItemCard
+            v-for="item in allFoods"
+            :key="item.id"
+            :food="item"
+            :show-edit="item.type === 'custom'"
+            :show-delete="item.type === 'custom'"
+            @click="handleViewDetail"
+            @edit="handleEditFood"
+            @delete="handleDeleteFood"
+          />
         </BaseScrollView>
       </GlassCard>
     </view>

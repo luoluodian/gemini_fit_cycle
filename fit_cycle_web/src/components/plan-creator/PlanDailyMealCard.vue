@@ -21,9 +21,7 @@
 
     <!-- 滚动列表 -->
     <BaseScrollView
-      :flex="flex"
       :height="flex ? undefined : maxHeight"
-      scroll-view-class="flex-1 min-h-0"
       content-class="pb-1"
     >
       <MealSection

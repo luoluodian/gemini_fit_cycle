@@ -89,9 +89,9 @@
           :scroll-x="true"
           :scroll-y="false"
           scroll-view-class="flex-1"
-          style="width: 0"
+          class="w-0"
           height="60rpx"
-          content-class="flex gap-2 pr-4"
+          content-class="flex items-center gap-2 pr-4"
         >
           <view
             v-for="cat in categoryOptions"

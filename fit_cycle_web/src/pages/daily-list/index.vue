@@ -3,7 +3,9 @@
     <template #nav-right>
       <view class="text-right pr-2">
         <view class="text-[18rpx] text-gray-400 font-bold">完成进度</view>
-        <view class="text-base font-black text-emerald-600 leading-none">{{ progressPercent }}%</view>
+        <view class="text-base font-black text-emerald-600 leading-none"
+          >{{ progressPercent }}%</view
+        >
       </view>
     </template>
 
@@ -76,8 +78,18 @@
         class="w-12 h-12 rounded-full flex items-center justify-center text-white shadow-lg transition-all active:scale-90 bg-gradient-to-br from-orange-400 to-orange-600"
         @click="handleBatchConfigure"
       >
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+        <svg
+          class="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+          ></path>
         </svg>
       </view>
     </view>
@@ -108,7 +120,6 @@ const progressPercent = computed(() => {
   if (!plan.value || plan.value.totalDays === 0) return 0;
   return Math.round((completedCount.value / plan.value.totalDays) * 100);
 });
-</script>
 
 interface DayTargets {
   calories: number;
