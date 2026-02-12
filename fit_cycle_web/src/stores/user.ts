@@ -4,6 +4,7 @@ import { getUserProfile, updateUserInfo as apiUpdateUserInfo, HealthProfile, Use
 import { setStorage, getStorage, removeStorage } from '@/utils/storage';
 import { ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY, USER_INFO_KEY } from '@/constants/storage';
 import Taro from '@tarojs/taro';
+import { ROUTES } from '@/constants/routes';
 
 export const useUserStore = defineStore('user', {
   state: () => ({
@@ -110,7 +111,7 @@ export const useUserStore = defineStore('user', {
      */
     logout() {
       this.clearLoginState();
-      Taro.reLaunch({ url: '/pages/login/index' });
+      Taro.reLaunch({ url: ROUTES.LOGIN });
     },
 
     /**

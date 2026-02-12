@@ -7,7 +7,7 @@
         'nav-tab flex flex-col items-center py-2 px-3 rounded-lg transition-all duration-300 cursor-pointer',
         selected === index ? 'active bg-emerald-500 text-white' : 'text-gray-600'
       ]"
-      @click="switchTab(index, item.pagePath)"
+      @click="switchTabAction(index, item.pagePath)"
     >
       <!-- Home Icon -->
       <svg v-if="index === 0" class="w-5 h-5 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -36,22 +36,22 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import Taro from '@tarojs/taro';
+import { switchTab, ROUTES } from '@/router';
 import { useNavigationStore } from '@/stores/navigation';
 
 const navStore = useNavigationStore();
 const selected = computed(() => navStore.activeTab);
 
 const list = [
-  { pagePath: '/pages/index/index', text: '记录' },
-  { pagePath: '/pages/plan/index', text: '计划' },
-  { pagePath: '/pages/food/index', text: '食材' },
-  { pagePath: '/pages/profile/index', text: '我的' }
+  { pagePath: ROUTES.HOME, text: '记录' },
+  { pagePath: ROUTES.PLAN_OVERVIEW, text: '计划' },
+  { pagePath: ROUTES.FOOD_LIBRARY, text: '食材' },
+  { pagePath: ROUTES.PROFILE, text: '我的' }
 ];
 
-const switchTab = (index: number, url: string) => {
+const switchTabAction = (index: number, url: string) => {
   navStore.setActiveTab(index);
-  Taro.switchTab({ url });
+  switchTab(url as any);
 };
 </script>
 

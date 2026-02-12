@@ -114,6 +114,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from "vue";
 import Taro, { useDidShow } from "@tarojs/taro";
+import { navigateTo, ROUTES } from "@/router";
 import PlanTabs from "@/components/plan/PlanTabs.vue";
 import PlanCard from "@/components/plan/PlanCard.vue";
 import NewPlanModal from "@/components/plan/NewPlanModal.vue";
@@ -446,7 +447,7 @@ const createNewPlan = () => {
 // 从选项弹窗点击 "创建新计划"
 const handleSelectCreate = () => {
   planStore.resetDraft();
-  Taro.navigateTo({ url: "/pages/plan-creator/index" });
+  navigateTo(ROUTES.PLAN_CREATOR);
 };
 
 const closeNewPlanModal = () => {
@@ -464,11 +465,10 @@ const handlePlanAction = async (type: string, planId: string | number) => {
   switch (type) {
     case "view":
       isNavigating = true;
-      Taro.navigateTo({
-        url: `/pages/plan-detail/index?id=${planId}`,
-        complete: () => {
-          isNavigating = false;
-        },
+      navigateTo(ROUTES.PLAN_DETAIL, { id: String(planId) }).then(() => {
+        isNavigating = false;
+      }).catch(() => {
+        isNavigating = false;
       });
       break;
     case "activate":
@@ -544,7 +544,7 @@ const _handleCreateRecommendedPlan = (_type: string) => {
     Object.assign(planStore.draft, presets[_type]);
   }
 
-  Taro.navigateTo({ url: `/pages/plan-creator/index?type=${_type}` });
+  navigateTo(ROUTES.PLAN_CREATOR, { type: _type });
 };
 
 // 页面加载时初始化

@@ -150,6 +150,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from "vue";
 import Taro, { useDidShow, useRouter } from "@tarojs/taro";
+import { navigateTo, navigateBack, ROUTES } from "@/router";
 import PageLayout from "@/components/common/PageLayout.vue";
 import GlassCard from "@/components/common/GlassCard.vue";
 import NutritionProgress from "@/components/plan-creator/NutritionProgress.vue";
@@ -332,7 +333,7 @@ const goToMealConfig = (mealType: string) => {
   };
   planStore.templates = [tempTemplate];
   planStore.currentMealType = mealType;
-  Taro.navigateTo({ url: "/pages/meal-config/index" });
+  navigateTo(ROUTES.MEAL_CONFIG);
 };
 
 const handleDeleteFood = (mealType: string, index: number) => {
@@ -347,7 +348,7 @@ const handleBack = () => {
     content:
       "有未保存的修改，退出将丢弃本次编辑内容（下次进入可恢复），确定吗？",
     success: (res) => {
-      if (res.confirm) Taro.navigateBack();
+      if (res.confirm) navigateBack();
     },
   });
 };
@@ -376,7 +377,7 @@ const handleSave = async () => {
 
     clearCache();
     showSuccess("配置已保存");
-    setTimeout(() => Taro.navigateBack(), 800);
+    setTimeout(() => navigateBack(), 800);
   } catch (e: any) {
     showError(e.message || "保存失败");
   } finally {
@@ -391,7 +392,7 @@ const handleShowMenu = () => {
     success: (res) => {
       if (res.tapIndex === 0) {
         clearCache();
-        Taro.navigateBack();
+        navigateBack();
       }
     },
   });

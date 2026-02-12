@@ -50,6 +50,7 @@
 <script setup lang="ts">
 import Taro, { useRouter, useDidShow } from "@tarojs/taro";
 import { ref } from "vue";
+import { navigateTo, navigateBack, switchTab, ROUTES } from "@/router";
 import PageLayout from "@/components/common/PageLayout.vue";
 import TemplateManagementStep from "@/components/plan-creator/TemplateManagementStep.vue";
 import { usePlanStore } from "@/stores/plan";
@@ -79,13 +80,14 @@ const loadData = async () => {
   }
 };
 
-const handleBack = () => Taro.navigateBack();
+const handleBack = () => navigateBack();
 
 const handleEditTemplate = (index: number) => {
   const day = planData.value.planDays[index];
   if (!day) return;
-  Taro.navigateTo({
-    url: `/pages/edit-template/index?dayId=${day.id}&planId=${planId}`,
+  navigateTo(ROUTES.EDIT_TEMPLATE, { 
+    dayId: String(day.id), 
+    planId: String(planId) 
   });
 };
 
@@ -151,7 +153,7 @@ const handleSave = async () => {
     showSuccess("计划配置完成！");
     planStore.resetDraft();
     setTimeout(() => {
-      Taro.switchTab({ url: "/pages/plan/index" });
+      switchTab(ROUTES.PLAN_OVERVIEW);
     }, 1500);
   } catch (e: any) {
     showError(e.message || "提交失败");

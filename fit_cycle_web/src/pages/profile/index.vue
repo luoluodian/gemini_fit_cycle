@@ -127,7 +127,7 @@ const importPlanModalVisible = ref(false);
 const handleViewPlan = async () => {
   await showSuccess("正在跳转到计划详情...");
   setTimeout(() => {
-    navigateTo("/pages/plan/index");
+    navigateTo(ROUTES.PLAN_OVERVIEW);
   }, 1500);
 };
 

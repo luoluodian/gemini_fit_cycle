@@ -53,7 +53,7 @@ import { ref } from "vue";
 import Taro from "@tarojs/taro";
 import { setStorage } from "@/utils/storage";
 import { showSuccess, showModal } from "@/utils/toast";
-import { useRouterParams, reLaunch } from "@/router";
+import { useRouterParams, reLaunch, ROUTES } from "@/router";
 import { useUserStore } from "@/stores/user";
 import LogoHeader from "@/components/login/LogoHeader.vue";
 import WelcomeCard from "@/components/login/WelcomeCard.vue";
@@ -65,7 +65,7 @@ const isLoading = ref<boolean>(false);
 const isDev = process.env.NODE_ENV === "development";
 const privacyModal = ref(false);
 const userStore = useUserStore();
-const routerParams = useRouterParams();
+const routerParams = useRouterParams<{ redirect?: string }>();
 
 /**
  * 处理 Mock 登录 (开发环境专用)
@@ -80,7 +80,7 @@ const handleMockLogin = async (): Promise<void> => {
       await showSuccess("登录成功 (Mock)");
       const targetUrl = routerParams.redirect
         ? decodeURIComponent(routerParams.redirect)
-        : "/pages/index/index";
+        : ROUTES.HOME;
       await reLaunch(targetUrl as any);
     }
   } catch (error: any) {
@@ -122,7 +122,7 @@ const handleWechatLogin = async (): Promise<void> => {
     // 3. 跳转重定向页面或首页
     const targetUrl = routerParams.redirect
       ? decodeURIComponent(routerParams.redirect)
-      : "/pages/index/index";
+      : ROUTES.HOME;
     await reLaunch(targetUrl as any);
   } catch (error: any) {
     console.error("微信登录失败:", error);

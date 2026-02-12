@@ -30,6 +30,7 @@
 
 <script setup lang="ts">
 import Taro from "@tarojs/taro";
+import { navigateTo, navigateBack, switchTab, ROUTES } from "@/router";
 import PageLayout from "@/components/common/PageLayout.vue";
 import BasicInfoStep from "@/components/plan-creator/BasicInfoStep.vue";
 import CycleSettingsStep from "@/components/plan-creator/CycleSettingsStep.vue";
@@ -75,9 +76,7 @@ const handleNext = async () => {
           },
         };
       }
-      Taro.navigateTo({
-        url: `/pages/carb-cycle-setup/index?planId=${planId}`,
-      });
+      navigateTo(ROUTES.CARB_CYCLE_SETUP, { planId });
     } else {
       // 常规流程：确保此时 carbType 是空的
       showLoading("正在生成日程...");
@@ -87,7 +86,7 @@ const handleNext = async () => {
       }
       await planService.initPlanDays(planId, { days });
 
-      Taro.navigateTo({ url: `/pages/plan-templates/index?id=${planId}` });
+      navigateTo(ROUTES.PLAN_TEMPLATES, { id: String(planId) });
     }
   } catch (e: any) {
     showError(e.message || "创建失败");
@@ -96,14 +95,14 @@ const handleNext = async () => {
   }
 };
 
-const _handleGoBack = () => Taro.navigateBack();
+const _handleGoBack = () => navigateBack();
 
 const handleCancel = () => {
   Taro.showModal({
     title: "确认取消",
     content: "确定要放弃创建计划吗？",
     success: (res) => {
-      if (res.confirm) Taro.switchTab({ url: "/pages/plan/index" });
+      if (res.confirm) switchTab(ROUTES.PLAN_OVERVIEW);
     },
   });
 };

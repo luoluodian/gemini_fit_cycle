@@ -67,6 +67,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import Taro from "@tarojs/taro";
+import { navigateBack, reLaunch, ROUTES } from "@/router";
 
 interface Props {
   title?: string;
@@ -106,9 +107,9 @@ onMounted(() => {
 const handleBack = () => {
   const pages = Taro.getCurrentPages();
   if (pages.length > 1) {
-    Taro.navigateBack();
+    navigateBack();
   } else {
-    Taro.reLaunch({ url: "/pages/index/index" });
+    reLaunch(ROUTES.HOME);
   }
 };
 </script>

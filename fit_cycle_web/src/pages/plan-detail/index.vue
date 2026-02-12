@@ -337,6 +337,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
 import Taro, { useRouter } from "@tarojs/taro";
+import { navigateTo, navigateBack, ROUTES } from "@/router";
 import PageLayout from "@/components/common/PageLayout.vue";
 import GlassCard from "@/components/common/GlassCard.vue";
 import BaseButton from "@/components/common/BaseButton.vue";
@@ -585,7 +586,7 @@ const handleShare = async () => {
 const handleEditPlan = () => {
   if (!plan.value) return;
   // 直接跳转到 plan-templates 页，复用配置流程
-  Taro.navigateTo({ url: `/pages/plan-templates/index?id=${planId}` });
+  navigateTo(ROUTES.PLAN_TEMPLATES, { id: String(planId) });
 };
 
 const handleActivate = async () => {
@@ -610,7 +611,7 @@ const handlePause = async () => {
   }
 };
 
-const handleBack = () => Taro.navigateBack();
+const handleBack = () => navigateBack();
 
 const handleDelete = () => {
   Taro.showModal({
@@ -622,7 +623,7 @@ const handleDelete = () => {
         try {
           await planService.deletePlan(planId);
           showSuccess("已删除");
-          setTimeout(() => Taro.navigateBack(), 1000);
+          setTimeout(() => navigateBack(), 1000);
         } catch (e) {
           showError("删除失败");
         }
@@ -642,8 +643,10 @@ const handleViewDay = (c: number, d: number) => {
   );
 
   if (day) {
-    Taro.navigateTo({
-      url: `/pages/edit-template/index?planId=${planId}&dayId=${day.id}&mode=edit`,
+    navigateTo(ROUTES.EDIT_TEMPLATE, { 
+      planId: String(planId), 
+      dayId: String(day.id), 
+      mode: 'edit' 
     });
   } else {
     showError("未找到该天数据");
@@ -652,8 +655,9 @@ const handleViewDay = (c: number, d: number) => {
 
 const handleViewToday = () => {
   const todayDayNumber = (plan.value?.completedDays || 0) + 1;
-  Taro.navigateTo({
-    url: `/pages/daily-plan/index?planId=${planId}&day=${todayDayNumber}`,
+  navigateTo(ROUTES.DAILY_PLAN, { 
+    planId: String(planId), 
+    day: String(todayDayNumber) 
   });
 };
 </script>

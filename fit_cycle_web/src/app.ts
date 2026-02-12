@@ -1,8 +1,8 @@
 import { createApp } from "vue";
 import { createPinia } from "pinia";
-import Taro, { useLaunch } from "@tarojs/taro";
+import { useLaunch } from "@tarojs/taro";
 import { useUserStore } from "./stores/user";
-import { isPublicPage, ROUTES } from "./constants/routes";
+import { isPublicPage, ROUTES, reLaunch } from "./router";
 
 import "./app.scss";
 
@@ -21,8 +21,8 @@ const App = createApp({
       if (startPath && !isPublicPage(startPath)) {
         if (!userStore.isLoggedIn) {
           console.warn("[App] 启动拦截：未登录访问受保护页面，重定向至登录页");
-          Taro.reLaunch({
-            url: `${ROUTES.LOGIN}?redirect=${encodeURIComponent(startPath)}`,
+          reLaunch(ROUTES.LOGIN, { 
+            redirect: startPath 
           });
         }
       }

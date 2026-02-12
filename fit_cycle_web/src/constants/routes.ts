@@ -1,23 +1,29 @@
 export const ROUTES = {
-  // 首页
+  // 核心 Tab 页面
   HOME: "/pages/index/index",
-
-  // 登录相关
-  LOGIN: "/pages/login/index",
-  // 计划相关
   PLAN_OVERVIEW: "/pages/plan/index",
-  DAILY_LIST: "/pages/daily-list/index",
+  FOOD_LIBRARY: "/pages/food/index",
+  PROFILE: "/pages/profile/index",
 
-  // 用户相关
+  // 认证与用户
+  LOGIN: "/pages/login/index",
   USER_PROFILE: "/pages/user/profile/index",
   USER_SETTINGS: "/pages/user/settings/index",
 
-  // 记录相关
+  // 计划管理流程
+  PLAN_CREATOR: "/pages/plan-creator/index",
+  CARB_CYCLE_SETUP: "/pages/carb-cycle-setup/index",
+  PLAN_TEMPLATES: "/pages/plan-templates/index",
+  EDIT_TEMPLATE: "/pages/edit-template/index",
+  PLAN_DETAIL: "/pages/plan-detail/index",
+  MEAL_CONFIG: "/pages/meal-config/index",
+
+  // 饮食记录与日程
+  DAILY_LIST: "/pages/daily-list/index",
+  DAILY_PLAN: "/pages/daily-plan/index",
   RECORD_LIST: "/pages/record/list/index",
   RECORD_DETAIL: "/pages/record/detail/index",
   RECORD_CREATE: "/pages/record/create/index",
-
-  // 其他页面...
 } as const;
 
 // 使用 typeof 获取更精确的类型约束

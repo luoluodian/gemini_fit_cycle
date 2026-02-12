@@ -245,6 +245,7 @@
 <script setup lang="ts">
 import { computed, watch } from "vue";
 import Taro, { useRouter } from "@tarojs/taro";
+import { navigateTo, navigateBack, ROUTES } from "@/router";
 import PageLayout from "@/components/common/PageLayout.vue";
 import BaseButton from "@/components/common/BaseButton.vue";
 import GlassCard from "@/components/common/GlassCard.vue";
@@ -331,7 +332,7 @@ watch(
   },
 );
 
-const handleBack = () => Taro.navigateBack();
+const handleBack = () => navigateBack();
 
 const handleNext = async () => {
   if (!algoResult.value.isBalanced) {
@@ -365,7 +366,7 @@ const handleNext = async () => {
     hideToast();
     
     // 3. 跳转到日模板列表页
-    Taro.navigateTo({ url: `/pages/plan-templates/index?id=${planId}` });
+    navigateTo(ROUTES.PLAN_TEMPLATES, { id: String(planId) });
   } catch (e: any) {
     showError(e.message || "初始化日程失败");
   } finally {
