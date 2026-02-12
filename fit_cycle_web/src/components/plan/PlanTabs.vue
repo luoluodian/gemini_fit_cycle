@@ -1,17 +1,20 @@
 <template>
   <GlassCard 
-    card-class="rounded-2xl p-4 shadow-lg border-[1rpx] border-solid border-white/30 flex flex-col"
+    card-class="rounded-2xl p-4 shadow-lg border-[1rpx] border-solid border-white/30"
   >
     <BaseTabs
       :tabs="tabs"
       :active-tab="activeTab"
       type="pills"
       @change="handleTabChange"
-      class="flex-shrink-0"
-    />
-    <view class="plan-list-container mt-2">
-      <slot :name="activeTab"></slot>
-    </view>
+    >
+      <template #active>
+        <slot name="active"></slot>
+      </template>
+      <template #completed>
+        <slot name="completed"></slot>
+      </template>
+    </BaseTabs>
   </GlassCard>
 </template>
 

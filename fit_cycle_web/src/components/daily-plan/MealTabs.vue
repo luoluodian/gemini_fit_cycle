@@ -3,7 +3,6 @@
     :tabs="meals"
     :active-tab="currentMeal"
     type="pills"
-    container-class="flex space-x-2 overflow-x-auto"
     @change="handleChange"
   />
 </template>

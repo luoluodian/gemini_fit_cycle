@@ -3,7 +3,7 @@
     :tabs="filters"
     :active-tab="currentFilter"
     type="pills"
-    container-class="flex items-center space-x-2 justify-center"
+    container-class="w-full flex justify-center"
     @change="handleFilterChange"
   />
 </template>
