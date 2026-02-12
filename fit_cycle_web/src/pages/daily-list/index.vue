@@ -1,142 +1,99 @@
 <template>
-  <view class="min-h-screen pb-20">
-    <!-- Header -->
-    <view class="bg-white shadow-sm">
-      <view class="px-4 py-6">
-        <view class="flex items-center justify-between">
-          <view class="flex items-center">
-            <view class="ml-2">
-              <text class="hero-title text-xl font-bold text-gray-800 block">{{
-                planName
-              }}</text>
-              <text class="text-sm text-gray-600 block">{{ planInfo }}</text>
-            </view>
-          </view>
-        </view>
+  <PageLayout :title="planName" :bg-class="'min-h-screen'">
+    <template #nav-right>
+      <view class="text-right pr-2">
+        <view class="text-[18rpx] text-gray-400 font-bold">完成进度</view>
+        <view class="text-base font-black text-emerald-600 leading-none">{{ progressPercent }}%</view>
       </view>
-    </view>
+    </template>
 
     <!-- 统计卡片 -->
-    <view class="px-4 py-4">
-      <view class="grid grid-cols-3 gap-3">
-        <StatsCard :count="completedCount" label="已完成" type="completed" />
-        <StatsCard :count="configuredCount" label="已配置" type="configured" />
-        <StatsCard :count="remainingCount" label="待配置" type="remaining" />
-      </view>
+    <view class="grid grid-cols-3 gap-3">
+      <StatsCard :count="completedCount" label="已完成" type="completed" />
+      <StatsCard :count="configuredCount" label="已配置" type="configured" />
+      <StatsCard :count="remainingCount" label="待配置" type="remaining" />
     </view>
 
     <!-- 筛选和排序 -->
-    <view class="px-4">
-      <view class="flex items-center justify-between">
-        <FilterButtons
-          :current-filter="currentFilter"
-          @change="handleFilterChange"
-        />
-        <view
-          class="p-2 rounded-lg hover:bg-gray-100 transition-colors bg-white cursor-pointer flex items-center justify-center mb-4"
-          @click="handleToggleSortOrder"
+    <view class="flex items-center justify-between">
+      <FilterButtons
+        :current-filter="currentFilter"
+        @change="handleFilterChange"
+      />
+      <view
+        class="p-2 rounded-lg hover:bg-gray-100 transition-colors bg-white cursor-pointer flex items-center justify-center"
+        @click="handleToggleSortOrder"
+      >
+        <svg
+          class="w-5 h-5 text-gray-600"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
         >
-          <svg
-            class="w-5 h-5 text-gray-600"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"
-            ></path>
-          </svg>
-        </view>
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"
+          ></path>
+        </svg>
       </view>
     </view>
 
     <!-- 每日列表 -->
-    <view class="px-4 py-2">
-      <view class="space-y-3">
-        <DayCard
-          v-for="day in filteredDays"
-          :key="day.id"
-          :day="day"
-          @edit="handleEditDay"
-          @copy="handleCopyDay"
-        />
-      </view>
+    <view class="space-y-3">
+      <DayCard
+        v-for="day in filteredDays"
+        :key="day.id"
+        :day="day"
+        @edit="handleEditDay"
+        @copy="handleCopyDay"
+      />
     </view>
 
-    <!-- 快速操作 -->
-    <view class="fixed bottom-20 right-4">
-      <view class="space-y-2">
-        <view
-          class="floating-btn w-12 h-12 rounded-full flex items-center justify-center text-white transition-all"
-          @click="handleBatchConfigure"
-        >
-          <svg
-            class="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-            ></path>
-          </svg>
-        </view>
-        <view
-          class="floating-btn w-12 h-12 rounded-full flex items-center justify-center text-white transition-all"
-          @click="handleCopyPlan"
-        >
-          <svg
-            class="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-            ></path>
-          </svg>
-        </view>
-      </view>
-    </view>
-
-    <!-- 底部操作栏 -->
-    <view class="btm_bottom bg-white border-t border-gray-200 px-4 py-3">
+    <template #footer>
       <view class="flex space-x-3">
         <view
-          class="flex-1 bg-emerald-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-emerald-700 transition-colors"
+          class="flex-1 bg-emerald-600 text-white py-3 px-4 rounded-xl font-black text-center active:scale-95 transition-all shadow-md shadow-emerald-100"
           @click="handleGoToToday"
         >
           回到今天
         </view>
         <view
-          class="flex-1 bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+          class="flex-1 bg-blue-600 text-white py-3 px-4 rounded-xl font-black text-center active:scale-95 transition-all shadow-md shadow-blue-100"
           @click="handleViewNutritionSummary"
         >
           营养统计
         </view>
       </view>
-    </view>
+    </template>
+  </PageLayout>
 
-    <!-- 批量配置模态框 -->
-    <BatchModal
-      :visible="batchModalVisible"
-      @close="handleCloseBatchModal"
-      @execute="handleExecuteBatchAction"
-    />
+  <!-- 浮动操作按钮 -->
+  <view class="fixed bottom-32 right-4 z-50">
+    <view class="space-y-3">
+      <view
+        class="w-12 h-12 rounded-full flex items-center justify-center text-white shadow-lg transition-all active:scale-90 bg-gradient-to-br from-orange-400 to-orange-600"
+        @click="handleBatchConfigure"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+        </svg>
+      </view>
+    </view>
   </view>
+
+  <!-- 批量配置模态框 -->
+  <BatchModal
+    :visible="batchModalVisible"
+    @close="handleCloseBatchModal"
+    @execute="handleExecuteBatchAction"
+  />
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
+import PageLayout from "@/components/common/PageLayout.vue";
 import DayCard from "@/components/daily-list/DayCard.vue";
 import StatsCard from "@/components/daily-list/StatsCard.vue";
 import FilterButtons from "@/components/daily-list/FilterButtons.vue";
@@ -145,6 +102,13 @@ import { getStorage, setStorage } from "@/utils/storage";
 import { showError, showSuccess, showModal } from "@/utils/toast";
 import { useRouterParams } from "@/router/hooks";
 import "./index.scss";
+
+// ... 逻辑部分保持不变 ...
+const progressPercent = computed(() => {
+  if (!plan.value || plan.value.totalDays === 0) return 0;
+  return Math.round((completedCount.value / plan.value.totalDays) * 100);
+});
+</script>
 
 interface DayTargets {
   calories: number;

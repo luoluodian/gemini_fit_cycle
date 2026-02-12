@@ -1,8 +1,11 @@
 <template>
   <view class="min-h-screen no-tabbar">
+    <!-- 固定高度占位，确保沉浸式背景下的内容不被状态栏遮挡 -->
+    <BaseNavBar :transparent="true" back-mode="none" />
+    
     <!-- Main Content -->
     <view
-      class="flex flex-col items-center justify-center min-h-screen px-4 pt-20"
+      class="flex flex-col items-center justify-center px-4 pt-10"
     >
       <!-- Logo/App Info -->
       <view class="animate-item pt-30">
@@ -51,6 +54,7 @@
 import "./index.scss";
 import { ref } from "vue";
 import Taro from "@tarojs/taro";
+import BaseNavBar from "@/components/common/BaseNavBar.vue";
 import { setStorage } from "@/utils/storage";
 import { showSuccess, showModal } from "@/utils/toast";
 import { useRouterParams, reLaunch, ROUTES } from "@/router";

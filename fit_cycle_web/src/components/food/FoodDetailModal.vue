@@ -9,7 +9,7 @@
     content-class="w-[85vw] overflow-x-hidden bg-white rounded-3xl"
   >
     <!-- 头部：标题始终显示食材名称 -->
-    <view class="flex items-center justify-between mb-4 pt-4 px-4">
+    <view class="flex items-center justify-between mb-4">
       <view class="w-10 h-10 flex items-center justify-center text-gray-400 active:opacity-60" @click="handleClose">
         <Close :size="18"></Close>
       </view>
@@ -19,7 +19,7 @@
       <view class="w-10 h-10"></view>
     </view>
 
-    <view v-if="food" class="pb-6 px-4">
+    <view v-if="food" class="pb-2">
       <view class="text-center mb-5">
         <text class="text-5xl mb-3 block leading-none animate-pop-in">{{ food.imageUrl || food.emoji || "🍎" }}</text>
         <view class="inline-block px-3 py-1 bg-emerald-50 rounded-full border border-solid border-emerald-100">

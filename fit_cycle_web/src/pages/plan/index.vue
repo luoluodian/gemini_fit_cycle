@@ -1,7 +1,7 @@
 <template>
   <view class="h-screen flex flex-col overflow-hidden">
     <!-- Header -->
-    <BaseNavBar title="饮食计划" subtitle="管理你的健康目标">
+    <BaseNavBar title="饮食计划" back-mode="none">
       <template #left>
         <view
           class="flex items-center justify-center p-3 border-[1rpx] border-solid border-emerald-600 text-emerald-600 rounded-lg active:scale-95 transition-all ml-2 shadow-sm"

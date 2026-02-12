@@ -7,232 +7,230 @@
     @update="(val) => (modalVisible = val)"
     style="width: 90vw"
   >
-    <view class="p-4">
-      <!-- 标题栏 (增加删除与收藏) -->
-      <view class="flex items-center justify-between mb-3 relative">
-        <view class="w-10">
-          <view
-            v-if="props.editingFood"
-            class="p-1 text-red-400 active:opacity-60"
-            @click="$emit('delete', props.editingFood)"
-          >
-            <Del :size="22"></Del>
-          </view>
+    <!-- 标题栏 (增加删除与收藏) -->
+    <view class="flex items-center justify-between mb-3 relative">
+      <view class="w-10">
+        <view
+          v-if="props.editingFood"
+          class="p-1 text-red-400 active:opacity-60"
+          @click="$emit('delete', props.editingFood)"
+        >
+          <Del :size="22"></Del>
         </view>
+      </view>
 
-        <text class="text-lg font-semibold text-gray-800">{{
-          props.editingFood ? "编辑食材" : "创建食材"
-        }}</text>
+      <text class="text-lg font-semibold text-gray-800">{{
+        props.editingFood ? "编辑食材" : "创建食材"
+      }}</text>
 
-        <view class="w-10 flex justify-end">
-          <view
-            v-if="props.editingFood"
-            class="p-1 transition-all active:scale-95"
-            @click="$emit('toggleFavorite', props.editingFood)"
+      <view class="w-10 flex justify-end">
+        <view
+          v-if="props.editingFood"
+          class="p-1 transition-all active:scale-95"
+          @click="$emit('toggleFavorite', props.editingFood)"
+        >
+          <HeartFill
+            v-if="props.editingFood.isFavorite"
+            :size="22"
+            color="#ef4444"
+          ></HeartFill>
+          <Heart v-else :size="22" color="#d1d5db"></Heart>
+        </view>
+      </view>
+    </view>
+
+    <view class="space-y-3">
+      <!-- 名称和单位在一行展示 -->
+      <view class="flex items-center gap-3">
+        <view class="flex flex-1 items-center gap-2">
+          <text class="text-sm font-medium text-gray-700 whitespace-nowrap"
+            >名称</text
           >
-            <HeartFill
-              v-if="props.editingFood.isFavorite"
-              :size="22"
-              color="#ef4444"
-            ></HeartFill>
-            <Heart v-else :size="22" color="#d1d5db"></Heart>
+          <input
+            v-model="formData.name"
+            type="text"
+            class="flex-1 px-3 py-1.5 border-[1rpx] border-solid border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 transition-all text-sm"
+            placeholder="例如：自制沙拉"
+          />
+        </view>
+        <view class="flex items-center gap-2 w-32">
+          <text class="text-sm font-medium text-gray-700 whitespace-nowrap"
+            >单位</text
+          >
+          <picker
+            :value="unitIndex"
+            :range="unitLabels"
+            @change="handleUnitChange"
+            class="flex-1"
+          >
+            <view
+              class="py-1.5 border-[1rpx] border-solid border-gray-300 rounded-lg flex items-center justify-between bg-white px-2"
+            >
+              <text class="text-xs text-gray-800">{{
+                unitLabels[unitIndex]
+              }}</text>
+              <image
+                src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGZpbGw9Im5vbmUiIHZpZXdCb3g9IjAgMCAyNCAyNCIgc3Ryb2tlPSIjOTY5RkExIj48cGF0aSBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS13aWR0aD0iMiIgZD0iTTE5IDlsLTcgNy03LTciLz48L3N2Zz4="
+                class="w-3 h-3 opacity-40 ml-1"
+              />
+            </view>
+          </picker>
+        </view>
+      </view>
+
+      <!-- 分类标签在一行展示 -->
+
+      <view class="flex items-center gap-2 py-1">
+        <text class="text-sm font-medium text-gray-700 whitespace-nowrap"
+          >标签</text
+        >
+
+        <BaseScrollView
+          :scroll-x="true"
+          :scroll-y="false"
+          scroll-view-class="flex-1"
+          style="width: 0"
+          height="60rpx"
+          content-class="flex gap-2 pr-4"
+        >
+          <view
+            v-for="cat in categoryOptions"
+            :key="cat.key"
+            class="px-3 py-1 text-[22rpx] rounded-lg border border-solid transition-all whitespace-nowrap inline-flex items-center flex-shrink-0"
+            :style="
+              formData.category === cat.key
+                ? 'background-color: #10b981; color: #fff; border-color: #10b981;'
+                : 'background-color: #fff; color: #6b7280; border-color: #e5e7eb;'
+            "
+            @click="
+              formData.category = cat.key;
+
+              formData.imageUrl = cat.emoji;
+            "
+          >
+            <text class="mr-1">{{ cat.emoji }}</text>
+
+            <text>{{ cat.label }}</text>
+          </view>
+        </BaseScrollView>
+      </view>
+
+      <!-- 营养成分输入 -->
+      <view
+        class="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-lg p-3 border border-emerald-100"
+      >
+        <view class="flex items-center justify-center gap-1 mb-2">
+          <view class="w-1.5 h-1.5 rounded-full bg-emerald-500"></view>
+          <text class="text-[18rpx] font-medium text-emerald-700">每</text>
+          <input
+            v-model="formData.baseCount"
+            type="number"
+            class="w-12 h-5 border-[1rpx] border-solid border-emerald-300 rounded px-1 text-center text-[20rpx] text-emerald-700 font-bold bg-white"
+            placeholder="100"
+          />
+          <text class="text-[18rpx] font-medium text-emerald-700"
+            >{{ formData.unit }} 营养成分</text
+          >
+        </view>
+        <view class="grid grid-cols-2 gap-2">
+          <view class="bg-white rounded-lg p-1.5 border border-orange-100">
+            <text
+              class="block text-[18rpx] text-orange-600 font-medium mb-0.5"
+              >🔥 热量 (kcal)</text
+            >
+            <input
+              v-model="formData.calories"
+              type="number"
+              class="px-1 py-1 border border-gray-200 rounded-md focus:ring-2 focus:ring-orange-400 text-xs bg-gray-50"
+              placeholder="0"
+            />
+          </view>
+          <view class="bg-white rounded-lg p-1.5 border border-rose-100">
+            <text class="block text-[18rpx] text-rose-600 font-medium mb-0.5"
+              >💪 蛋白质 (g)</text
+            >
+            <input
+              v-model="formData.protein"
+              type="number"
+              class="px-1 py-1 border border-gray-200 rounded-md focus:ring-2 focus:ring-rose-400 text-xs bg-gray-50"
+              placeholder="0"
+            />
+          </view>
+          <view class="bg-white rounded-lg p-1.5 border border-yellow-100">
+            <text
+              class="block text-[18rpx] text-yellow-600 font-medium mb-0.5"
+              >🧈 脂肪 (g)</text
+            >
+            <input
+              v-model="formData.fat"
+              type="number"
+              class="px-1 py-1 border border-gray-200 rounded-md focus:ring-2 focus:ring-yellow-400 text-xs bg-gray-50"
+              placeholder="0"
+            />
+          </view>
+          <view class="bg-white rounded-lg p-1.5 border border-amber-100">
+            <text class="block text-[18rpx] text-amber-600 font-medium mb-0.5"
+              >🌾 碳水 (g)</text
+            >
+            <input
+              v-model="formData.carbs"
+              type="number"
+              class="px-1 py-1 border border-gray-200 rounded-md focus:ring-2 focus:ring-amber-400 text-xs bg-gray-50"
+              placeholder="0"
+            />
           </view>
         </view>
       </view>
 
-      <view class="space-y-3">
-        <!-- 名称和单位在一行展示 -->
-        <view class="flex items-center gap-3">
-          <view class="flex flex-1 items-center gap-2">
-            <text class="text-sm font-medium text-gray-700 whitespace-nowrap"
-              >名称</text
-            >
-            <input
-              v-model="formData.name"
-              type="text"
-              class="flex-1 px-3 py-1.5 border-[1rpx] border-solid border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 transition-all text-sm"
-              placeholder="例如：自制沙拉"
-            />
-          </view>
-          <view class="flex items-center gap-2 w-32">
-            <text class="text-sm font-medium text-gray-700 whitespace-nowrap"
-              >单位</text
-            >
-            <picker
-              :value="unitIndex"
-              :range="unitLabels"
-              @change="handleUnitChange"
-              class="flex-1"
-            >
-              <view
-                class="py-1.5 border-[1rpx] border-solid border-gray-300 rounded-lg flex items-center justify-between bg-white px-2"
-              >
-                <text class="text-xs text-gray-800">{{
-                  unitLabels[unitIndex]
-                }}</text>
-                <image
-                  src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGZpbGw9Im5vbmUiIHZpZXdCb3g9IjAgMCAyNCAyNCIgc3Ryb2tlPSIjOTY5RkExIj48cGF0aSBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS13aWR0aD0iMiIgZD0iTTE5IDlsLTcgNy03LTciLz48L3N2Zz4="
-                  class="w-3 h-3 opacity-40 ml-1"
-                />
-              </view>
-            </picker>
-          </view>
-        </view>
+      <!-- 描述 -->
+      <view class="w-full">
+        <textarea
+          v-model="formData.description"
+          class="w-full py-1.5 px-3 border-[1rpx] border-solid border-gray-300 rounded-lg text-sm h-12 focus:ring-2 focus:ring-emerald-500"
+          style="box-sizing: border-box"
+          placeholder="简单描述这个食材...（可选）"
+        ></textarea>
+      </view>
 
-        <!-- 分类标签在一行展示 -->
-
-        <view class="flex items-center gap-2 py-1">
-          <text class="text-sm font-medium text-gray-700 whitespace-nowrap"
-            >标签</text
-          >
-
-          <BaseScrollView
-            :scroll-x="true"
-            :scroll-y="false"
-            scroll-view-class="flex-1"
-            style="width: 0"
-            height="60rpx"
-            content-class="flex gap-2 pr-4"
-          >
-            <view
-              v-for="cat in categoryOptions"
-              :key="cat.key"
-              class="px-3 py-1 text-[22rpx] rounded-lg border border-solid transition-all whitespace-nowrap inline-flex items-center flex-shrink-0"
-              :style="
-                formData.category === cat.key
-                  ? 'background-color: #10b981; color: #fff; border-color: #10b981;'
-                  : 'background-color: #fff; color: #6b7280; border-color: #e5e7eb;'
-              "
-              @click="
-                formData.category = cat.key;
-
-                formData.imageUrl = cat.emoji;
-              "
-            >
-              <text class="mr-1">{{ cat.emoji }}</text>
-
-              <text>{{ cat.label }}</text>
-            </view>
-          </BaseScrollView>
-        </view>
-
-        <!-- 营养成分输入 -->
-        <view
-          class="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-lg p-3 border border-emerald-100"
-        >
-          <view class="flex items-center justify-center gap-1 mb-2">
-            <view class="w-1.5 h-1.5 rounded-full bg-emerald-500"></view>
-            <text class="text-[18rpx] font-medium text-emerald-700">每</text>
-            <input
-              v-model="formData.baseCount"
-              type="number"
-              class="w-12 h-5 border-[1rpx] border-solid border-emerald-300 rounded px-1 text-center text-[20rpx] text-emerald-700 font-bold bg-white"
-              placeholder="100"
-            />
-            <text class="text-[18rpx] font-medium text-emerald-700"
-              >{{ formData.unit }} 营养成分</text
-            >
-          </view>
-          <view class="grid grid-cols-2 gap-2">
-            <view class="bg-white rounded-lg p-1.5 border border-orange-100">
-              <text
-                class="block text-[18rpx] text-orange-600 font-medium mb-0.5"
-                >🔥 热量 (kcal)</text
-              >
-              <input
-                v-model="formData.calories"
-                type="number"
-                class="px-1 py-1 border border-gray-200 rounded-md focus:ring-2 focus:ring-orange-400 text-xs bg-gray-50"
-                placeholder="0"
-              />
-            </view>
-            <view class="bg-white rounded-lg p-1.5 border border-rose-100">
-              <text class="block text-[18rpx] text-rose-600 font-medium mb-0.5"
-                >💪 蛋白质 (g)</text
-              >
-              <input
-                v-model="formData.protein"
-                type="number"
-                class="px-1 py-1 border border-gray-200 rounded-md focus:ring-2 focus:ring-rose-400 text-xs bg-gray-50"
-                placeholder="0"
-              />
-            </view>
-            <view class="bg-white rounded-lg p-1.5 border border-yellow-100">
-              <text
-                class="block text-[18rpx] text-yellow-600 font-medium mb-0.5"
-                >🧈 脂肪 (g)</text
-              >
-              <input
-                v-model="formData.fat"
-                type="number"
-                class="px-1 py-1 border border-gray-200 rounded-md focus:ring-2 focus:ring-yellow-400 text-xs bg-gray-50"
-                placeholder="0"
-              />
-            </view>
-            <view class="bg-white rounded-lg p-1.5 border border-amber-100">
-              <text class="block text-[18rpx] text-amber-600 font-medium mb-0.5"
-                >🌾 碳水 (g)</text
-              >
-              <input
-                v-model="formData.carbs"
-                type="number"
-                class="px-1 py-1 border border-gray-200 rounded-md focus:ring-2 focus:ring-amber-400 text-xs bg-gray-50"
-                placeholder="0"
-              />
-            </view>
-          </view>
-        </view>
-
-        <!-- 描述 -->
-        <view class="w-full">
-          <textarea
-            v-model="formData.description"
-            class="w-full py-1.5 px-3 border-[1rpx] border-solid border-gray-300 rounded-lg text-sm h-12 focus:ring-2 focus:ring-emerald-500"
-            style="box-sizing: border-box"
-            placeholder="简单描述这个食材...（可选）"
-          ></textarea>
-        </view>
-
-        <!-- 公开食材 -->
-        <view
-          class="flex items-center justify-between bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg p-2 border border-purple-100"
-        >
-          <view class="flex items-center gap-2">
-            <view
-              class="w-7 h-7 rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center text-white text-sm"
-            >
-              <text>🌐</text>
-            </view>
-            <view>
-              <text class="block text-xs font-medium text-gray-800"
-                >公开食材</text
-              >
-              <text class="text-[18rpx] text-gray-500">允许其他用户使用</text>
-            </view>
-          </view>
-          <switch
-            :checked="formData.isPublic"
-            color="#8b5cf6"
-            style="transform: scale(0.6)"
-            @change="(e: any) => (formData.isPublic = e.detail.value)"
-          />
-        </view>
-
-        <!-- Buttons -->
-        <view class="flex space-x-3 pt-1">
+      <!-- 公开食材 -->
+      <view
+        class="flex items-center justify-between bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg p-2 border border-purple-100"
+      >
+        <view class="flex items-center gap-2">
           <view
-            class="flex-1 bg-gray-100 text-gray-700 py-2 px-4 rounded-lg font-medium hover:bg-gray-200 transition-colors text-center text-sm"
-            @click="handleClose"
+            class="w-7 h-7 rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center text-white text-sm"
           >
-            取消
+            <text>🌐</text>
           </view>
-          <view
-            class="flex-1 bg-emerald-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-emerald-700 transition-colors text-center flex items-center justify-center text-sm"
-            @click="handleSubmit"
-          >
-            <text v-if="submitting">提交中...</text>
-            <text v-else>{{ editingFood ? "保存" : "创建" }}</text>
+          <view>
+            <text class="block text-xs font-medium text-gray-800"
+              >公开食材</text
+            >
+            <text class="text-[18rpx] text-gray-500">允许其他用户使用</text>
           </view>
+        </view>
+        <switch
+          :checked="formData.isPublic"
+          color="#8b5cf6"
+          style="transform: scale(0.6)"
+          @change="(e: any) => (formData.isPublic = e.detail.value)"
+        />
+      </view>
+
+      <!-- Buttons -->
+      <view class="flex space-x-3 pt-1">
+        <view
+          class="flex-1 bg-gray-100 text-gray-700 py-2 px-4 rounded-lg font-medium hover:bg-gray-200 transition-colors text-center text-sm"
+          @click="handleClose"
+        >
+          取消
+        </view>
+        <view
+          class="flex-1 bg-emerald-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-emerald-700 transition-colors text-center flex items-center justify-center text-sm"
+          @click="handleSubmit"
+        >
+          <text v-if="submitting">提交中...</text>
+          <text v-else>{{ editingFood ? "保存" : "创建" }}</text>
         </view>
       </view>
     </view>

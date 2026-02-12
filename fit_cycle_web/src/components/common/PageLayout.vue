@@ -5,7 +5,12 @@
     style="height: 100vh"
   >
     <!-- 1. 顶部：导航栏 (固定) -->
-    <BaseNavBar :title="title" :show-back="showBack">
+    <BaseNavBar 
+      :title="title" 
+      :back-mode="backMode" 
+      :manual-handle-back="manualHandleBack"
+      @back="$emit('back')"
+    >
       <template #right>
         <slot name="nav-right" />
       </template>
@@ -52,20 +57,26 @@ import BaseScrollView from "./BaseScrollView.vue";
 
 interface Props {
   title: string;
-  showBack?: boolean;
+  backMode?: "back" | "home" | "none";
+  manualHandleBack?: boolean;
   useScrollView?: boolean;
   scrollContainerClass?: string;
   scrollContentClass?: string;
   bgClass?: string;
 }
 
-withDefaults(defineProps<Props>(), {
-  showBack: true,
+const props = withDefaults(defineProps<Props>(), {
+  backMode: "back",
+  manualHandleBack: false,
   useScrollView: true,
   scrollContainerClass: "py-4 px-4",
   scrollContentClass: "space-y-6 ",
   bgClass: "default-bg",
 });
+
+defineEmits<{
+  back: [];
+}>();
 </script>
 
 <style scoped lang="scss">

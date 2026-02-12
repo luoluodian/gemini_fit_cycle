@@ -2,13 +2,12 @@
   <view>
     <!-- 1. 搜索与选择主弹窗 -->
     <BaseModal
-      :visible="visible"
-      position="bottom"
-      :title="title"
-      content-class="bg-white rounded-t-3xl h-[65vh] flex flex-col"
-      body-class="flex flex-col flex-1 min-h-0 overflow-hidden"
-      @close="handleClose"
-      @update:visible="(val) => !val && handleClose()"
+          :visible="visible"
+          position="bottom"
+          :title="title"
+          content-class="bg-white rounded-t-3xl h-[65vh] flex flex-col"
+          body-class="p-0 flex flex-col flex-1 min-h-0 overflow-hidden"
+          @close="handleClose"      @update:visible="(val) => !val && handleClose()"
     >
       <!-- 1. 固定头部：搜索与分类 -->
       <view class="flex-shrink-0 z-10 animate-fade-in-up px-4">

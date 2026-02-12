@@ -3,7 +3,6 @@
     :visible="visible"
     :show-header="false"
     content-class="w-[90vw] max-w-md"
-    body-class="p-6"
     @update:visible="(val) => emit('update:visible', val)"
     @close="handleClose"
   >

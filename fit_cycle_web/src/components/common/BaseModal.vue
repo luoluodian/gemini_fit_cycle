@@ -33,7 +33,7 @@
       </view>
 
       <!-- 内容区 -->
-      <view :class="['flex-1 min-h-0', bodyClass || 'overflow-y-auto']">
+      <view :class="['flex-1 min-h-0 overflow-y-auto', bodyClass || 'p-4']">
         <slot></slot>
       </view>
 

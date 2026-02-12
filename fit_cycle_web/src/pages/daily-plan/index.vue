@@ -1,11 +1,14 @@
 <template>
-  <view class="min-h-screen pb-20">
+  <view class="min-h-screen pb-24">
     <!-- Header -->
-    <DailyPlanHeader
-      :day-name="dayName"
-      :day-date="dayDate"
-      :current-calories="currentCalories"
-    />
+    <BaseNavBar :title="dayName" :manual-handle-back="true" @back="handleSaveAndExit">
+      <template #right>
+        <view class="text-right pr-2">
+          <view class="text-[18rpx] text-gray-400 font-bold">当日摄入</view>
+          <view class="text-sm font-black text-emerald-600 leading-none">{{ currentCalories }}</view>
+        </view>
+      </template>
+    </BaseNavBar>
 
     <!-- 营养目标 -->
     <view class="px-4 py-4">
@@ -72,7 +75,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
-import DailyPlanHeader from "@/components/daily-plan/DailyPlanHeader.vue";
+import BaseNavBar from "@/components/common/BaseNavBar.vue";
 import NutritionTargets from "@/components/daily-plan/NutritionTargets.vue";
 import MealTabs from "@/components/daily-plan/MealTabs.vue";
 import MealCard from "@/components/common/MealCard.vue";
