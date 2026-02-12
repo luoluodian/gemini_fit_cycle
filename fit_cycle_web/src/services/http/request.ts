@@ -257,8 +257,3 @@ export class RequestManager {
   }
 }
 
-/**
- * 默认请求管理器实例
- */
-export const request = new RequestManager();
-export default request;

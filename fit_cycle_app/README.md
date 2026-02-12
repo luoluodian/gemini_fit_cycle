@@ -20,7 +20,7 @@ Docker部署流程
   docker run -d --name nestjs-app -p 3001:3000 --env-file /home/cluoc/fit_cycle/.env nestjs-app:latest
   ```
 
-docker run -d \
+<!-- docker run -d \
 
 --name nestjs-app \
 
@@ -42,4 +42,4 @@ DB_USER=root
 
 DB_PASSWORD=xxxx  # 统一使用 DB_PASSWORD（代码中已统一）
 
-DB_NAME=fit_cycle
+DB_NAME=fit_cycle -->

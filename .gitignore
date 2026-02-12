@@ -8,6 +8,7 @@ yarn.lock
 dist/
 build/
 *.tsbuildinfo
+*.tar
 
 # Environment files
 .env

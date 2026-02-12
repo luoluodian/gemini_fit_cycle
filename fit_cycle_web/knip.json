@@ -4,7 +4,8 @@
     "src/app.ts",
     "src/app.config.ts",
     "src/pages/**/index.config.ts",
-    "src/pages/**/index.vue"
+    "src/pages/**/index.vue",
+    "config/*.ts"
   ],
   "project": [
     "src/**/*.{ts,vue}",

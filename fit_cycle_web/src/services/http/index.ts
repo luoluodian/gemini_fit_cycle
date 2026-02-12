@@ -17,7 +17,7 @@ export {
 // Token管理已统一在AuthInterceptor中处理，不再单独导出TokenManager
 
 // 请求管理器
-export { RequestManager, request } from "./request";
+export { RequestManager } from "./request";
 
 // 创建默认的请求管理器实例，配置常用拦截器
 import { RequestManager } from "./request";

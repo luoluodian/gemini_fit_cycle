@@ -89,11 +89,11 @@ export function getApiBaseUrl(): string {
 
   // 开发环境
   if (isDevelopment()) {
-    return "http://localhost:3000";
+    return "https://www.cluoc.top/api";
   }
 
   // 生产环境
-  return "https://api.fit-cycle.com";
+  return "https://www.cluoc.top/api";
 }
 
 /**
@@ -118,4 +118,3 @@ export function isLogEnabled(): boolean {
 
   return false;
 }
-

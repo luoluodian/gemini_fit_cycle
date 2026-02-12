@@ -42,17 +42,13 @@ export const AUTH_ROUTES = [
 /**
  * 不需要认证的公共API路由
  */
-export const PUBLIC_ROUTES = [
-  "/auth/wechatAuth",
-];
+export const PUBLIC_ROUTES = ["/auth/wechatAuth"];
 
 /**
  * 静默路由(不显示错误提示)
  * 用于后台检查类接口，失败时不打扰用户
  */
-export const SILENT_ROUTES = [
-  "/auth/refreshToken",
-];
+export const SILENT_ROUTES = ["/auth/refreshToken"];
 
 /**
  * 判断是否需要认证
@@ -66,8 +62,14 @@ export function needAuth(url: string): boolean {
 
   // 2. 检查是否包含认证关键词 (只要路径包含即匹配，增强兼容性)
   // 去除结尾斜杠以支持 /food-items?q=... 这种形式
-  const authKeywords = ['/user/', '/records', '/diet-plans', '/food-items', '/dict/'];
-  return authKeywords.some(keyword => url.includes(keyword));
+  const authKeywords = [
+    "/user/",
+    "/records",
+    "/diet-plans",
+    "/food-items",
+    "/dict/",
+  ];
+  return authKeywords.some((keyword) => url.includes(keyword));
 }
 
 /**
@@ -85,12 +87,12 @@ export function isSilentRoute(url: string): boolean {
 export function getFullUrl(path: string): string {
   const baseURL = API_BASE_CONFIG.baseURL?.replace(/\/$/, "") || "";
   const cleanPath = path.replace(/^\//, "");
-  
+
   // 如果 baseURL 为空，返回相对路径（用于开发环境的代理）
   if (!baseURL) {
     return `/${cleanPath}`;
   }
-  
+
   // 如果有 baseURL，拼接完整路径
   return `${baseURL}/${cleanPath}`;
 }
