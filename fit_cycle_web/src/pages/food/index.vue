@@ -271,7 +271,6 @@ const handleViewDetail = (food: FoodItem) => {
 
 const handleCloseDetailModal = () => {
   showDetailModal.value = false;
-  selectedFood.value = null;
 };
 
 const handleEditFood = (food: FoodItem) => {
@@ -289,7 +288,6 @@ const handleCreateCustomFood = () => {
 
 const handleCloseCustomFoodModal = () => {
   showCustomFoodModal.value = false;
-  editingFood.value = null;
 };
 
 const handleToggleFavorite = async (food: any) => {

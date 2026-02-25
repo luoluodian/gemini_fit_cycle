@@ -49,7 +49,7 @@ class FoodModuleTest(BaseTest):
         self.page.get_elements(".food-item-card")[0].click()
         time.sleep(1)
         
-        # 获取初始热量
+        # 获取初始热量 (使用更稳定的 test class)
         initial_cal_text = self.page.get_element(".test-nutrition-value").inner_text
         initial_cal = float(initial_cal_text)
         print(f"📊 Initial Cal (100g): {initial_cal}")
@@ -144,6 +144,63 @@ class FoodModuleTest(BaseTest):
             self.fail(f"Custom food '{food_name}' not found after creation")
         
         print(f"✅ Custom food '{food_name}' created and verified.")
+
+    def test_F_050_calorie_validation(self):
+        """
+        TC-F-050: 热量计算校验提醒
+        预期：输入热量明显低于三大营养素总和时，弹出提醒弹窗
+        """
+        print("\n🚀 [TC-F-050] Testing Calorie Validation Logic...")
+        self.app.relaunch("/pages/food/index")
+        time.sleep(2)
+        
+        self.app.evaluate("function(){ const p = getCurrentPages().pop(); if(p) p.handleCreateCustomFood(); }")
+        time.sleep(1)
+        
+        # 输入矛盾数据：10g脂肪(90kcal)，但输入热量 10kcal
+        self.page.get_element("input[placeholder='例如：自制沙拉']").input("ValidationTest")
+        # 定位热量输入 (第一个 placeholder='0')
+        inputs = self.page.get_elements("input[placeholder='0']")
+        inputs[0].input("10") # 热量
+        inputs[2].input("10") # 脂肪 (第三个输入框)
+        
+        create_btn = self.page.get_element("view", inner_text="创建")
+        create_btn.click()
+        time.sleep(1)
+        
+        # 验证弹窗是否出现 (通过查找“数据校验提醒”文本)
+        modal_title = self.page.get_element("view", inner_text="数据校验提醒")
+        if not modal_title:
+            self.fail("Validation modal DID NOT appear for mismatched calories")
+        print("✅ Calorie validation modal verified.")
+
+    def test_F_060_localization_check(self):
+        """
+        TC-F-060: 本地化单位检查
+        预期：不出现 'g', 'ml'，显示为 '克', '毫升'
+        """
+        print("\n🚀 [TC-F-060] Testing Localization Compliance...")
+        self.app.relaunch("/pages/food/index")
+        time.sleep(2)
+        
+        # 进入详情页查看单位
+        self.page.get_elements(".food-item-card")[0].click()
+        time.sleep(1)
+        
+        page_source = self.page.get_element("page").inner_text
+        
+        # 检查非法英文单位
+        for forbidden in ["g", "ml"]:
+            if f" {forbidden}" in page_source or f"{forbidden} " in page_source:
+                # 注意：这里需要排除 'kcal'，因为它是准许的
+                self.fail(f"Forbidden English unit '{forbidden}' found in UI")
+        
+        # 检查合法中文单位
+        for required in ["克", "kcal"]:
+            if required not in page_source:
+                self.fail(f"Required unit '{required}' missing from UI")
+        
+        print("✅ Localization check passed (Found '克' and 'kcal', No 'g').")
 
     def tearDown(self):
         print("🧹 Cleanup...")

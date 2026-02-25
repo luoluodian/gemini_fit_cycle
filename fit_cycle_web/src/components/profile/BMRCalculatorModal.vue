@@ -213,6 +213,7 @@ const handleCalculate = async () => {
 
 watch(() => props.visible, (newVal) => {
   if (newVal) {
+    showResult.value = false;
     // 回显数据
     if (userStore.healthProfile) {
       const p = userStore.healthProfile;
@@ -230,8 +231,6 @@ watch(() => props.visible, (newVal) => {
         age.value = String(new Date().getFullYear() - birthYear);
       }
     }
-  } else {
-    showResult.value = false;
   }
 });
 </script>

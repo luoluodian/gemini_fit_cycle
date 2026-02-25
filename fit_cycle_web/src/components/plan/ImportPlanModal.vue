@@ -54,7 +54,7 @@ const shareCode = ref("");
 watch(
   () => props.visible,
   (newVal) => {
-    if (!newVal) {
+    if (newVal) {
       shareCode.value = "";
     }
   },

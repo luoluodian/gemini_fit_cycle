@@ -356,37 +356,40 @@ const formData = ref({
 watch(
   () => props.visible,
   (newVal) => {
-    if (newVal && props.editingFood) {
-      const f = props.editingFood;
-      formData.value = {
-        name: f.name,
-        unit: f.unit,
-        baseCount: f.baseCount || 100,
-        imageUrl: f.imageUrl || "🥗",
-        category: f.category,
-        calories: f.calories,
-        protein: f.protein,
-        fat: f.fat,
-        carbs: f.carbs,
-        description: f.description || "",
-        isPublic: f.isPublic,
-      };
-      unitIndex.value = units.indexOf(f.unit);
-    } else if (!newVal) {
-      formData.value = {
-        name: "",
-        unit: "g",
-        baseCount: 100,
-        imageUrl: "🥩",
-        category: FoodCategory.PROTEIN,
-        calories: "",
-        protein: "",
-        fat: "",
-        carbs: "",
-        description: "",
-        isPublic: false,
-      };
-      unitIndex.value = 0;
+    if (newVal) {
+      if (props.editingFood) {
+        const f = props.editingFood;
+        formData.value = {
+          name: f.name,
+          unit: f.unit,
+          baseCount: f.baseCount || 100,
+          imageUrl: f.imageUrl || "🥗",
+          category: f.category,
+          calories: f.calories,
+          protein: f.protein,
+          fat: f.fat,
+          carbs: f.carbs,
+          description: f.description || "",
+          isPublic: f.isPublic,
+        };
+        unitIndex.value = units.indexOf(f.unit);
+      } else {
+        // 创建模式：重置表单
+        formData.value = {
+          name: "",
+          unit: "g",
+          baseCount: 100,
+          imageUrl: "🥩",
+          category: FoodCategory.PROTEIN,
+          calories: "",
+          protein: "",
+          fat: "",
+          carbs: "",
+          description: "",
+          isPublic: false,
+        };
+        unitIndex.value = 0;
+      }
     }
   },
 );
