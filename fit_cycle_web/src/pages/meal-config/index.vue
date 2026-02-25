@@ -27,7 +27,7 @@
               <text class="text-base font-black text-emerald-700 block">{{
                 Math.round(totalStats.calories)
               }}</text>
-              <text class="text-[14rpx] text-emerald-400 font-bold">kcal</text>
+              <text class="text-[14rpx] text-emerald-400 font-bold">{{ displayUnit('kcal') }}</text>
             </view>
             <view
               class="bg-blue-50/50 rounded-xl p-2 border border-solid border-blue-100"
@@ -38,7 +38,7 @@
               <text class="text-base font-black text-blue-700 block">{{
                 totalStats.protein.toFixed(1)
               }}</text>
-              <text class="text-[14rpx] text-blue-400 font-bold">g</text>
+              <text class="text-[14rpx] text-blue-400 font-bold">{{ displayUnit('g') }}</text>
             </view>
             <view
               class="bg-yellow-50/50 rounded-xl p-2 border border-solid border-yellow-100"
@@ -49,7 +49,7 @@
               <text class="text-base font-black text-yellow-700 block">{{
                 totalStats.carbs.toFixed(1)
               }}</text>
-              <text class="text-[14rpx] text-yellow-400 font-bold">g</text>
+              <text class="text-[14rpx] text-yellow-400 font-bold">{{ displayUnit('g') }}</text>
             </view>
             <view
               class="bg-red-50/50 rounded-xl p-2 border border-solid border-red-100"
@@ -60,7 +60,7 @@
               <text class="text-base font-black text-red-700 block">{{
                 totalStats.fat.toFixed(1)
               }}</text>
-              <text class="text-[14rpx] text-red-400 font-bold">g</text>
+              <text class="text-[14rpx] text-red-400 font-bold">{{ displayUnit('g') }}</text>
             </view>
           </view>
         </GlassCard>
@@ -172,6 +172,7 @@ import FoodPicker from "@/components/food/FoodPicker.vue";
 import FoodItemCard from "@/components/food/FoodItemCard.vue";
 import FoodDetailModal from "@/components/food/FoodDetailModal.vue";
 import type { FoodItem } from "@/components/food/types";
+import { displayUnit } from "@/utils";
 
 const planStore = usePlanStore();
 const currentDayIndex = planStore.currentDayIndex;

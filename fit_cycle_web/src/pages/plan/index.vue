@@ -40,9 +40,9 @@
             >
           </view>
           <text
-            class="text-[18rpx] text-gray-300 font-black uppercase tracking-widest"
+            class="text-[18rpx] text-gray-300 font-black"
           >
-            {{ filteredPlans.length }} Items
+            共 {{ filteredPlans.length }} 个计划
           </text>
         </view>
 

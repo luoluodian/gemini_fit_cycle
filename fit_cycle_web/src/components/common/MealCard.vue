@@ -7,7 +7,7 @@
       </view>
       <view class="bg-gray-50 px-2 py-1 rounded-lg border border-solid border-gray-100">
         <text class="text-sm font-black text-emerald-600">{{ Math.round(mealCalories) }}</text>
-        <text class="text-[18rpx] text-gray-400 ml-0.5 font-bold">kcal</text>
+        <text class="text-[18rpx] text-gray-400 ml-0.5 font-bold">{{ displayUnit('kcal') }}</text>
       </view>
     </view>
 
@@ -45,6 +45,7 @@
 import { computed } from "vue";
 import GlassCard from "./GlassCard.vue";
 import FoodItemCard from "../food/FoodItemCard.vue";
+import { displayUnit } from "@/utils";
 
 interface Food {
   name: string;

@@ -21,7 +21,7 @@
           <text class="text-[16rpx] text-gray-300 font-black">/</text>
           <text class="text-xs font-black text-gray-400">{{ target.calories }}</text>
         </template>
-        <text class="text-[14rpx] text-gray-400 font-bold ml-0.5">kcal</text>
+        <text class="text-[14rpx] text-gray-400 font-bold ml-0.5">{{ displayUnit('kcal') }}</text>
       </view>
     </view>
 
@@ -31,9 +31,9 @@
       <view class="bg-blue-50/50 rounded-xl p-2 border border-solid border-blue-100">
         <view class="flex items-center justify-between mb-1">
           <text class="text-[16rpx] font-black text-blue-600">蛋白质</text>
-          <text class="text-[16rpx] font-black text-blue-400">{{ Math.round(current.protein) }}g</text>
+          <text class="text-[16rpx] font-black text-blue-400">{{ Math.round(current.protein) }}{{ displayUnit('g') }}</text>
         </view>
-        <view class="text-sm font-black text-blue-700 mb-1.5">{{ target.protein }}g</view>
+        <view class="text-sm font-black text-blue-700 mb-1.5">{{ target.protein }}{{ displayUnit('g') }}</view>
         <view class="w-full bg-blue-100 rounded-full h-1 overflow-hidden">
           <view
             class="h-full rounded-full bg-blue-500 transition-all duration-500"
@@ -46,9 +46,9 @@
       <view class="bg-yellow-50/50 rounded-xl p-2 border border-solid border-yellow-100">
         <view class="flex items-center justify-between mb-1">
           <text class="text-[16rpx] font-black text-yellow-600">碳水</text>
-          <text class="text-[16rpx] font-black text-yellow-500">{{ Math.round(current.carbs) }}g</text>
+          <text class="text-[16rpx] font-black text-yellow-500">{{ Math.round(current.carbs) }}{{ displayUnit('g') }}</text>
         </view>
-        <view class="text-sm font-black text-yellow-700 mb-1.5">{{ target.carbs }}g</view>
+        <view class="text-sm font-black text-yellow-700 mb-1.5">{{ target.carbs }}{{ displayUnit('g') }}</view>
         <view class="w-full bg-yellow-100 rounded-full h-1 overflow-hidden">
           <view
             class="h-full rounded-full bg-yellow-500 transition-all duration-500"
@@ -61,9 +61,9 @@
       <view class="bg-red-50/50 rounded-xl p-2 border border-solid border-red-100">
         <view class="flex items-center justify-between mb-1">
           <text class="text-[16rpx] font-black text-red-600">脂肪</text>
-          <text class="text-[16rpx] font-black text-red-400">{{ Math.round(current.fat) }}g</text>
+          <text class="text-[16rpx] font-black text-red-400">{{ Math.round(current.fat) }}{{ displayUnit('g') }}</text>
         </view>
-        <view class="text-sm font-black text-red-700 mb-1.5">{{ target.fat }}g</view>
+        <view class="text-sm font-black text-red-700 mb-1.5">{{ target.fat }}{{ displayUnit('g') }}</view>
         <view class="w-full bg-red-100 rounded-full h-1 overflow-hidden">
           <view
             class="h-full rounded-full bg-red-500 transition-all duration-500"
@@ -78,6 +78,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import GlassCard from "../common/GlassCard.vue";
+import { displayUnit } from "@/utils";
 
 interface Nutrition {
   calories: number;

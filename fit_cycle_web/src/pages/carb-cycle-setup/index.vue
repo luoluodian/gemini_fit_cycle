@@ -32,7 +32,7 @@
                     parseFloat(e.detail.value) || 0)
               "
             />
-            <text class="ml-1 text-sm font-bold text-gray-500">kg</text>
+            <text class="ml-1 text-sm font-bold text-gray-500">{{ displayUnit('kg') }}</text>
           </view>
         </view>
       </GlassCard>
@@ -47,8 +47,8 @@
       >
         <view class="flex items-center justify-between mb-4">
           <text class="text-lg font-bold text-gray-800">营养素配比</text>
-          <text class="text-[20rpx] text-gray-400 font-bold uppercase"
-            >每kg体重 / 天</text
+          <text class="text-[20rpx] text-gray-400 font-bold"
+            >每{{ displayUnit('kg') }}体重 / 天</text
           >
         </view>
 
@@ -252,6 +252,7 @@ import { usePlanStore } from "@/stores/plan";
 import { planService } from "@/services";
 import { calculateCarbCycle } from "@/utils/carb-cycle-algo";
 import { showLoading, hideToast, showError } from "@/utils/toast";
+import { displayUnit } from "@/utils";
 
 const planStore = usePlanStore();
 const router = useRouter();

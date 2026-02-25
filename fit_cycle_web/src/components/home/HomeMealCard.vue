@@ -7,7 +7,7 @@
       </view>
       <view class="bg-gray-50 px-2 py-1 rounded-lg border border-solid border-gray-100">
         <text class="text-sm font-black text-emerald-600">{{ totalCalories }}</text>
-        <text class="text-[20rpx] text-gray-400 ml-0.5 font-bold">kcal</text>
+        <text class="text-[20rpx] text-gray-400 ml-0.5 font-bold">{{ displayUnit('kcal') }}</text>
       </view>
     </view>
 
@@ -55,6 +55,7 @@ import Taro from "@tarojs/taro";
 import FoodItemCard from "@/components/food/FoodItemCard.vue";
 import { useRecordStore } from "@/stores/record";
 import { usePlanStore } from "@/stores/plan";
+import { displayUnit } from "@/utils";
 
 interface Props {
   title: string;

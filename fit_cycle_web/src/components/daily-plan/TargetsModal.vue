@@ -15,7 +15,7 @@
         <view class="space-y-4">
           <view>
             <text class="block text-sm font-medium text-gray-700 mb-1"
-              >热量 (kcal)</text
+              >热量 ({{ displayUnit('kcal') }})</text
             >
             <input
               :value="editTargets.calories"
@@ -26,7 +26,7 @@
           </view>
           <view>
             <text class="block text-sm font-medium text-gray-700 mb-1"
-              >蛋白质 (g)</text
+              >蛋白质 ({{ displayUnit('g') }})</text
             >
             <input
               :value="editTargets.protein"
@@ -37,7 +37,7 @@
           </view>
           <view>
             <text class="block text-sm font-medium text-gray-700 mb-1"
-              >脂肪 (g)</text
+              >脂肪 ({{ displayUnit('g') }})</text
             >
             <input
               :value="editTargets.fat"
@@ -48,7 +48,7 @@
           </view>
           <view>
             <text class="block text-sm font-medium text-gray-700 mb-1"
-              >碳水 (g)</text
+              >碳水 ({{ displayUnit('g') }})</text
             >
             <input
               :value="editTargets.carbs"
@@ -79,6 +79,7 @@
 
 <script setup lang="ts">
 import { ref, watch } from "vue";
+import { displayUnit } from "@/utils";
 
 interface Targets {
   calories: number;

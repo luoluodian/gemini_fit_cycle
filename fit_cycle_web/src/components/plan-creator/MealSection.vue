@@ -35,7 +35,7 @@
           <view class="text-sm font-black text-gray-700 leading-tight">
             {{ Math.round(totalCalories || 0)
             }}<text class="text-[16rpx] text-gray-400 ml-0.5 font-bold"
-              >kcal</text
+              >{{ displayUnit('kcal') }}</text
             >
           </view>
           <view
@@ -114,6 +114,7 @@ import { computed, watch } from "vue";
 import { ArrowDown } from "@nutui/icons-vue-taro";
 import GlassCard from "../common/GlassCard.vue";
 import FoodItemCard from "../food/FoodItemCard.vue";
+import { displayUnit } from "@/utils";
 
 interface Food {
   name: string;

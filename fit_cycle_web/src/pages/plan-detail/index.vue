@@ -218,7 +218,7 @@
               <text class="text-3xl font-black text-blue-700">{{
                 plan.carbCycleConfig.weight
               }}</text>
-              <text class="text-sm font-black text-blue-400 ml-1">kg</text>
+              <text class="text-sm font-black text-blue-400 ml-1">{{ displayUnit('kg') }}</text>
             </view>
           </view>
 
@@ -234,7 +234,7 @@
               <text class="text-sm font-black text-gray-700"
                 >{{ val
                 }}<text class="text-[14rpx] ml-0.5 text-gray-400"
-                  >g/kg</text
+                  >{{ displayUnit('g') }}/{{ displayUnit('kg') }}</text
                 ></text
               >
             </view>
@@ -288,7 +288,7 @@
                     >蛋白质</text
                   >
                   <text class="text-xs font-black text-blue-600"
-                    >{{ phaseDetailResults?.[phase]?.protein }}g</text
+                    >{{ phaseDetailResults?.[phase]?.protein }}{{ displayUnit('g') }}</text
                   >
                 </view>
                 <view>
@@ -296,7 +296,7 @@
                     >碳水</text
                   >
                   <text class="text-xs font-black text-emerald-600"
-                    >{{ phaseDetailResults?.[phase]?.carbs }}g</text
+                    >{{ phaseDetailResults?.[phase]?.carbs }}{{ displayUnit('g') }}</text
                   >
                 </view>
                 <view>
@@ -304,7 +304,7 @@
                     >脂肪</text
                   >
                   <text class="text-xs font-black text-red-600"
-                    >{{ phaseDetailResults?.[phase]?.fat }}g</text
+                    >{{ phaseDetailResults?.[phase]?.fat }}{{ displayUnit('g') }}</text
                   >
                 </view>
               </view>
@@ -343,6 +343,7 @@ import { planService } from "@/services";
 import { usePlanStore } from "@/stores/plan";
 import { calculateCarbCycle } from "@/utils/carb-cycle-algo";
 import { showSuccess, showError, showLoading, hideToast } from "@/utils/toast";
+import { displayUnit } from "@/utils";
 
 const router = useRouter();
 const planId = Number(router.params.id);

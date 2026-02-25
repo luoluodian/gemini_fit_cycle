@@ -4,13 +4,14 @@
  */
 
 const UNIT_MAP: Record<string, string> = {
-  g: "g",
-  ml: "ml",
-  piece: "个",
-  kcal: "kcal",
-  "kcal/100g": "kcal/100克",
-  cup: "杯",
-  tbsp: "勺",
+  'g': 'g',
+  'ml': 'ml',
+  'kg': 'kg',
+  'kcal': 'kcal',
+  'kcal/100g': 'kcal/100g',
+  'piece': '个',
+  'cup': '杯',
+  'tbsp': '勺',
 };
 
 /**

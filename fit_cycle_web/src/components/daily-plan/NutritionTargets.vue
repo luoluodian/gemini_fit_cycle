@@ -64,6 +64,7 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
+import { displayUnit } from "@/utils";
 
 interface Nutrition {
   calories: number;
@@ -91,22 +92,22 @@ const emit = defineEmits<{
 const caloriesText = computed(() => {
   return `${Math.round(props.currentNutrition.calories)}/${
     props.targets.calories
-  } kcal`;
+  } ${displayUnit('kcal')}`;
 });
 
 const proteinText = computed(() => {
   const current = Math.round(props.currentNutrition.protein * 10) / 10;
-  return `${current}/${props.targets.protein} g`;
+  return `${current}/${props.targets.protein} ${displayUnit('g')}`;
 });
 
 const fatText = computed(() => {
   const current = Math.round(props.currentNutrition.fat * 10) / 10;
-  return `${current}/${props.targets.fat} g`;
+  return `${current}/${props.targets.fat} ${displayUnit('g')}`;
 });
 
 const carbsText = computed(() => {
   const current = Math.round(props.currentNutrition.carbs * 10) / 10;
-  return `${current}/${props.targets.carbs} g`;
+  return `${current}/${props.targets.carbs} ${displayUnit('g')}`;
 });
 
 const caloriesPercent = computed(() => {

@@ -24,7 +24,7 @@
           </view>
           <view class="text-right ml-4 flex-shrink-0">
             <text
-              class="text-[20rpx] text-gray-400 block mb-1 font-bold uppercase tracking-wider"
+              class="text-[20rpx] text-gray-400 block mb-1 font-bold"
               >配置进度</text
             >
             <view class="flex items-baseline justify-end">
@@ -136,7 +136,7 @@
                   <view
                     v-if="isCarbCycle"
                     :class="[
-                      'px-2 py-0.5 rounded-full text-[18rpx] font-black uppercase tracking-tighter',
+                      'px-2 py-0.5 rounded-full text-[18rpx] font-black',
                       getPhaseStyles(template).labelBg,
                       getPhaseStyles(template).labelColor,
                     ]"
@@ -168,12 +168,12 @@
                   <view class="flex items-center text-gray-600">
                     <text class="mr-0.5 opacity-50">⚡</text>
                     <text>{{ template.targetCalories }}</text>
-                    <text class="ml-0.5 opacity-50">kcal</text>
+                    <text class="ml-0.5 opacity-50">{{ displayUnit('kcal') }}</text>
                   </view>
                   <text class="opacity-20 text-gray-200">|</text>
-                  <text>蛋 {{ template.targetProtein }}g</text>
-                  <text>脂 {{ template.targetFat }}g</text>
-                  <text>碳 {{ template.targetCarbs }}g</text>
+                  <text>蛋 {{ template.targetProtein }}{{ displayUnit('g') }}</text>
+                  <text>脂 {{ template.targetFat }}{{ displayUnit('g') }}</text>
+                  <text>碳 {{ template.targetCarbs }}{{ displayUnit('g') }}</text>
                 </view>
               </view>
             </view>
@@ -211,6 +211,7 @@
 import { computed } from "vue";
 import GlassCard from "../common/GlassCard.vue";
 import BaseScrollView from "../common/BaseScrollView.vue";
+import { displayUnit } from "@/utils";
 
 interface Template {
   id: string | number;
