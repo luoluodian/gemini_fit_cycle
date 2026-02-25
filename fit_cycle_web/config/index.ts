@@ -69,7 +69,9 @@ export default defineConfig<"vite">(async (merge, { command: _command, mode: _mo
       postcss: {
         pxtransform: {
           enable: true,
-          config: {},
+          config: {
+            designWidth: 1500,
+          },
         },
         cssModules: {
           enable: false, // 默认为 false，如需使用 css modules 功能，则设为 true

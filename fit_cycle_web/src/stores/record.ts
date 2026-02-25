@@ -112,7 +112,7 @@ export const useRecordStore = defineStore("record", {
       return newLogs;
     },
 
-    async updateMealAction(id: string | number, data: { quantity: number }) {
+    async updateMealAction(id: string | number, data: { quantity?: number; isRecorded?: boolean }) {
       console.log(`[Store] Updating log ${id}...`, data);
       const updated = await updateMealLog(id, data);
       const idx = this.mealLogs.findIndex(m => String(m.id) === String(id));
@@ -130,6 +130,11 @@ export const useRecordStore = defineStore("record", {
       await removeMealLog(id);
       this.mealLogs = this.mealLogs.filter(m => String(m.id) !== String(id));
       console.log("[Store] Remove Success");
+    },
+
+    invalidateAllCache() {
+      this.recordsCache.clear();
+      console.log("[Store] Records cache invalidated");
     },
 
     clearRecord() {

@@ -22,7 +22,7 @@
             @input="handleInput"
             @blur="handleBlur"
           />
-          <text class="text-sm font-black text-gray-400 ml-1">{{ unit }}</text>
+          <text class="text-sm font-black text-gray-400 ml-1">{{ displayUnit(unit) }}</text>
         </view>
       </view>
 
@@ -43,7 +43,7 @@
         class="flex-1 py-2 bg-gray-50 rounded-lg text-center text-xs font-black text-gray-500 active:bg-emerald-50 active:text-emerald-600 border border-transparent active:border-emerald-100 transition-colors"
         @click="handlePreset(preset)"
       >
-        {{ preset }}{{ unit }}
+        {{ preset }}{{ displayUnit(unit) }}
       </view>
     </view>
   </view>
@@ -51,6 +51,7 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
+import { displayUnit } from "@/utils";
 
 interface Props {
   modelValue: number;
@@ -70,7 +71,7 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits(["update:modelValue", "change"]);
 
 const dynamicStep = computed(() => {
-  const smallUnits = ["个", "枚", "片", "根", "块", "勺", "瓶", "罐"];
+  const smallUnits = ["个", "枚", "片", "根", "块", "勺", "瓶", "罐", "piece", "tbsp"];
   if (smallUnits.includes(props.unit)) return 1;
   return props.step;
 });
@@ -78,7 +79,7 @@ const dynamicStep = computed(() => {
 const presets = computed(() => {
   if (props.unit === "g") return [50, 100, 150, 200];
   if (props.unit === "ml") return [100, 200, 250, 500];
-  const smallUnits = ["个", "枚", "片", "根", "块", "勺", "瓶", "罐"];
+  const smallUnits = ["个", "枚", "片", "根", "块", "勺", "瓶", "罐", "piece", "tbsp"];
   if (smallUnits.includes(props.unit)) return [0.5, 1, 2, 3];
   return [1, 2, 5, 10];
 });

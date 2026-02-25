@@ -83,12 +83,12 @@
         <text class="text-sm font-medium text-gray-700 whitespace-nowrap"
           >标签</text
         >
-        <view class="flex-1 min-w-0">
+        <view class="flex-1" style="min-width: 0">
           <BaseScrollView
             :scroll-x="true"
             :scroll-y="false"
-            height="60rpx"
-            content-class="flex items-center gap-2 pr-4"
+            height="70rpx"
+            content-class="items-center gap-2 pr-4"
           >
             <view
               v-for="cat in categoryOptions"
@@ -125,14 +125,13 @@
             placeholder="100"
           />
           <text class="text-[18rpx] font-medium text-emerald-700"
-            >{{ formData.unit }} 营养成分</text
+            >{{ displayUnit(formData.unit) }} 营养成分</text
           >
         </view>
         <view class="grid grid-cols-2 gap-2">
           <view class="bg-white rounded-lg p-1.5 border border-orange-100">
-            <text
-              class="block text-[18rpx] text-orange-600 font-medium mb-0.5"
-              >🔥 热量 (kcal)</text
+            <text class="block text-[18rpx] text-orange-600 font-medium mb-0.5"
+              >🔥 热量 ({{ displayUnit("kcal") }})</text
             >
             <input
               v-model="formData.calories"
@@ -143,7 +142,7 @@
           </view>
           <view class="bg-white rounded-lg p-1.5 border border-rose-100">
             <text class="block text-[18rpx] text-rose-600 font-medium mb-0.5"
-              >💪 蛋白质 (g)</text
+              >💪 蛋白质 ({{ displayUnit("g") }})</text
             >
             <input
               v-model="formData.protein"
@@ -153,9 +152,8 @@
             />
           </view>
           <view class="bg-white rounded-lg p-1.5 border border-yellow-100">
-            <text
-              class="block text-[18rpx] text-yellow-600 font-medium mb-0.5"
-              >🧈 脂肪 (g)</text
+            <text class="block text-[18rpx] text-yellow-600 font-medium mb-0.5"
+              >🧈 脂肪 ({{ displayUnit("g") }})</text
             >
             <input
               v-model="formData.fat"
@@ -166,7 +164,7 @@
           </view>
           <view class="bg-white rounded-lg p-1.5 border border-amber-100">
             <text class="block text-[18rpx] text-amber-600 font-medium mb-0.5"
-              >🌾 碳水 (g)</text
+              >🌾 碳水 ({{ displayUnit("g") }})</text
             >
             <input
               v-model="formData.carbs"
@@ -235,6 +233,7 @@
 
 <script setup lang="ts">
 import { ref, watch, computed } from "vue";
+import Taro from "@tarojs/taro";
 import BaseModal from "../common/BaseModal.vue";
 import { Heart, HeartFill, Del } from "@nutui/icons-vue-taro";
 import {
@@ -244,6 +243,7 @@ import {
 } from "@/services/modules/food";
 import type { FoodItem } from "@/services/modules/food";
 import { showError, showSuccess } from "@/utils/toast";
+import { displayUnit } from "@/utils";
 
 const props = defineProps<{
   visible: boolean;
@@ -259,7 +259,7 @@ const emit = defineEmits<{
 
 const submitting = ref(false);
 
-const unitLabels = ["克 (g)", "毫升 (ml)", "个/片", "杯", "勺"];
+const unitLabels = ["克", "毫升", "个/片", "杯", "勺"];
 const units = ["g", "ml", "piece", "cup", "tbsp"];
 const unitIndex = ref(0);
 
@@ -412,15 +412,46 @@ const handleSubmit = async () => {
     return;
   }
 
+  const inputCalories = Number(formData.value.calories);
+  const p = Number(formData.value.protein || 0);
+  const f = Number(formData.value.fat || 0);
+  const c = Number(formData.value.carbs || 0);
+
+  // 1g碳水4kcal, 1g脂肪9kcal, 1g蛋白质4kcal
+  const expectedCalories = Math.round(p * 4 + f * 9 + c * 4);
+
+  let shouldRemind = false;
+  if (inputCalories < expectedCalories) {
+    // 输入值小于理论最小值，直接提醒
+    shouldRemind = true;
+  } else if (inputCalories > expectedCalories) {
+    // 输入值大于理论值，走阈值逻辑 (差异 > 10% 且 > 15kcal)
+    const diff = inputCalories - expectedCalories;
+    if (diff > inputCalories * 0.1 && diff > 15) {
+      shouldRemind = true;
+    }
+  }
+
+  // 校验逻辑
+  if (inputCalories > 0 && shouldRemind) {
+    const res = await Taro.showModal({
+      title: "数据校验提醒",
+      content: `检测到热量(${inputCalories}kcal)与三大营养素计算结果(${expectedCalories}kcal)不符，是否确定保存？`,
+      confirmText: "确定保存",
+      cancelText: "返回修改",
+    });
+    if (!res.confirm) return;
+  }
+
   try {
     submitting.value = true;
     const payload = {
       ...formData.value,
       baseCount: Number(formData.value.baseCount || 100),
-      calories: Number(formData.value.calories),
-      protein: Number(formData.value.protein || 0),
-      fat: Number(formData.value.fat || 0),
-      carbs: Number(formData.value.carbs || 0),
+      calories: inputCalories,
+      protein: p,
+      fat: f,
+      carbs: c,
     };
 
     if (props.editingFood?.id) {

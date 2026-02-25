@@ -24,9 +24,9 @@
     </view>
 
     <!-- 3. Body (Flex-1) -->
-    <!-- 修复点：通过 pb-[160rpx] 彻底避开底部导航栏，space-y-4 统一间距 -->
+    <!-- 修复点：通过 pb-tabbar 彻底避开底部导航栏，space-y-4 统一间距 -->
     <view
-      class="flex-1 min-h-0 flex flex-col px-4 pt-1 overflow-hidden pb-[180rpx]"
+      class="flex-1 min-h-0 flex flex-col px-4 pt-1 overflow-hidden space-y-4 pb-tabbar"
     >
       <!-- 3.1 Horizontal Categories -->
       <view class="flex-shrink-0">
@@ -49,7 +49,7 @@
           <text
             v-if="!isPopularLoading && popularFoods.length > 0"
             class="text-[18rpx] text-gray-300 font-bold uppercase tracking-widest"
-            >Slide to view</text
+            >左滑查看更多</text
           >
         </view>
 
@@ -102,7 +102,7 @@
           </view>
           <text
             class="text-[18rpx] text-gray-300 font-black uppercase tracking-widest"
-            >{{ totalCount }} Items</text
+            >共 {{ totalCount }} 种食材</text
           >
         </view>
 

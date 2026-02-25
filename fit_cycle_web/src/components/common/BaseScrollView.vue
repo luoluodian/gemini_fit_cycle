@@ -112,8 +112,11 @@ const emit = defineEmits<{
   (e: "reach-end"): void;
 }>();
 
-const formatSize = (size: string | number) => {
-  if (typeof size === "number") return `${size}rpx`;
+const formatSize = (size: string | number | undefined | null) => {
+  if (size === undefined || size === null) return "";
+  if (typeof size === "number") {
+    return isNaN(size) ? "0" : `${size}rpx`;
+  }
   return size;
 };
 

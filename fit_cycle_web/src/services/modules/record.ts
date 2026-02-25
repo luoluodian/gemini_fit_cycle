@@ -82,7 +82,7 @@ export async function syncMealFromPlan(data: {
  */
 export async function updateMealLog(
   id: number | string,
-  data: { quantity: number },
+  data: { quantity?: number; isRecorded?: boolean },
 ): Promise<MealLog> {
   return httpRequest.put(`/records/meal/${id}`, data);
 }

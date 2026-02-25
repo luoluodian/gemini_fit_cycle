@@ -11,7 +11,7 @@
     </ProfileHeader>
 
     <!-- Main Content -->
-    <view class="px-4 py-6 pb-20">
+    <view class="px-4 py-6 pb-tabbar">
       <!-- Quick Stats -->
       <QuickStats
         :total-days="userData.totalDays"

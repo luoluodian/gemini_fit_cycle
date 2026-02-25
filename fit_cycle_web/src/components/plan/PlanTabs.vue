@@ -1,12 +1,13 @@
 <template>
   <GlassCard 
-    card-class="rounded-2xl border-[1rpx] border-solid border-white/30"
+    :card-class="['rounded-2xl border-[1rpx] border-solid border-white/30 flex flex-col', cardClass]"
   >
     <BaseTabs
       :tabs="tabs"
       :active-tab="activeTab"
       type="pills"
       @change="handleTabChange"
+      container-class="flex-1 min-h-0"
     >
       <template #active>
         <slot name="active"></slot>
@@ -24,6 +25,7 @@ import GlassCard from "../common/GlassCard.vue";
 
 interface Props {
   activeTab: "active" | "completed" | "archived";
+  cardClass?: string;
 }
 
 interface Emits {

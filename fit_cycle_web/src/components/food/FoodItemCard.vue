@@ -17,9 +17,9 @@
     </view>
 
     <!-- 2. Content -->
-    <view class="flex-1 min-w-0 flex flex-col justify-center">
+    <view class="flex-1 flex flex-col justify-center" style="min-width: 0">
       <view class="flex items-center justify-between">
-        <view class="flex items-center gap-1.5 min-w-0 flex-1 pr-3 flex-wrap">
+        <view class="flex items-center gap-1.5 flex-1 pr-3 flex-wrap" style="min-width: 0">
           <text 
             class="font-black text-sm truncate"
             :class="(status === 'ghost' || status === 'draft') ? 'text-gray-500' : 'text-emerald-700'"
@@ -52,7 +52,7 @@
            <text class="text-[20rpx] font-black" :class="(status === 'ghost' || status === 'draft') ? 'text-gray-400' : 'text-emerald-600'">
              {{ displayQuantity }}
            </text>
-           <text class="text-[20rpx] font-black text-gray-800 whitespace-nowrap">{{ displayNutrition.calories }}<text class="text-[14rpx] font-bold text-gray-400 ml-0.5">kcal</text></text>
+           <text class="text-[20rpx] font-black text-gray-800 whitespace-nowrap">{{ displayNutrition.calories }}<text class="text-[14rpx] font-bold text-gray-400 ml-0.5">{{ displayUnit('kcal') }}</text></text>
         </view>
       </view>
 
@@ -93,6 +93,7 @@ import { computed } from "vue";
 import { Edit, Del } from "@nutui/icons-vue-taro";
 import { FOOD_CATEGORIES, getFoodCategoryConfig } from "@/constants/food-categories";
 import NutritionMacroSmall from "./NutritionMacroSmall.vue";
+import { displayUnit } from "@/utils";
 
 interface Props {
   food: any;
@@ -127,7 +128,7 @@ const displayNutrition = computed(() => {
 const displayQuantity = computed(() => {
   const { food } = props;
   const qty = food.quantity || food.baseCount || 100;
-  return `${qty}${food.unit || 'g'}`;
+  return `${qty}${displayUnit(food.unit)}`;
 });
 
 const getCategoryBg = (cat: string) => FOOD_CATEGORIES.find(c => c.key === cat)?.theme.bg || "bg-gray-50";

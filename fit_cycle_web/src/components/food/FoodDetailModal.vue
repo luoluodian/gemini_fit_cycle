@@ -38,14 +38,14 @@
       <view class="bg-gray-50 rounded-2xl p-4 mb-6 border border-solid border-gray-100">
         <view class="flex items-center justify-center space-x-2 mb-4">
           <text class="text-[18rpx] text-gray-400 font-black">设定摄入</text>
-          <text class="text-[18rpx] text-gray-500 font-black">{{ localQuantity }}{{ food.unit || "g" }}</text>
+          <text class="text-[18rpx] text-gray-500 font-black">{{ localQuantity }}{{ displayUnit(food.unit) }}</text>
         </view>
 
         <view class="grid grid-cols-4 gap-1">
-          <NutritionMacro label="热量" :value="displayNutrition.calories" unit="kcal" color="text-emerald-500" />
-          <NutritionMacro label="蛋白质" :value="displayNutrition.protein" unit="g" color="text-rose-500" />
-          <NutritionMacro label="碳水" :value="displayNutrition.carbs" unit="g" color="text-amber-500" />
-          <NutritionMacro label="脂肪" :value="displayNutrition.fat" unit="g" color="text-blue-500" />
+          <NutritionMacro label="热量" :value="displayNutrition.calories" :unit="displayUnit('kcal')" color="text-emerald-500" />
+          <NutritionMacro label="蛋白质" :value="displayNutrition.protein" :unit="displayUnit('g')" color="text-rose-500" />
+          <NutritionMacro label="碳水" :value="displayNutrition.carbs" :unit="displayUnit('g')" color="text-amber-500" />
+          <NutritionMacro label="脂肪" :value="displayNutrition.fat" :unit="displayUnit('g')" color="text-blue-500" />
         </view>
       </view>
 
@@ -98,6 +98,7 @@ import QuantityStepper from "./QuantityStepper.vue";
 import NutritionMacro from "./NutritionMacro.vue";
 import { Close, Heart, HeartFill, Edit, Del } from "@nutui/icons-vue-taro";
 import { FOOD_CATEGORIES } from "@/constants/food-categories";
+import { displayUnit } from "@/utils";
 
 interface Props {
   visible: boolean;

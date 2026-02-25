@@ -1,4 +1,4 @@
-import { IsEnum, IsInt, IsNotEmpty, IsNumber, IsPositive, IsString, Matches } from 'class-validator';
+import { IsEnum, IsInt, IsNotEmpty, IsNumber, IsPositive, IsString, Matches, IsOptional, IsBoolean } from 'class-validator';
 import { MealType } from '@/database/entity/meal-log.entity';
 
 /**
@@ -22,4 +22,8 @@ export class CreateMealLogDto {
   @IsPositive()
   @IsNotEmpty()
   quantity: number;
+
+  @IsOptional()
+  @IsBoolean()
+  isPlanned?: boolean;
 }

@@ -36,12 +36,13 @@ export class AuthInterceptor implements Interceptor {
   private static isNavigatingToLogin = false;
   private static refreshing = {
     isRefreshing: false,
-    queue: [] as ((token: string) => void)[],
+    queue: [] as { resolve: (token: string) => void; reject: (err: any) => void }[],
   };
 
   /**
    * 请求拦截器 - 添加认证头
    */
+// ... (rest of the class code will be included in the final replacement)
   async beforeRequest(config: RequestOptions): Promise<RequestOptions> {
     const url = config.url || "";
 
@@ -71,6 +72,12 @@ export class AuthInterceptor implements Interceptor {
    */
   async onError(error: any): Promise<any> {
     if (error instanceof ApiError && error.code === ERROR_CODES.UNAUTHORIZED) {
+      // 如果本身就是刷新Token的请求，直接抛出，不要重试刷新，否则会死循环
+      if (error.config?.url?.includes('/auth/refreshToken')) {
+        console.warn('[Auth] Refresh token request itself failed with 401, aborting refresh loop.');
+        throw error;
+      }
+
       console.warn('[Auth] Unauthorized access detected, attempting refresh...');
       
       // 如果是认证错误，尝试刷新token
@@ -117,8 +124,8 @@ export class AuthInterceptor implements Interceptor {
 
     if (AuthInterceptor.refreshing.isRefreshing) {
       console.log('[Auth] Refresh already in progress, queuing request');
-      return new Promise((resolve) =>
-        AuthInterceptor.refreshing.queue.push(resolve)
+      return new Promise((resolve, reject) =>
+        AuthInterceptor.refreshing.queue.push({ resolve, reject })
       );
     }
 
@@ -145,13 +152,19 @@ export class AuthInterceptor implements Interceptor {
       AuthInterceptor.refreshing.isRefreshing = false;
 
       console.log(`[Auth] Token refreshed. Resuming ${pendingQueue.length} queued requests.`);
-      pendingQueue.forEach((resolve) => resolve(newAccessToken));
+      pendingQueue.forEach(({ resolve }) => resolve(newAccessToken));
 
       return newAccessToken;
     } catch (err) {
       console.error('[Auth] Refresh token failed:', err);
-      AuthInterceptor.refreshing.isRefreshing = false;
+      
+      const pendingQueue = AuthInterceptor.refreshing.queue;
       AuthInterceptor.refreshing.queue = [];
+      AuthInterceptor.refreshing.isRefreshing = false;
+      
+      // 通知所有等待中的请求刷新失败
+      pendingQueue.forEach(({ reject }) => reject(err));
+      
       removeStorage(ACCESS_TOKEN_KEY);
       removeStorage(REFRESH_TOKEN_KEY);
       removeStorage(USER_INFO_KEY);

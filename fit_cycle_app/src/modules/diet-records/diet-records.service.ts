@@ -42,13 +42,13 @@ export class DietRecordsService {
   }
 
   async addMealLog(userId: number, dto: CreateMealLogDto) {
-    const { date, foodId, quantity, mealType } = dto;
+    const { date, foodId, quantity, mealType, isPlanned } = dto;
     const food = await this.foodItemRepo.findOne({ where: { id: foodId } });
     if (!food) throw new BadRequestException(`食材不存在`);
 
     return await this.dataSource.transaction(async (manager) => {
       const record = await this.getOrCreateDailyRecord(manager, userId, date);
-      const ratio = quantity / 100;
+      const ratio = quantity / (food.baseCount || 100);
       
       const result = await manager.createQueryBuilder()
         .insert()
@@ -70,7 +70,7 @@ export class DietRecordsService {
           baseProtein: food.protein,
           baseFat: food.fat,
           baseCarbs: food.carbs,
-          isPlanned: false,
+          isPlanned: isPlanned ?? false,
           isRecorded: true
         })
         .execute();
@@ -123,9 +123,11 @@ export class DietRecordsService {
   }
 
   private async getOrCreateDailyRecord(manager: any, userId: number, date: string): Promise<DailyRecord> {
-    let record = await manager.findOne(DailyRecord, { where: { userId, date } });
-    if (!record) {
-      const preview = await this.calculateDefaultRecord(userId, date);
+    const record = await manager.findOne(DailyRecord, { where: { userId, date } });
+    if (record) return record;
+
+    const preview = await this.calculateDefaultRecord(userId, date);
+    try {
       const res = await manager.createQueryBuilder().insert().into(DailyRecord).values({
         userId, date, 
         targetCalories: preview.record.targetCalories,
@@ -134,9 +136,14 @@ export class DietRecordsService {
         targetCarbs: preview.record.targetCarbs,
         planId: preview.record.planId
       }).execute();
-      record = await manager.findOne(DailyRecord, { where: { id: res.identifiers[0].id } });
+      return await manager.findOne(DailyRecord, { where: { id: res.identifiers[0].id } });
+    } catch (e) {
+      // 如果插入冲突（并发请求），则重新查询已存在的记录
+      if (e.message.includes('Duplicate entry') || e.code === 'ER_DUP_ENTRY') {
+        return await manager.findOne(DailyRecord, { where: { userId, date } });
+      }
+      throw e;
     }
-    return record;
   }
 
   async updateMealLog(userId: number, id: number, dto: UpdateMealLogDto) {
@@ -144,7 +151,7 @@ export class DietRecordsService {
     if (!log) throw new NotFoundException('记录不存在');
     
     if (dto.quantity !== undefined) {
-      const ratio = dto.quantity / 100;
+      const ratio = dto.quantity / (log.baseCount || 100);
       log.quantity = dto.quantity;
       log.calories = Math.round(log.baseCalories * ratio);
       log.protein = Number((log.baseProtein * ratio).toFixed(4));

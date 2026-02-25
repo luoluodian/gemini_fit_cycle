@@ -34,6 +34,14 @@ body, view, text, button, input {
   padding-bottom: env(safe-area-inset-bottom);
 }
 
+.pb-tabbar {
+  padding-bottom: calc(160rpx + env(safe-area-inset-bottom));
+}
+
+.h-tabbar {
+  height: calc(160rpx + env(safe-area-inset-bottom));
+}
+
 .pt-safe {
   padding-top: constant(safe-area-inset-top);
   padding-top: env(safe-area-inset-top);

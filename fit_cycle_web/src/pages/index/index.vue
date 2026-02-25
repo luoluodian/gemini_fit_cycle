@@ -2,7 +2,7 @@
   <view class="min-h-screen bg-gray-50">
     <BaseNavBar title="今日记录" />
     
-    <view class="px-4 py-6 pb-20">
+    <view class="px-4 py-6 pb-tabbar">
       <DateNavigation v-model="currentDate" :plan-id="currentRecord?.planId" />
 
       <view v-if="isLoading" class="animate-pulse mb-6">
