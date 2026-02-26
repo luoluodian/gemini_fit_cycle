@@ -23,7 +23,7 @@ export class PlanMeal {
   @Column({ name: 'plan_day_id', type: 'bigint', unsigned: true })
   planDayId: number;
 
-  @ManyToOne(() => PlanDay, (day) => day.planMeals)
+  @ManyToOne(() => PlanDay, (day) => day.planMeals, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'plan_day_id' })
   planDay: PlanDay; // 所属计划日
 

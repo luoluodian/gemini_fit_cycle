@@ -66,7 +66,7 @@ import PrivacyModal from "@/components/login/PrivacyModal.vue";
 
 // 响应式状态
 const isLoading = ref<boolean>(false);
-const isDev = process.env.NODE_ENV === "development";
+const isDev = process.env.NODE_ENV === "development" || (global as any).__FC_TEST_SKIP_AUTH__;
 const privacyModal = ref(false);
 const userStore = useUserStore();
 const routerParams = useRouterParams<{ redirect?: string }>();

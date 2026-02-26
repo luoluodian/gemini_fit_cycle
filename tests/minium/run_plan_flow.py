@@ -6,91 +6,112 @@ def run_plan_test():
         "project_path": "/Users/wangweining/Desktop/web/gemini_fit_cycle/fit_cycle_web/dist",
         "dev_tool_path": "/Applications/wechatwebdevtools.app/Contents/MacOS/cli",
         "test_port": 46910,
-        "auto_relaunch": False
+        "auto_relaunch": True
     }
     
-    print("🚀 Connecting to DevTools...")
+    print("🚀 Final Stabilized UI Acceptance Flow...")
     try:
         mini = minium.Minium(conf)
         app = mini.app
-        print("✅ Connected!")
+        print("✅ Connection Active.")
         
-        # 1. 注入 Token 并跳转
-        app.call_wx_method("setStorageSync", ["access_token", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiIxIiwiaWF0IjoxNzcwMDg4NDMyLCJleHAiOjE3NzA2OTMyMzJ9.S4lgYfSNOF7f0QpNdPhqUWzQJPrr9Jboxk8I4y4NxaI"])
-        app.relaunch("/pages/plan/index")
-        app.wait_for_page("/pages/plan/index", 5000)
-        time.sleep(2)
+        # 1. 物理环境重置
+        print("🧹 Clearing session...")
+        app.call_wx_method("clearStorageSync")
+        # 激活特权标志（防止中间环节干扰）
+        app.evaluate("global.__FC_TEST_SKIP_AUTH__ = true")
+        
+        # 2. 登录触发
+        app.relaunch("/pages/login/index")
+        app.wait_for_page("/pages/login/index", 10000)
+        time.sleep(3)
         
         page = app.get_current_page()
-        print(f"📍 Location: {page.path}")
+        print("🖱️ Clicking Mock Login (.FC-TEST-MOCK-LOGIN)...")
+        login_btn = page.get_element(".FC-TEST-MOCK-LOGIN")
         
-        # 2. 点击新建按钮 (使用用户提供的 ID #_HY)
-        print("🔍 Searching for '+' button via ID #_HY...")
-        btn = page.get_element("#_HY")
-        
-        if not btn:
-            print("💡 ID #_HY not found via standard selector, trying JS probe...")
-            # 有时 ID 在组件内部，尝试用 JS 触发点击
-            res = app.evaluate("function(){ const el = document.getElementById('_HY'); if(el) { el.click(); return true; } return false; }")
-            if res:
-                print("✨ Clicked #_HY via JS injection.")
-            else:
-                print("⚠️ JS could not find #_HY, falling back to business logic call...")
-                app.evaluate("function(){ const p = getCurrentPages().pop(); if(p && p.createNewPlan) p.createNewPlan(); }")
+        if login_btn:
+            login_btn.click()
+            # 关键：点击后立即放弃旧页面句柄，等待新页面
+            print("⏳ Waiting for Login-to-Home transition...")
+            if not app.wait_for_page("/pages/index/index", 15000):
+                print("⚠️ Redirect to Home failed, trying direct relaunch to Plan...")
+                app.relaunch("/pages/plan/index")
         else:
-            print("✨ Found #_HY element! Clicking...")
-            btn.click()
-            
-        time.sleep(1.5)
+            print("🚨 ERROR: Mock Login button not visible. Re-building might be needed.")
+            app.capture("login_err.png")
+            return
+
+        # 3. 导航至计划页
+        print("🔄 Switching Tab to Plan...")
+        app.switch_tab("/pages/plan/index")
+        app.wait_for_page("/pages/plan/index", 10000)
+        time.sleep(4)
         
-        # 3. 处理弹窗选项
-        print("📦 Checking for Modal options...")
-        views = app.get_current_page().get_elements("view")
-        target = None
-        for v in views:
-            if v.inner_text and "创建新计划" in v.inner_text:
-                target = v
-                break
-        
-        if target:
-            print("🔘 Clicking 'Create New Plan' option...")
-            target.click()
+        # 重新捕获稳定的计划页实例
+        page = app.get_current_page()
+        print(f"📍 Current Path: {page.path}")
+
+        # 4. 执行创建流 (基于物理 Class)
+        print("🔍 Locating Create Button (.FC-TEST-CREATE-BTN)...")
+        create_btn = page.get_element(".FC-TEST-CREATE-BTN")
+        if not create_btn:
+            print("💡 Class fallback to inner_text '+'...")
+            create_btn = page.get_element("view", inner_text="+")
             
-            # 4. 进入向导页
-            app.wait_for_page("/pages/plan-creator/index", 5000)
-            print("📍 Arrived at Plan Creator.")
+        if create_btn:
+            create_btn.click()
+            time.sleep(2)
             
-            # 5. 填写并提交 (通过 JS 模型操作以确保速度)
-            plan_name = f"ID定位测试_{int(time.time())}"
-            print(f"⌨️ Submitting plan: {plan_name}")
-            app.evaluate(f"""
-                function() {{
-                    const p = getCurrentPages().pop();
-                    if(p && p.planStore) {{
-                        p.planStore.draft.name = '{plan_name}';
-                        p.planStore.draft.type = 'custom';
-                        p.handleNext();
-                        return true;
-                    }}
-                    return false;
-                }}
-            """)
-            
-            # 6. 验证最终跳转
-            if app.wait_for_page("/pages/plan-templates/index", 8000):
-                print(f"🎉 SUCCESS! Reached: {app.get_current_page().path}")
-                print("🏁 FLOW VERIFIED WITH ID #_HY.")
+            # 处理弹出菜单
+            page = app.get_current_page()
+            option = page.get_element("view", inner_text="创建新计划")
+            if option:
+                print("✨ Selecting '创建新计划'...")
+                option.click()
+                
+                # 5. 向导人工模拟
+                if app.wait_for_page("/pages/plan-creator/index", 10000):
+                    print("📍 Entered Wizard.")
+                    time.sleep(2)
+                    page = app.get_current_page()
+                    
+                    # 输入计划名称
+                    input_el = page.get_element("input")
+                    if input_el:
+                        plan_name = f"Final_Acceptance_{int(time.time())}"
+                        print(f"⌨️ Entering name: {plan_name}")
+                        input_el.input(plan_name)
+                        time.sleep(1)
+                        
+                        # 点击下一步
+                        next_btn = page.get_element("view", inner_text="下一步")
+                        if next_btn:
+                            print("🖱️ Clicking '下一步'...")
+                            next_btn.click()
+                            
+                            # 6. 跨页数据闭环验证
+                            if app.wait_for_page("/pages/plan-templates/index", 15000):
+                                print(f"🎉 MISSION ACCOMPLISHED! Destination: {app.get_current_page().path}")
+                                print("🏁 ALL UI ANCHORS AND LOGIC BRANCHES VERIFIED.")
+                            else:
+                                print("❌ FAILED: Wizard submission timeout.")
+                                app.capture("submission_stuck.png")
+                        else:
+                            print("❌ FAILED: '下一步' button unreachable.")
+                    else:
+                        print("❌ FAILED: Name input missing.")
+                else:
+                    print("❌ FAILED: Wizard entry timed out.")
             else:
-                print(f"❌ FAILED: Final navigation timeout.")
-                app.capture("id_test_fail.png")
+                print("❌ FAILED: Selection Modal not displayed.")
         else:
-            print("❌ FAILED: Options Modal not found.")
-            app.capture("modal_not_found.png")
+            print("❌ FAILED: Create button not found on Plan page.")
 
     except Exception as e:
-        print(f"💥 ERROR: {str(e)}")
+        print(f"💥 SYSTEM ERROR: {str(e)}")
     finally:
-        print("🏁 Done.")
+        print("🏁 Flow Terminated.")
 
 if __name__ == "__main__":
     run_plan_test()

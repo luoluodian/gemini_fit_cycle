@@ -26,7 +26,7 @@
         class="p-2 rounded-lg hover:bg-gray-100 transition-colors bg-white cursor-pointer flex items-center justify-center"
         @click="handleToggleSortOrder"
       >
-        <Sort font-size="18" color="#4b5563" />
+        <Horizontal font-size="18" color="#4b5563" />
       </view>
     </view>
 
@@ -86,13 +86,14 @@ import DayCard from "@/components/daily-list/DayCard.vue";
 import StatsCard from "@/components/daily-list/StatsCard.vue";
 import FilterButtons from "@/components/daily-list/FilterButtons.vue";
 import BatchModal from "@/components/daily-list/BatchModal.vue";
-import { Sort, Plus } from "@nutui/icons-vue-taro";
+import { Horizontal, Plus } from "@nutui/icons-vue-taro";
 import { getStorage, setStorage } from "@/utils/storage";
 import { showError, showSuccess, showModal } from "@/utils/toast";
 import { useRouterParams } from "@/router/hooks";
+import { usePlanStore } from "@/stores/plan";
 import "./index.scss";
 
-// ... 逻辑部分保持不变 ...
+const planStore = usePlanStore();
 const progressPercent = computed(() => {
   if (!plan.value || plan.value.totalDays === 0) return 0;
   return Math.round((completedCount.value / plan.value.totalDays) * 100);

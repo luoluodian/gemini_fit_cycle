@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, InternalServerErrorException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource } from 'typeorm';
+import { Repository, DataSource, In } from 'typeorm';
 import { User } from '@/database/entity/user.entity';
 import { DietPlan, PlanStatus } from '@/database/entity/diet-plan.entity';
 import { PlanDay } from '@/database/entity/plan-day.entity';
@@ -150,9 +150,18 @@ export class DietPlansService {
       await queryRunner.manager.update(PlanDay, dayId, updateData);
 
       // 2. 清理旧的餐次和食材 (简单方案：物理删除再重建该天的)
-      // 更加严谨方案是做 Map 对比 ID 差量更新，但鉴于“单日模板”数据量极小（通常 3-5 餐，每餐 2-5 个食材），
-      // 物理重建性能可控且逻辑最清晰。
-      await queryRunner.manager.delete(PlanMeal, { planDayId: dayId });
+      // 必须先删除 Item，再删除 Meal，否则会触发外键约束报错
+      // 获取当前天下的所有 Meal ID
+      const oldMeals = await queryRunner.manager.find(PlanMeal, {
+        where: { planDayId: dayId },
+        select: ['id']
+      });
+      const oldMealIds = oldMeals.map(m => m.id);
+
+      if (oldMealIds.length > 0) {
+        await queryRunner.manager.delete(PlanMealItem, { planMealId: In(oldMealIds) });
+        await queryRunner.manager.delete(PlanMeal, { id: In(oldMealIds) });
+      }
 
       // 3. 重建树状结构
       const mealTypes = await this.dictRepo.find({ where: { category: 'MealType' } });

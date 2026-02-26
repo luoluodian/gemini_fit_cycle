@@ -19,14 +19,23 @@
           :meals="getMealsByType(type.key)"
           :date="currentDate"
           @add="handleShowPicker"
-          @edit="handleRequestToggleStatus"
+          @edit="handleRequestEdit"
           @delete="handlePerformDelete"
         />
       </view>
     </view>
 
-    <!-- 仅用于新增的弹窗 -->
+    <!-- 食材库选择弹窗 (新增用) -->
     <FoodPicker v-model:visible="foodPickerVisible" @select="handleFoodPicked" />
+
+    <!-- 🚀 核心优化：修改弹窗 -->
+    <FoodDetailModal
+      :visible="editModalVisible"
+      :food="editingFood"
+      mode="edit"
+      @close="closeEditModal"
+      @confirm="handleConfirmEdit"
+    />
   </view>
 </template>
 
@@ -40,6 +49,7 @@ import DateNavigation from "@/components/home/DateNavigation.vue";
 import DailyGoalsOverview from "@/components/home/DailyGoalsOverview.vue";
 import MealCard from "@/components/home/HomeMealCard.vue";
 import FoodPicker from "@/components/food/FoodPicker.vue";
+import FoodDetailModal from "@/components/food/FoodDetailModal.vue";
 import { useNavigationStore } from "@/stores/navigation";
 import "./index.scss";
 
@@ -47,6 +57,8 @@ const { currentRecord, isLoading, summary, getMealsByType, fetchRecord } = useNu
 const recordStore = useRecordStore();
 const currentDate = ref(getTodayString());
 const foodPickerVisible = ref(false);
+const editModalVisible = ref(false);
+const editingFood = ref<any>(null);
 const currentMealType = ref("");
 const isSubmitting = ref(false);
 const navStore = useNavigationStore();
@@ -64,26 +76,49 @@ const handleShowPicker = (type: string) => {
 };
 
 /**
- * 业务核心：修改仅改变颜色状态 (Req 1 & 4)
- * 点击修改图标 -> 弹出确认 -> 设为未记录 (变灰)
+ * 业务核心：修改逻辑重构
+ * 1. 弹出询问是否修改
+ * 2. 如果是，弹出 FoodDetailModal
+ * 3. 确认后设为未记录并保存
  */
-const handleRequestToggleStatus = (food: any) => {
+const handleRequestEdit = (food: any) => {
   if (!food.id) return;
   
   Taro.showModal({
     title: '确认修改',
-    content: '修改后该食材将变为未记录状态，确定吗？',
-    success: async (res) => {
+    content: '确定要修改这项记录吗？修改完成后将变为“未记录”状态（需再次点击打卡确认）。',
+    success: (res) => {
       if (res.confirm) {
-        try {
-          await recordStore.updateMealAction(food.id, { isRecorded: false });
-          Taro.showToast({ title: '已设为未记录', icon: 'none' });
-        } catch (e) {
-          console.error("状态切换失败", e);
-        }
+        editingFood.value = food;
+        editModalVisible.value = true;
       }
     }
   });
+};
+
+const closeEditModal = () => {
+  editModalVisible.value = false;
+  editingFood.value = null;
+};
+
+const handleConfirmEdit = async (payload: { food: any; quantity: number }) => {
+  if (!editingFood.value?.id) return;
+  
+  try {
+    Taro.showLoading({ title: '正在同步...', mask: true });
+    // 设为未记录 (false) 并更新摄入量
+    await recordStore.updateMealAction(editingFood.value.id, { 
+      quantity: payload.quantity,
+      isRecorded: false 
+    });
+    
+    closeEditModal();
+    Taro.showToast({ title: '修改成功', icon: 'success' });
+  } catch (e) {
+    Taro.showToast({ title: '修改失败', icon: 'none' });
+  } finally {
+    Taro.hideLoading();
+  }
 };
 
 const handlePerformDelete = (food: any) => {

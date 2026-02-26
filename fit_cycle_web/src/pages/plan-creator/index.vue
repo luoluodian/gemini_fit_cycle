@@ -32,7 +32,11 @@
 import { onMounted } from "vue";
 import Taro, { useRouter } from "@tarojs/taro";
 import { navigateTo, navigateBack, switchTab, ROUTES } from "@/router";
-// ... (omitted imports)
+import { usePlanStore } from "@/stores/plan";
+import { planService } from "@/services";
+import BasicInfoStep from "@/components/plan-creator/BasicInfoStep.vue";
+import CycleSettingsStep from "@/components/plan-creator/CycleSettingsStep.vue";
+import PageLayout from "@/components/common/PageLayout.vue";
 import { showLoading, hideToast, showError } from "@/utils/toast";
 
 const planStore = usePlanStore();

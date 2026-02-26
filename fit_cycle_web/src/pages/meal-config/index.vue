@@ -6,7 +6,44 @@
   >
     <!-- 1. 顶部固定区：营养汇总 (Sticky) -->
     <template #fixed-top>
-      <view class="px-4 pt-4">
+      <view class="px-4 pt-4 space-y-3">
+        <!-- 餐次名称修改 -->
+        <GlassCard
+          background="#ffffff"
+          card-class="border-[1rpx] border-solid border-gray-200"
+          :border="false"
+        >
+          <view class="flex items-center">
+            <view
+              class="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center mr-3 flex-shrink-0"
+            >
+              <text class="text-lg">🍴</text>
+            </view>
+            <view class="flex-1 min-w-0">
+              <text
+                class="text-[20rpx] font-black text-gray-400 block mb-0.5 tracking-widest uppercase"
+                >餐次名称 (最多5字)</text
+              >
+              <input
+                type="text"
+                v-model="editableMealName"
+                maxlength="5"
+                class="w-full py-1 text-base font-black text-gray-800 transition-all border-b-[1rpx] border-solid border-transparent focus:border-emerald-500"
+                placeholder="设定名称"
+                @blur="handleNameBlur"
+              />
+            </view>
+            <view
+              class="ml-4 flex items-center justify-center bg-gray-50 w-8 h-8 rounded-lg border border-solid border-gray-100"
+            >
+              <text class="text-[18rpx] text-gray-400 font-black">{{
+                editableMealName?.length || 0
+              }}</text>
+            </view>
+          </view>
+        </GlassCard>
+
+        <!-- 营养统计 -->
         <GlassCard
           background="#ffffff"
           card-class="border-[1rpx] border-solid border-gray-200"
@@ -76,7 +113,7 @@
     </template>
 
     <!-- 2. 中间内容区：食物列表 (锁定高度 + 内部滑动) -->
-    <view class="flex-shrink-0 flex flex-col pt-3 overflow-hidden h-[950rpx]">
+    <view class="flex-shrink-0 flex flex-col pt-3 overflow-hidden h-[850rpx]">
       <GlassCard
         background="#ffffff"
         card-class="flex-1 flex flex-col min-h-0 w-full overflow-hidden border-[1rpx] border-solid border-gray-200"
@@ -170,7 +207,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import Taro from "@tarojs/taro";
 import { usePlanStore } from "@/stores/plan";
 import PageLayout from "@/components/common/PageLayout.vue";
@@ -221,6 +258,26 @@ const mealLabel = computed(() => {
   }
   return map[currentMealType] || currentMealType;
 });
+
+const editableMealName = ref("");
+
+onMounted(() => {
+  editableMealName.value = mealLabel.value;
+});
+
+const handleNameBlur = () => {
+  const name = editableMealName.value.trim().slice(0, 5);
+  if (!name) {
+    editableMealName.value = mealLabel.value;
+    return;
+  }
+  
+  const template = planStore.templates[0] || planStore.draft.templates[currentDayIndex];
+  if (template) {
+    if (!template.customLabels) template.customLabels = {};
+    template.customLabels[currentMealType] = name;
+  }
+};
 
 const totalStats = computed(() => {
   return foods.value.reduce(

@@ -72,12 +72,14 @@ interface Food {
 interface Props {
   mealOrder: string[];
   meals: Record<string, Food[]>;
+  customLabels?: Record<string, string>;
   showAddButton?: boolean;
   maxHeight?: string | number;
   flex?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  customLabels: () => ({}),
   showAddButton: false,
   maxHeight: "500rpx",
   flex: false,
@@ -102,7 +104,7 @@ const getMealLabel = (type: string) => {
     dinner: "晚餐",
     snacks: "加餐",
   };
-  return map[type] || type;
+  return map[type] || props.customLabels[type] || type;
 };
 
 const getMealIcon = (type: string) => {

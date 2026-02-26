@@ -42,8 +42,24 @@
 | :--- | :--- | :--- | :--- |
 | **M-ERR-09** | **认证失效恢复** | 编辑中途 Token 过期 -> 重新登录 | 自动回跳编辑原 Step，Draft 数据 100% 还原 |
 | **M-ERR-11** | **组件崩溃自愈** | 模拟某个餐次组件渲染异常 | 页面触发 Error Boundary，显示重试按钮而非全屏崩溃 |
+| **M-ERR-16** | **高频连点防御** | 在“完成配置”按钮执行 `fast_click` (50ms间隔) | 仅触发一次请求，Loading 状态物理拦截后续点击 |
 
-## 5. 执行指令 (Execution)
+### 4.4 数据精度与值域校验 (Data Integrity)
+| ID | 场景描述 | 审计点 | 预期结果 |
+| :--- | :--- | :--- | :--- |
+| **M-VAL-04** | **全链路精度容差** | 1. 添加 3 个重量为 33.3g 的食材<br>2. 比对 UI 总和与 Store 快照 | 总值误差 ≤ 1kcal，UI 显示无 `NaN` 或多位小数 |
+
+## 5. 全局校验标准 (Verification Standards)
+
+### 5.1 精度容差协议
+- **Rounding Policy**: 采用“四舍五入到个位”策略。
+- **Pass Criterion**: `abs(UI_Value - DB_Record) <= 1`。若偏离超过 1 单位，必须记录 `Precision Error`。
+
+### 5.2 并发拦截标准
+- **UI 状态**: 点击后 100ms 内必须进入 `loading` 或 `disabled` 状态。
+- **网络层**: 使用 Minium 拦截 `request`，确保同一操作在同一生命周期内仅发出一次有效 API 调用。
+
+## 6. 执行指令 (Execution)
 
 ```bash
 # 执行全量自修复能力测试

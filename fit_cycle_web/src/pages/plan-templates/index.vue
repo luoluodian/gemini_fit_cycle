@@ -13,7 +13,7 @@
     </template>
 
     <!-- 2. 中间内容区：日模板列表 (Flex-1 + Scroll) -->
-    <view class="flex-1 min-h-0 flex flex-col p-4 h-full">
+    <view class="flex-1 min-h-0 flex flex-col pt-0 px-0 pb-4 h-full">
       <TemplateManagementStep
         :templates="planData.planDays"
         :basic-info="planData"
@@ -108,8 +108,27 @@ const handleAddTemplate = async () => {
   }
 };
 
-const handleCopyTemplate = async () => {
-  showError("克隆功能开发中");
+const handleCopyTemplate = async (index: number) => {
+  if (planData.value.planDays.length >= planData.value.cycleDays) {
+    Taro.showToast({ title: "已达到周期天数上限", icon: "none" });
+    return;
+  }
+
+  const sourceDay = planData.value.planDays[index];
+  if (!sourceDay) return;
+
+  try {
+    // 构造复制后的列表
+    const newList = [...planData.value.planDays];
+    const copiedDay = JSON.parse(JSON.stringify(sourceDay));
+    // 插入到当前项之后
+    newList.splice(index + 1, 0, copiedDay);
+    
+    await convertAndSave(newList);
+    showSuccess("复制成功");
+  } catch (e) {
+    showError("复制失败");
+  }
 };
 
 const handleDeleteTemplate = async (index: number) => {
@@ -121,25 +140,88 @@ const handleDeleteTemplate = async (index: number) => {
     return;
   }
 
+  Taro.showModal({
+    title: '确认删除',
+    content: `确定要删除第 ${index + 1} 天的模板吗？`,
+    success: async (res) => {
+      if (res.confirm) {
+        try {
+          showLoading("正在删除...");
+          await planService.removePlanDay(day.id);
+          loadData();
+        } catch (e) {
+          showError("删除失败");
+        }
+      }
+    }
+  });
+};
+
+const handleMoveTemplate = async (fromIndex: number, direction: 'up' | 'down') => {
+  const toIndex = direction === 'up' ? fromIndex - 1 : fromIndex + 1;
+  if (toIndex < 0 || toIndex >= planData.value.planDays.length) return;
+
   try {
-    showLoading("正在删除...");
-    await planService.removePlanDay(day.id);
-    loadData();
+    const newList = [...planData.value.planDays];
+    const item = newList.splice(fromIndex, 1)[0];
+    newList.splice(toIndex, 0, item);
+    
+    await convertAndSave(newList);
+    showSuccess("移动成功");
   } catch (e) {
-    showError("删除失败");
+    showError("移动失败");
   }
 };
 
-const handleMoveTemplate = () => {
-  showError("移动功能开发中");
+const convertAndSave = async (newList: any[]) => {
+  // 转换 DTO 格式并重新编号
+  const templates = newList.map((day, i) => ({
+    dayNumber: i + 1,
+    carbType: day.carbType,
+    targetCalories: day.targetCalories || 0,
+    targetProtein: day.targetProtein || 0,
+    targetFat: day.targetFat || 0,
+    targetCarbs: day.targetCarbs || 0,
+    meals: day.planMeals?.map((meal: any) => ({
+      mealTypeId: meal.mealType?.id || meal.mealTypeId,
+      scheduledTime: meal.scheduledTime,
+      note: meal.note,
+      items: meal.mealItems?.map((item: any) => ({
+        foodItemId: item.foodItemId,
+        customName: item.customName,
+        quantity: item.quantity,
+        unit: item.unit,
+        calories: item.calories,
+        protein: item.protein,
+        fat: item.fat,
+        carbs: item.carbs,
+        fiber: item.fiber,
+        sortOrder: item.sortOrder
+      })) || []
+    })) || []
+  }));
+
+  showLoading("同步配置...");
+  await planService.savePlanTemplates(planId, { templates });
+  await loadData();
 };
 
 const handleLongPress = (index: number) => {
-  const options = ["删除该天"];
+  const total = planData.value.planDays.length;
+  const options = ["复制该天"];
+  
+  if (index > 0) options.push("向上移动");
+  if (index < total - 1) options.push("向下移动");
+  options.push("删除该天");
+
   Taro.showActionSheet({
     itemList: options,
     success: (res) => {
-      if (res.tapIndex === 0) handleDeleteTemplate(index);
+      const selected = options[res.tapIndex];
+      if (selected === "复制该天") handleCopyTemplate(index);
+      else if (selected === "向上移动") handleMoveTemplate(index, 'up');
+      else if (selected === "向下移动") handleMoveTemplate(index, 'down');
+      else if (selected === "删除该天") handleDeleteTemplate(index);
     },
   });
 };

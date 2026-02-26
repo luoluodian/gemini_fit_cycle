@@ -82,6 +82,7 @@
       <PlanDailyMealCard
         :meal-order="mealOrder"
         :meals="localTemplate.meals"
+        :custom-labels="localTemplate.customLabels"
         :show-add-button="isCarbCycle"
         @edit-meal="goToMealConfig"
         @delete-food="handleDeleteFood"
@@ -112,31 +113,33 @@
     <BaseModal
       :visible="showAddMealModal"
       title="新增餐次"
+      content-class="w-[80vw] max-w-[600rpx]"
+      body-class="p-0"
       @close="showAddMealModal = false"
     >
-      <view class="p-4">
+      <view class="p-6" @touchmove.stop.prevent>
         <view class="mb-6">
-          <text class="text-xs font-black text-gray-400 block mb-2"
-            >餐次名称</text
+          <text class="text-[20rpx] font-black text-gray-400 block mb-2"
+            >餐次名称 (最多5字)</text
           >
           <input
             type="text"
             v-model="newMealName"
-            maxlength="10"
-            class="w-full h-12 px-4 bg-gray-50 border border-solid border-gray-100 rounded-xl text-base font-black text-gray-800"
-            placeholder="例如：训练后补充、夜宵"
+            maxlength="5"
+            class="w-full h-11 px-4 bg-gray-50 border border-solid border-gray-100 rounded-xl text-base font-black text-gray-800 focus:border-emerald-500/50 transition-colors"
+            placeholder="例如：练后补"
             focus
           />
         </view>
         <view class="flex space-x-3">
           <view
             @click="showAddMealModal = false"
-            class="flex-1 py-3 bg-gray-100 text-gray-500 rounded-xl font-black text-center text-sm"
+            class="flex-1 py-3 bg-gray-100 text-gray-500 rounded-xl font-black text-center text-sm active:bg-gray-200 transition-colors"
             >取消</view
           >
           <view
             @click="confirmAddMeal"
-            class="flex-1 py-3 bg-emerald-600 text-white rounded-xl font-black text-center text-sm shadow-md"
+            class="flex-1 py-3 bg-emerald-600 text-white rounded-xl font-black text-center text-sm shadow-md active:bg-emerald-700 transition-colors"
             >确认添加</view
           >
         </view>
@@ -251,6 +254,7 @@ const fetchDetail = async () => {
     // 结构适配：后端数组 -> 前端 UI 对象
     const mealsObj: any = { breakfast: [], lunch: [], dinner: [], snacks: [] };
     const order: string[] = [];
+    const labels: Record<string, string> = {};
 
     if (dayData.planMeals) {
       dayData.planMeals.forEach((m: any) => {
@@ -262,6 +266,10 @@ const fetchDetail = async () => {
         };
         const key = typeMap[m.mealType?.id] || `custom_${m.id}`;
         order.push(key);
+        // 如果是自定义餐次且有 note，记录为 label
+        if (!typeMap[m.mealType?.id] && m.note) {
+          labels[key] = m.note;
+        }
         mealsObj[key] =
           m.mealItems?.map((mi: any) => ({
             name: mi.customName,
@@ -275,7 +283,7 @@ const fetchDetail = async () => {
       });
     }
 
-    localTemplate.value = { ...dayData, meals: mealsObj };
+    localTemplate.value = { ...dayData, meals: mealsObj, customLabels: labels };
     if (order.length > 0) mealOrder.value = order;
   } catch (e) {
     showError("加载失败");
@@ -294,8 +302,17 @@ useDidShow(() => {
   if (planStore.currentMealType && planStore.templates[0]?.meals) {
     const mealType = planStore.currentMealType;
     const updatedFoods = planStore.templates[0].meals[mealType];
-    if (updatedFoods && localTemplate.value) {
-      localTemplate.value.meals[mealType] = [...updatedFoods];
+    const updatedLabels = planStore.templates[0].customLabels;
+
+    if (localTemplate.value) {
+      if (updatedFoods) {
+        localTemplate.value.meals[mealType] = [...updatedFoods];
+      }
+      if (updatedLabels && updatedLabels[mealType]) {
+        if (!localTemplate.value.customLabels)
+          localTemplate.value.customLabels = {};
+        localTemplate.value.customLabels[mealType] = updatedLabels[mealType];
+      }
       saveToCache(localTemplate.value);
     }
     planStore.currentMealType = "";
@@ -357,6 +374,7 @@ const handleSave = async () => {
     const typeIdMap: any = { breakfast: 1, lunch: 2, dinner: 3, snacks: 4 };
     const mealsDto = mealOrder.value.map((key) => ({
       mealTypeId: typeIdMap[key] || 4,
+      note: localTemplate.value.customLabels?.[key] || "",
       items: (localTemplate.value.meals[key] || []).map((f: any) => ({
         customName: f.name,
         quantity: f.quantity,
@@ -397,12 +415,54 @@ const handleShowMenu = () => {
 };
 
 const handleMealMenu = (mealType: string) => {
-  const options = ["清空食材"];
+  const options = ["清空食材", "复制该餐次", "删除该餐次"];
   Taro.showActionSheet({
     itemList: options,
     success: (res) => {
-      if (res.tapIndex === 0) localTemplate.value.meals[mealType] = [];
+      if (res.tapIndex === 0) {
+        localTemplate.value.meals[mealType] = [];
+      } else if (res.tapIndex === 1) {
+        handleCopyMeal(mealType);
+      } else if (res.tapIndex === 2) {
+        handleDeleteMeal(mealType);
+      }
     },
+  });
+};
+
+const handleCopyMeal = (mealType: string) => {
+  const foods = localTemplate.value.meals[mealType];
+  const newKey = `custom_${Date.now()}`;
+  const label = (localTemplate.value.customLabels?.[mealType] || "未命名") + " 副本";
+  
+  localTemplate.value.meals[newKey] = JSON.parse(JSON.stringify(foods));
+  if (!localTemplate.value.customLabels) localTemplate.value.customLabels = {};
+  localTemplate.value.customLabels[newKey] = label.slice(0, 5);
+  
+  const idx = mealOrder.value.indexOf(mealType);
+  mealOrder.value.splice(idx + 1, 0, newKey);
+  showSuccess("已复制餐次");
+};
+
+const handleDeleteMeal = (mealType: string) => {
+  const standardMeals = ["breakfast", "lunch", "dinner", "snacks"];
+  if (standardMeals.includes(mealType)) {
+    Taro.showToast({ title: "标准餐次只能清空，不能删除", icon: "none" });
+    return;
+  }
+  
+  Taro.showModal({
+    title: "确认删除",
+    content: "确定要删除该自定义餐次吗？",
+    success: (res) => {
+      if (res.confirm) {
+        delete localTemplate.value.meals[mealType];
+        if (localTemplate.value.customLabels) delete localTemplate.value.customLabels[mealType];
+        const idx = mealOrder.value.indexOf(mealType);
+        if (idx > -1) mealOrder.value.splice(idx, 1);
+        showSuccess("已删除餐次");
+      }
+    }
   });
 };
 
@@ -419,7 +479,7 @@ const confirmAddMeal = () => {
   localTemplate.value.meals[mealKey] = [];
   mealOrder.value.push(mealKey);
   if (!localTemplate.value.customLabels) localTemplate.value.customLabels = {};
-  localTemplate.value.customLabels[mealKey] = name;
+  localTemplate.value.customLabels[mealKey] = name.slice(0, 5);
   showAddMealModal.value = false;
 };
 </script>
