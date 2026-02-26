@@ -172,6 +172,16 @@ function formatPlans(plans: any[]) {
       description = `创建时间：${formatDate(plan.createdAt)}`;
       targets = `目标：未正式开启`;
       progressColor = "#9ca3af";
+    } else if (plan.status === "configured") {
+      tags.push("已就绪", "待开启");
+      const typeMap: any = {
+        "fat-loss": "减脂",
+        "muscle-gain": "增肌",
+        "carb-cycle": "碳循环",
+      };
+      description = `类型：${typeMap[plan.type] || plan.type} | ${plan.cycleDays}天 × ${plan.cycleCount}周期`;
+      targets = `目标热量：${plan.targetCalories || 0} ${displayUnit('kcal')}`;
+      progressColor = "#10b981";
     } else if (plan.status === "paused") {
       tags.push("暂停中");
       description = `剩余：${calculateDaysLeft(plan.endDate)}天`;
@@ -185,18 +195,13 @@ function formatPlans(plans: any[]) {
       type: "view",
       class: "flex-1 bg-emerald-600 text-white hover:bg-emerald-700",
     });
-    if (plan.status === "paused") {
+    if (plan.status === "paused" || plan.status === "configured") {
       actions.push({
         label: "激活",
         type: "activate",
         class: "bg-blue-100 text-blue-700",
       });
     }
-    actions.push({
-      label: "⋮",
-      type: "menu",
-      class: "bg-gray-100 text-gray-700",
-    });
 
     return {
       ...plan,
@@ -339,7 +344,8 @@ const handlePlanAction = async (type: string, planId: string | number) => {
             });
           }
         },
-      });
+        fail: () => {},
+      }).catch(() => {});
       break;
   }
 };

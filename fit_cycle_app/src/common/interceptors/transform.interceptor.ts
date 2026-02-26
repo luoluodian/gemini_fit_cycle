@@ -37,7 +37,12 @@ export class TransformInterceptor implements NestInterceptor {
         }
 
         // 2. 已经是包装好的格式（比如异常过滤器返回）
-        if (data && typeof data === 'object' && 'code' in data) {
+        if (
+          data &&
+          typeof data === 'object' &&
+          typeof (data as any).code === 'number' &&
+          ('message' in data || 'data' in data)
+        ) {
           return data;
         }
 

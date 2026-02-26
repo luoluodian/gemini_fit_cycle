@@ -411,7 +411,8 @@ const handleShowMenu = () => {
         navigateBack();
       }
     },
-  });
+    fail: () => {},
+  }).catch(() => {});
 };
 
 const handleMealMenu = (mealType: string) => {
@@ -427,7 +428,8 @@ const handleMealMenu = (mealType: string) => {
         handleDeleteMeal(mealType);
       }
     },
-  });
+    fail: () => {},
+  }).catch(() => {});
 };
 
 const handleCopyMeal = (mealType: string) => {

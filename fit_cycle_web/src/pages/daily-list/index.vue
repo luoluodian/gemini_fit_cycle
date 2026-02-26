@@ -251,9 +251,8 @@ const handleToggleSortOrder = () => {
 };
 
 const handleEditDay = (_dayId: string) => {
-  // TODO: 跳转到每日计划页面
-  // navigateTo(ROUTES.DAILY_PLAN, { planId: planId.value, dayId });
-  showError("每日计划页面开发中...");
+  // TODO: 跳转到编辑页面
+  showError("该功能开发中...");
 };
 
 const handleCopyDay = (dayId: string) => {

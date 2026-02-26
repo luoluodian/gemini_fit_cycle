@@ -20,7 +20,6 @@ export const ROUTES = {
 
   // 饮食记录与日程
   DAILY_LIST: "/pages/daily-list/index",
-  DAILY_PLAN: "/pages/daily-plan/index",
   RECORD_LIST: "/pages/record/list/index",
   RECORD_DETAIL: "/pages/record/detail/index",
   RECORD_CREATE: "/pages/record/create/index",

@@ -3,15 +3,18 @@
     v-if="plan"
     :title="plan.name"
   >
-    <template #nav-right>
-      <view
-        @click="handleShowOptions"
-        class="w-10 h-10 flex items-center justify-center rounded-xl active:bg-black/5 transition-colors"
-      >
-        <view class="flex flex-col space-y-0.5 items-center">
-          <view class="w-1 h-1 rounded-full bg-gray-400"></view>
-          <view class="w-1 h-1 rounded-full bg-gray-400"></view>
-          <view class="w-1 h-1 rounded-full bg-gray-400"></view>
+    <template #nav-left>
+      <view class="flex items-center">
+        <!-- 1. 更多操作菜单 -->
+        <view
+          @click="handleShowOptions"
+          class="w-10 h-10 flex items-center justify-center rounded-xl active:bg-black/5 transition-colors -ml-2"
+        >
+          <view class="flex flex-col space-y-0.5 items-center">
+            <view class="w-1 h-1 rounded-full bg-gray-400"></view>
+            <view class="w-1 h-1 rounded-full bg-gray-400"></view>
+            <view class="w-1 h-1 rounded-full bg-gray-400"></view>
+          </view>
         </view>
       </view>
     </template>
@@ -74,30 +77,6 @@
               class="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-full transition-all duration-1000"
               :style="{ width: progressPercent + '%' }"
             ></view>
-          </view>
-
-          <!-- 查看今日快捷按钮 -->
-          <view
-            v-if="plan.status === 'active'"
-            class="mb-5 px-4 py-3 bg-emerald-600 rounded-2xl flex items-center justify-between active:opacity-80 transition-all shadow-md shadow-emerald-100"
-            @click="handleViewToday"
-          >
-            <view class="flex items-center">
-              <view
-                class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center mr-3"
-              >
-                <text class="text-white text-sm">📅</text>
-              </view>
-              <view>
-                <text class="text-white text-sm font-black block"
-                  >查看今日任务</text
-                >
-                <text class="text-white/60 text-[18rpx] font-bold"
-                  >点击进入第 {{ plan.completedDays + 1 }} 天配置</text
-                >
-              </view>
-            </view>
-            <Right font-size="18" color="rgba(255, 255, 255, 0.5)" />
           </view>
 
           <!-- 计划日程 (周期分组) -->
@@ -322,7 +301,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
 import Taro, { useRouter } from "@tarojs/taro";
-import { Right } from "@nutui/icons-vue-taro";
+import { Right, Left } from "@nutui/icons-vue-taro";
 import { navigateTo, navigateBack, ROUTES } from "@/router";
 import PageLayout from "@/components/common/PageLayout.vue";
 import GlassCard from "@/components/common/GlassCard.vue";
@@ -543,7 +522,8 @@ const handleShowOptions = () => {
           break;
       }
     },
-  });
+    fail: () => {},
+  }).catch(() => {});
 };
 
 const handleShare = async () => {
@@ -572,8 +552,8 @@ const handleShare = async () => {
 
 const handleEditPlan = () => {
   if (!plan.value) return;
-  // 直接跳转到 plan-templates 页，复用配置流程
-  navigateTo(ROUTES.PLAN_TEMPLATES, { id: String(planId) });
+  // 返回到向导第一步，允许修改基本信息和碳循环参数
+  navigateTo(ROUTES.PLAN_CREATOR, { id: String(planId) });
 };
 
 const handleActivate = async () => {
@@ -638,14 +618,6 @@ const handleViewDay = (c: number, d: number) => {
   } else {
     showError("未找到该天数据");
   }
-};
-
-const handleViewToday = () => {
-  const todayDayNumber = (plan.value?.completedDays || 0) + 1;
-  navigateTo(ROUTES.DAILY_PLAN, { 
-    planId: String(planId), 
-    day: String(todayDayNumber) 
-  });
 };
 </script>
 

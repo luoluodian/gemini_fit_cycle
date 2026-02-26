@@ -9,7 +9,6 @@ export default {
     "pages/edit-template/index",
     "pages/meal-config/index",
     "pages/daily-list/index",
-    "pages/daily-plan/index",
     "pages/food/index",
     "pages/profile/index",
     "pages/plan-detail/index",

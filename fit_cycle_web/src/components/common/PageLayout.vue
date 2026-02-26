@@ -11,6 +11,9 @@
         :manual-handle-back="manualHandleBack"
         @back="$emit('back')"
       >
+        <template #left v-if="$slots['nav-left']">
+          <slot name="nav-left" />
+        </template>
         <template #right>
           <slot name="nav-right" />
         </template>

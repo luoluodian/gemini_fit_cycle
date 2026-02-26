@@ -223,7 +223,8 @@ const handleLongPress = (index: number) => {
       else if (selected === "向下移动") handleMoveTemplate(index, 'down');
       else if (selected === "删除该天") handleDeleteTemplate(index);
     },
-  });
+    fail: () => {},
+  }).catch(() => {});
 };
 
 const handleSave = async () => {

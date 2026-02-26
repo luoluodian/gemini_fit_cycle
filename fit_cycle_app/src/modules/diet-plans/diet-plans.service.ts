@@ -670,7 +670,7 @@ export class DietPlansService {
         targetFat: originalPlan.targetFat,
         targetCarbs: originalPlan.targetCarbs,
         userId,
-        status: PlanStatus.DRAFT,
+        status: PlanStatus.CONFIGURED,
         isTemplate: false
       });
       const savedPlan = await queryRunner.manager.save(newPlan);
