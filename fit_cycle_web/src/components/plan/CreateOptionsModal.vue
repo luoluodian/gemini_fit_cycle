@@ -28,19 +28,7 @@
           <view
             class="w-12 h-12 bg-emerald-500 rounded-2xl flex items-center justify-center mr-4 shadow-emerald-200 shadow-md flex-shrink-0"
           >
-            <svg
-              class="w-6 h-6 text-white"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-              ></path>
-            </svg>
+            <Plus font-size="24" color="#ffffff" />
           </view>
           <view class="text-left flex-1 min-w-0">
             <text class="block font-bold text-gray-900 text-base mb-0.5"
@@ -50,19 +38,7 @@
               >从零开始制定个性化饮食计划</text
             >
           </view>
-          <svg
-            class="w-5 h-5 text-emerald-300 ml-2"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M9 5l7 7-7 7"
-            ></path>
-          </svg>
+          <Right font-size="20" color="#6ee7b7" />
         </view>
 
         <!-- 导入计划 -->
@@ -73,19 +49,7 @@
           <view
             class="w-12 h-12 bg-blue-500 rounded-2xl flex items-center justify-center mr-4 shadow-blue-200 shadow-md flex-shrink-0"
           >
-            <svg
-              class="w-6 h-6 text-white"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-              ></path>
-            </svg>
+            <Uploader font-size="24" color="#ffffff" />
           </view>
           <view class="text-left flex-1 min-w-0">
             <text class="block font-bold text-gray-900 text-base mb-0.5"
@@ -95,19 +59,7 @@
               >使用分享码快速同步他人计划</text
             >
           </view>
-          <svg
-            class="w-5 h-5 text-blue-300 ml-2"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M9 5l7 7-7 7"
-            ></path>
-          </svg>
+          <Right font-size="20" color="#93c5fd" />
         </view>
       </view>
     </view>
@@ -116,7 +68,7 @@
 
 <script setup lang="ts">
 import BaseModal from "../common/BaseModal.vue";
-import { Close } from "@nutui/icons-vue-taro";
+import { Close, Plus, Uploader, Right } from "@nutui/icons-vue-taro";
 
 interface Props {
   visible: boolean;

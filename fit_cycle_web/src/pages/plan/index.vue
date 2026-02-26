@@ -105,6 +105,7 @@ import { usePlanStore } from "@/stores/plan";
 import { planService } from "@/services";
 import { PlanStatus } from "@/types/plan";
 import { Uploader } from "@nutui/icons-vue-taro";
+import { displayUnit } from "@/utils";
 
 type TabType = "active" | "completed";
 
@@ -165,7 +166,7 @@ function formatPlans(plans: any[]) {
         "carb-cycle": "碳循环",
       };
       description = `类型：${typeMap[plan.type] || plan.type} | 剩余：${calculateDaysLeft(plan.endDate)}天`;
-      targets = `目标热量：${plan.targetCalories || 0} kcal`;
+      targets = `目标热量：${plan.targetCalories || 0} ${displayUnit('kcal')}`;
     } else if (plan.status === "draft") {
       tags.push("草稿", "待配置");
       description = `创建时间：${formatDate(plan.createdAt)}`;
@@ -174,7 +175,7 @@ function formatPlans(plans: any[]) {
     } else if (plan.status === "paused") {
       tags.push("暂停中");
       description = `剩余：${calculateDaysLeft(plan.endDate)}天`;
-      targets = `目标热量：${plan.targetCalories || 0} kcal`;
+      targets = `目标热量：${plan.targetCalories || 0} ${displayUnit('kcal')}`;
       progressColor = "#f59e0b";
     }
 

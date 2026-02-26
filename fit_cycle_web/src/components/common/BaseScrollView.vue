@@ -18,21 +18,9 @@
       <slot name="empty">
         <view class="flex flex-col items-center">
           <view
-            class="w-[120rpx] h-[120rpx] bg-gray-50 rounded-full flex items-center justify-center mb-6"
+            class="w-[120rpx] h-[120rpx] bg-emerald-50/50 rounded-full flex items-center justify-center mb-6"
           >
-            <svg
-              class="w-10 h-10 text-gray-200"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="1.5"
-                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-              ></path>
-            </svg>
+            <Order font-size="36" color="#d1d5db" />
           </view>
           <text class="text-sm text-gray-400 font-medium">{{ emptyText }}</text>
         </view>
@@ -42,6 +30,7 @@
     <!-- 2. 正式内容区域 -->
     <view
       v-else
+      class="scroll-content-wrapper"
       :class="[
         scrollX
           ? 'inline-flex min-w-full h-full align-top'
@@ -51,9 +40,9 @@
     >
       <slot></slot>
 
-      <!-- 3. 上拉加载状态区 (仅纵向滚动且非空时显示) -->
+      <!-- 3. 上拉加载状态区 (仅在有状态需要反馈时显示) -->
       <view
-        v-if="scrollY && !isEmpty"
+        v-if="scrollY && !isEmpty && (loading || finished)"
         class="py-5 flex items-center justify-center gap-3"
       >
         <template v-if="loading">
@@ -76,6 +65,7 @@
 
 <script setup lang="ts">
 import { computed, type CSSProperties } from "vue";
+import { Order } from "@nutui/icons-vue-taro";
 
 interface Props {
   height?: string | number;
@@ -113,9 +103,10 @@ const emit = defineEmits<{
 }>();
 
 const formatSize = (size: string | number | undefined | null) => {
-  if (size === undefined || size === null) return "";
+  if (size === undefined || size === null || size === "") return "";
   if (typeof size === "number") {
-    return isNaN(size) ? "0" : `${size}rpx`;
+    if (size === 0 || isNaN(size)) return "0px";
+    return `${size}rpx`;
   }
   return size;
 };
@@ -127,10 +118,10 @@ const scrollStyle = computed<CSSProperties>(() => {
     whiteSpace: props.scrollX ? "nowrap" : "normal",
   };
 
-  // 核心修复：如果是纵向滚动且没有显式指定高度，使用 flex:1 确保高度继承
   if (props.scrollY && props.height === "100%") {
     styles.flex = "1";
-    styles.minHeight = "0";
+    styles.minHeight = "0px";
+    styles.height = "100%";
   } else {
     styles.height = formatSize(props.height);
   }

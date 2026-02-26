@@ -78,6 +78,7 @@ import ImportPlanCard from "@/components/profile/ImportPlanCard.vue";
 import BMRCalculatorModal from "@/components/profile/BMRCalculatorModal.vue";
 import AboutModal from "@/components/profile/AboutModal.vue";
 import ImportPlanModal from "@/components/profile/ProfileImportPlanModal.vue";
+import { displayUnit } from "@/utils";
 import "./index.scss";
 
 const userStore = useUserStore();
@@ -113,9 +114,9 @@ const currentPlan = ref({
 });
 
 const weeklyStats = ref({
-  averageIntake: "1,650",
+  averageIntake: `1,650 ${displayUnit('kcal')}`,
   daysMet: 5,
-  weeklyChange: "-0.5kg",
+  weeklyChange: `-0.5${displayUnit('kg')}`,
 });
 
 // 模态框状态

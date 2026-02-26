@@ -20,7 +20,7 @@
               foods.length > 0 ? 'text-emerald-600' : 'text-gray-400',
             ]"
           >
-            {{ foods.length > 0 ? foods.length + " 个食物" : "未配置" }}
+            {{ foods.length > 0 ? foods.length + " 个食材" : "未配置" }}
           </text>
         </view>
       </view>

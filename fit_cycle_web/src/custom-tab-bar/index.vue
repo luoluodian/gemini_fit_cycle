@@ -10,24 +10,16 @@
       @click="switchTabAction(index, item.pagePath)"
     >
       <!-- Home Icon -->
-      <svg v-if="index === 0" class="w-5 h-5 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
-      </svg>
+      <Home v-if="index === 0" font-size="20" class="mb-1" />
       
       <!-- Plan Icon -->
-      <svg v-if="index === 1" class="w-5 h-5 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
-      </svg>
+      <Horizontal v-if="index === 1" font-size="20" class="mb-1" />
       
       <!-- Food Icon -->
-      <svg v-if="index === 2" class="w-5 h-5 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
-      </svg>
+      <Category v-if="index === 2" font-size="20" class="mb-1" />
       
       <!-- User Icon -->
-      <svg v-if="index === 3" class="w-5 h-5 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-      </svg>
+      <People v-if="index === 3" font-size="20" class="mb-1" />
 
       <text class="text-xs">{{ item.text }}</text>
     </view>
@@ -38,6 +30,7 @@
 import { computed } from 'vue';
 import { switchTab, ROUTES } from '@/router';
 import { useNavigationStore } from '@/stores/navigation';
+import { Home, Horizontal, Category, People } from '@nutui/icons-vue-taro';
 
 const navStore = useNavigationStore();
 const selected = computed(() => navStore.activeTab);

@@ -2,44 +2,20 @@
   <view class="glass-card rounded-lg p-4 mb-6 shadow-lg">
     <view class="flex items-center justify-between">
       <view
-        class="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors flex items-center justify-center"
+        class="p-2 rounded-lg bg-gray-100 active:bg-gray-200 transition-colors flex items-center justify-center"
         @click="handlePrevDate"
       >
-        <svg
-          class="w-5 h-5 text-gray-600"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M15 19l-7-7 7-7"
-          ></path>
-        </svg>
+        <Left font-size="18" color="#4b5563" />
       </view>
       <view class="text-center">
         <view class="text-lg font-semibold text-gray-800">{{ dateText }}</view>
         <view class="text-sm text-gray-500">{{ planText }}</view>
       </view>
       <view
-        class="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors flex items-center justify-center"
+        class="p-2 rounded-lg bg-gray-100 active:bg-gray-200 transition-colors flex items-center justify-center"
         @click="handleNextDate"
       >
-        <svg
-          class="w-5 h-5 text-gray-600"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M9 5l7 7-7 7"
-          ></path>
-        </svg>
+        <Right font-size="18" color="#4b5563" />
       </view>
     </view>
   </view>
@@ -47,6 +23,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
+import { Left, Right } from "@nutui/icons-vue-taro";
 
 interface PlanInfo {
   planName: string;

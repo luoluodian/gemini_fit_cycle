@@ -46,16 +46,7 @@ import { computed } from "vue";
 import GlassCard from "./GlassCard.vue";
 import FoodItemCard from "../food/FoodItemCard.vue";
 import { displayUnit } from "@/utils";
-
-interface Food {
-  name: string;
-  quantity: number;
-  unit: string;
-  calories: number;
-  protein: number;
-  fat: number;
-  carbs: number;
-}
+import { Food } from "@/services/modules/record";
 
 const props = defineProps<{
   mealName: string;

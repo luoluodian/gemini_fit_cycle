@@ -27,7 +27,9 @@
               <text class="text-base font-black text-emerald-700 block">{{
                 Math.round(totalStats.calories)
               }}</text>
-              <text class="text-[14rpx] text-emerald-400 font-bold">{{ displayUnit('kcal') }}</text>
+              <text class="text-[14rpx] text-emerald-400 font-bold">{{
+                displayUnit("kcal")
+              }}</text>
             </view>
             <view
               class="bg-blue-50/50 rounded-xl p-2 border border-solid border-blue-100"
@@ -38,7 +40,9 @@
               <text class="text-base font-black text-blue-700 block">{{
                 totalStats.protein.toFixed(1)
               }}</text>
-              <text class="text-[14rpx] text-blue-400 font-bold">{{ displayUnit('g') }}</text>
+              <text class="text-[14rpx] text-blue-400 font-bold">{{
+                displayUnit("g")
+              }}</text>
             </view>
             <view
               class="bg-yellow-50/50 rounded-xl p-2 border border-solid border-yellow-100"
@@ -49,7 +53,9 @@
               <text class="text-base font-black text-yellow-700 block">{{
                 totalStats.carbs.toFixed(1)
               }}</text>
-              <text class="text-[14rpx] text-yellow-400 font-bold">{{ displayUnit('g') }}</text>
+              <text class="text-[14rpx] text-yellow-400 font-bold">{{
+                displayUnit("g")
+              }}</text>
             </view>
             <view
               class="bg-red-50/50 rounded-xl p-2 border border-solid border-red-100"
@@ -60,35 +66,37 @@
               <text class="text-base font-black text-red-700 block">{{
                 totalStats.fat.toFixed(1)
               }}</text>
-              <text class="text-[14rpx] text-red-400 font-bold">{{ displayUnit('g') }}</text>
+              <text class="text-[14rpx] text-red-400 font-bold">{{
+                displayUnit("g")
+              }}</text>
             </view>
           </view>
         </GlassCard>
       </view>
     </template>
 
-    <!-- 2. 中间内容区：食物列表 (Flex-1 + Scroll) -->
-    <view
-      class="flex-1 min-h-0 flex flex-col px-4 pt-3 pb-4 overflow-hidden h-full"
-    >
+    <!-- 2. 中间内容区：食物列表 (锁定高度 + 内部滑动) -->
+    <view class="flex-shrink-0 flex flex-col pt-3 overflow-hidden h-[950rpx]">
       <GlassCard
         background="#ffffff"
-        card-class="border-[1rpx] border-solid border-gray-200 flex-1 flex flex-col min-h-0 h-full"
+        card-class="flex-1 flex flex-col min-h-0 w-full overflow-hidden border-[1rpx] border-solid border-gray-200"
         :border="false"
       >
         <view class="flex items-center justify-between mb-4 flex-shrink-0">
-          <h3 class="text-sm font-black text-gray-800 flex items-center">
-            <view class="w-1.5 h-3.5 bg-orange-500 rounded-full mr-2"></view>
-            已选食材清单
-          </h3>
+          <view class="flex items-center gap-2">
+            <view class="w-1.5 h-3.5 bg-emerald-500 rounded-full"></view>
+            <text class="text-sm font-black text-gray-700">已选食材清单</text>
+          </view>
           <text
             class="text-[18rpx] text-gray-300 font-black uppercase tracking-widest"
-            >{{ foods.length }} 个食物</text
+            >共 {{ foods.length }} 个食材</text
           >
         </view>
 
         <BaseScrollView
-          content-class="pb-4"
+          content-class="pr-2 space-y-2 pb-4"
+          scroll-view-class="flex-1 min-h-0"
+          height="100%"
         >
           <!-- 1. 列表有内容时的展示模式 -->
           <template v-if="foods.length > 0">

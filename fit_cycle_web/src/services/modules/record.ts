@@ -6,6 +6,21 @@
 import { httpRequest } from "../http";
 
 /**
+ * 通用食物展示接口 (用于组件 Prop 与展示)
+ */
+export interface Food {
+  id?: number | string;
+  foodId?: number | string;
+  name: string;
+  quantity: number;
+  unit: string;
+  calories: number;
+  protein: number;
+  fat: number;
+  carbs: number;
+}
+
+/**
  * 每日记录总表快照 (对齐后端 DailyRecord 实体)
  */
 export interface DailyRecord {

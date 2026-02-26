@@ -77,13 +77,12 @@
 
     <!-- 2. 中间内容区：当日餐单 (Flex-1 + Scroll) -->
     <view
-      class="flex-1 min-h-0 flex flex-col p-4 animate-fade-in-up delay-200 h-full"
+      class="flex-1 min-h-0 flex flex-col pt-4 animate-fade-in-up delay-200"
     >
       <PlanDailyMealCard
         :meal-order="mealOrder"
         :meals="localTemplate.meals"
         :show-add-button="isCarbCycle"
-        :flex="true"
         @edit-meal="goToMealConfig"
         @delete-food="handleDeleteFood"
         @add-meal="handleShowAddMeal"

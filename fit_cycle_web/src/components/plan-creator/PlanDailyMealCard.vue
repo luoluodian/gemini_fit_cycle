@@ -2,26 +2,29 @@
   <GlassCard
     background="#ffffff"
     :card-class="[
-      'border-[1rpx] border-solid border-gray-200 flex flex-col min-h-0',
-      flex ? 'flex-1 h-full' : '',
-    ]"
+      'border-[1rpx] border-solid border-gray-200 flex flex-col min-h-0 w-full overflow-hidden',
+      flex ? 'flex-1' : 'h-[750rpx]',
+    ].join(' ')"
     :border="false"
   >
     <!-- 头部 -->
     <view class="flex items-center justify-between mb-4 flex-shrink-0">
-      <view class="flex items-center">
-        <view class="w-1 h-4 bg-orange-500 rounded-full mr-2"></view>
-        <text class="text-sm font-black text-gray-800">当日餐单</text>
+      <view class="flex items-center gap-2">
+        <view class="w-1.5 h-3.5 bg-emerald-500 rounded-full"></view>
+        <text class="text-sm font-black text-gray-700">当日餐单</text>
       </view>
-      <text class="text-[16rpx] text-gray-300 font-black">
-        {{ totalFoodsCount }} 个食物
+      <text
+        class="text-[18rpx] text-gray-300 font-black uppercase tracking-widest"
+      >
+        共 {{ totalFoodsCount }} 个食材
       </text>
     </view>
 
     <!-- 滚动列表 -->
     <BaseScrollView
-      :height="flex ? undefined : maxHeight"
+      :height="flex ? '100%' : maxHeight"
       content-class="pb-1"
+      scroll-view-class="flex-1 min-h-0"
     >
       <MealSection
         v-for="meal in mealOrder"

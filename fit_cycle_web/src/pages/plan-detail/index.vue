@@ -2,7 +2,6 @@
   <PageLayout
     v-if="plan"
     :title="plan.name"
-    :subtitle="typeLabel + '计划 · 共 ' + totalDays + ' 天'"
   >
     <template #nav-right>
       <view
@@ -98,19 +97,7 @@
                 >
               </view>
             </view>
-            <svg
-              class="w-5 h-5 text-white/50"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M9 5l7 7-7 7"
-              ></path>
-            </svg>
+            <Right font-size="18" color="rgba(255, 255, 255, 0.5)" />
           </view>
 
           <!-- 计划日程 (周期分组) -->
@@ -124,7 +111,7 @@
               }}</text>
             </view>
 
-            <view class="space-y-4 max-h-[600rpx] overflow-y-auto pr-1">
+            <view class="space-y-4 pr-1">
               <view
                 v-for="c in plan.cycleCount"
                 :key="c"
@@ -335,6 +322,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
 import Taro, { useRouter } from "@tarojs/taro";
+import { Right } from "@nutui/icons-vue-taro";
 import { navigateTo, navigateBack, ROUTES } from "@/router";
 import PageLayout from "@/components/common/PageLayout.vue";
 import GlassCard from "@/components/common/GlassCard.vue";

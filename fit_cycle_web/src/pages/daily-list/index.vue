@@ -26,19 +26,7 @@
         class="p-2 rounded-lg hover:bg-gray-100 transition-colors bg-white cursor-pointer flex items-center justify-center"
         @click="handleToggleSortOrder"
       >
-        <svg
-          class="w-5 h-5 text-gray-600"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"
-          ></path>
-        </svg>
+        <Sort font-size="18" color="#4b5563" />
       </view>
     </view>
 
@@ -78,19 +66,7 @@
         class="w-12 h-12 rounded-full flex items-center justify-center text-white shadow-lg transition-all active:scale-90 bg-gradient-to-br from-orange-400 to-orange-600"
         @click="handleBatchConfigure"
       >
-        <svg
-          class="w-5 h-5"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-          ></path>
-        </svg>
+        <Plus font-size="20" color="#ffffff" />
       </view>
     </view>
   </view>
@@ -110,6 +86,7 @@ import DayCard from "@/components/daily-list/DayCard.vue";
 import StatsCard from "@/components/daily-list/StatsCard.vue";
 import FilterButtons from "@/components/daily-list/FilterButtons.vue";
 import BatchModal from "@/components/daily-list/BatchModal.vue";
+import { Sort, Plus } from "@nutui/icons-vue-taro";
 import { getStorage, setStorage } from "@/utils/storage";
 import { showError, showSuccess, showModal } from "@/utils/toast";
 import { useRouterParams } from "@/router/hooks";

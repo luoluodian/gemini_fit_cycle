@@ -42,7 +42,7 @@
               />
             </view>
             <view>
-              <text class="block text-sm font-medium text-gray-700 mb-2">体重 (kg)</text>
+              <text class="block text-sm font-medium text-gray-700 mb-2">体重 ({{ displayUnit('kg') }})</text>
               <input 
                 v-model="weight" 
                 type="number" 
@@ -73,11 +73,11 @@
           <text class="font-semibold text-gray-800 mb-3 block">计算结果</text>
           <view class="grid grid-cols-2 gap-4 text-sm">
             <view class="text-center">
-              <text class="font-bold text-emerald-600 block">{{ bmrResult }} kcal</text>
+              <text class="font-bold text-emerald-600 block">{{ bmrResult }} {{ displayUnit('kcal') }}</text>
               <text class="text-gray-600 block">基础代谢 (BMR)</text>
             </view>
             <view class="text-center">
-              <text class="font-bold text-blue-600 block">{{ tdeeResult }} kcal</text>
+              <text class="font-bold text-blue-600 block">{{ tdeeResult }} {{ displayUnit('kcal') }}</text>
               <text class="text-gray-600 block">每日消耗 (TDEE)</text>
             </view>
           </view>
@@ -86,15 +86,15 @@
             <view class="text-sm space-y-1">
               <view class="flex justify-between">
                 <text>减脂:</text>
-                <text class="font-medium">{{ fatLossTarget }} kcal</text>
+                <text class="font-medium">{{ fatLossTarget }} {{ displayUnit('kcal') }}</text>
               </view>
               <view class="flex justify-between">
                 <text>维持:</text>
-                <text class="font-medium">{{ maintenanceTarget }} kcal</text>
+                <text class="font-medium">{{ maintenanceTarget }} {{ displayUnit('kcal') }}</text>
               </view>
               <view class="flex justify-between">
                 <text>增肌:</text>
-                <text class="font-medium">{{ muscleGainTarget }} kcal</text>
+                <text class="font-medium">{{ muscleGainTarget }} {{ displayUnit('kcal') }}</text>
               </view>
             </view>
           </view>
@@ -108,6 +108,7 @@
 import { ref, watch } from 'vue';
 import { showError, showSuccess } from '@/utils/toast';
 import { useUserStore } from '@/stores/user';
+import { displayUnit } from '@/utils';
 
 const props = defineProps<{
   visible: boolean;

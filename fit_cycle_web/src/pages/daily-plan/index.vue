@@ -1,45 +1,47 @@
 <template>
-  <view class="min-h-screen pb-24">
-    <!-- Header -->
-    <BaseNavBar :title="dayName" :manual-handle-back="true" @back="handleSaveAndExit">
-      <template #right>
-        <view class="text-right pr-2">
-          <view class="text-[18rpx] text-gray-400 font-bold">当日摄入</view>
-          <view class="text-sm font-black text-emerald-600 leading-none">{{ currentCalories }}</view>
+  <PageLayout
+    :title="dayName"
+    :manual-handle-back="true"
+    @back="handleBack"
+  >
+    <template #nav-right>
+      <view class="text-right pr-2">
+        <view class="text-[18rpx] text-gray-400 font-bold">当日摄入</view>
+        <view class="text-sm font-black text-emerald-600 leading-none">
+          {{ Math.round(recordStore.displaySummary.calories) }}/{{ targets.calories }}
         </view>
-      </template>
-    </BaseNavBar>
+      </view>
+    </template>
 
     <!-- 营养目标 -->
-    <view class="px-4 py-4">
+    <view class="px-0 pt-2">
       <NutritionTargets
         :targets="targets"
-        :current-nutrition="currentNutrition"
+        :current-nutrition="recordStore.displaySummary"
         @edit="handleEditTargets"
       />
     </view>
 
     <!-- 餐次标签 -->
-    <view class="px-4 py-2">
+    <view class="px-0">
       <MealTabs :current-meal="currentMeal" @change="handleMealChange" />
     </view>
 
     <!-- 当前餐次内容 -->
-    <view class="px-4 py-2">
+    <view class="px-0">
       <MealCard
         :meal-name="currentMealName"
         :meal-calories="mealCalories"
-        :foods="currentMealFoods"
+        :foods="mappedMealFoods"
         @add-food="handleAddFood"
-        @edit-food="handleEditFood"
         @remove-food="handleRemoveFood"
       />
     </view>
 
-    <!-- 快速建议 -->
-    <view class="px-4 py-2">
+    <!-- 快速建议 (根据计划建议) -->
+    <view class="px-0" v-if="plannedSuggestions.length > 0">
       <QuickSuggestions
-        :suggestions="quickSuggestions"
+        :suggestions="plannedSuggestions"
         @add="handleAddQuickFood"
       />
     </view>
@@ -50,11 +52,13 @@
       @mark-complete="handleMarkComplete"
     />
 
-    <!-- 底部操作栏 -->
-    <BottomActions
-      @save-exit="handleSaveAndExit"
-      @save-next="handleSaveAndNext"
-    />
+    <template #footer>
+      <!-- 底部操作栏 -->
+      <BottomActions
+        @save-exit="handleBack"
+        @save-next="handleSaveAndNext"
+      />
+    </template>
 
     <!-- 添加食物模态框 -->
     <FoodPicker
@@ -70,12 +74,13 @@
       @close="handleCloseTargetsModal"
       @save="handleSaveTargets"
     />
-  </view>
+  </PageLayout>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
-import BaseNavBar from "@/components/common/BaseNavBar.vue";
+import Taro from "@tarojs/taro";
+import PageLayout from "@/components/common/PageLayout.vue";
 import NutritionTargets from "@/components/daily-plan/NutritionTargets.vue";
 import MealTabs from "@/components/daily-plan/MealTabs.vue";
 import MealCard from "@/components/common/MealCard.vue";
@@ -84,278 +89,123 @@ import FloatingButtons from "@/components/daily-plan/FloatingButtons.vue";
 import BottomActions from "@/components/daily-plan/BottomActions.vue";
 import FoodPicker from "@/components/food/FoodPicker.vue";
 import TargetsModal from "@/components/daily-plan/TargetsModal.vue";
-import { navigateBack } from "@/router";
+import { navigateBack, navigateTo, ROUTES } from "@/router";
 import { useRouterParams } from "@/router/hooks";
-import { showSuccess, showError, showModal } from "@/utils/toast";
+import { showSuccess, showError, showModal, showLoading, hideToast } from "@/utils/toast";
+import { useRecordStore } from "@/stores/record";
+import { usePlanStore } from "@/stores/plan";
+import { planService } from "@/services";
+import { Food } from "@/services/modules/record";
+import { addDays, getDisplayDate } from "@/utils/date";
 import "./index.scss";
 
-interface Food {
-  name: string;
-  quantity: number;
-  unit: string;
-  calories: number;
-  protein: number;
-  fat: number;
-  carbs: number;
-}
+const routerParams = useRouterParams<{ planId?: string; day?: string }>();
+const planId = Number(routerParams.planId);
+const dayNumber = Number(routerParams.day || 1);
 
-interface DayTargets {
-  calories: number;
-  protein: number;
-  fat: number;
-  carbs: number;
-}
+const recordStore = useRecordStore();
+const planStore = usePlanStore();
 
-interface DayPlan {
-  id: string;
-  name: string;
-  date: string;
-  targets: DayTargets;
-  meals: {
-    breakfast: Food[];
-    lunch: Food[];
-    dinner: Food[];
-    snacks: Food[];
-  };
-  isCompleted: boolean;
-  isConfigured: boolean;
-}
-
-interface Plan {
-  id: string;
-  name: string;
-  dailyPlans: DayPlan[];
-}
-
-const routerParams = useRouterParams<{ planId?: string; dayId?: string }>();
-const dayId = ref<string>(routerParams.dayId || "");
-const plan = ref<Plan | null>(null);
-const day = ref<DayPlan | null>(null);
-const currentMeal = ref<"breakfast" | "lunch" | "dinner" | "snacks">(
-  "breakfast"
-);
+const planDetail = ref<any>(null);
+const currentMeal = ref<"breakfast" | "lunch" | "dinner" | "snacks">("breakfast");
 const foodModalVisible = ref(false);
 const targetsModalVisible = ref(false);
 
-const dayName = computed(() => day.value?.name || "第1天");
-const dayDate = computed(() => {
-  if (!day.value) return "2025年1月1日";
-  return formatDate(new Date(day.value.date));
+const dayName = computed(() => `第 ${dayNumber} 天`);
+
+// 核心日期计算 - 增加健壮性
+const targetDate = computed(() => {
+  const start = planDetail.value?.startDate;
+  if (!start || isNaN(new Date(start).getTime())) return "";
+  return addDays(start, dayNumber - 1);
 });
 
-const targets = computed(
-  () =>
-    day.value?.targets || {
-      calories: 1800,
-      protein: 120,
-      fat: 50,
-      carbs: 180,
-    }
-);
+// 目标营养素 (优先取记录快照，次之取计划模板)
+const targets = computed(() => {
+  if (recordStore.currentRecord?.id) {
+    const r = recordStore.currentRecord;
+    return {
+      calories: r.targetCalories,
+      protein: r.targetProtein,
+      fat: r.targetFat,
+      carbs: r.targetCarbs
+    };
+  }
+  
+  // 查找计划模板
+  const template = planDetail.value?.planDays?.find((d: any) => d.dayNumber === dayNumber);
+  return {
+    calories: template?.targetCalories || 1800,
+    protein: template?.targetProtein || 120,
+    fat: template?.targetFat || 50,
+    carbs: template?.targetCarbs || 180,
+  };
+});
 
-const currentMealFoods = computed(() => {
-  if (!day.value) return [];
-  return day.value.meals[currentMeal.value] || [];
+// 数据映射：MealLog -> MealCard Food 接口
+const mappedMealFoods = computed(() => {
+  return recordStore.mealLogs
+    .filter(log => log.mealType === currentMeal.value)
+    .map(log => ({
+      id: log.id, // 保留原 ID 以便删除
+      name: log.foodName,
+      quantity: log.quantity,
+      unit: log.unit,
+      calories: log.calories,
+      protein: log.protein,
+      fat: log.fat,
+      carbs: log.carbs
+    }));
+});
+
+// 计划建议食物 (显示在 QuickSuggestions)
+const plannedSuggestions = computed(() => {
+  if (!planDetail.value) return [];
+  const template = planDetail.value.planDays?.find((d: any) => d.dayNumber === dayNumber);
+  const typeIdMap: any = { breakfast: 1, lunch: 2, dinner: 3, snacks: 4 };
+  const meal = template?.planMeals?.find((m: any) => m.mealTypeId === typeIdMap[currentMeal.value] || m.mealType?.id === typeIdMap[currentMeal.value]);
+  
+  return meal?.mealItems?.map((item: any) => ({
+    foodId: item.foodId,
+    name: item.customName,
+    quantity: item.quantity,
+    unit: item.unit,
+    calories: item.calories,
+    protein: item.protein,
+    fat: item.fat,
+    carbs: item.carbs
+  })) || [];
 });
 
 const currentMealName = computed(() => {
-  const names = {
-    breakfast: "早餐",
-    lunch: "午餐",
-    dinner: "晚餐",
-    snacks: "加餐",
-  };
+  const names = { breakfast: "早餐", lunch: "午餐", dinner: "晚餐", snacks: "加餐" };
   return names[currentMeal.value];
 });
 
 const mealCalories = computed(() => {
-  const foods = currentMealFoods.value;
-  return foods.reduce((total, food) => {
-    const ratio = food.quantity / 100;
-    return total + Math.round(food.calories * ratio);
-  }, 0);
+  return mappedMealFoods.value.reduce((total, food) => total + food.calories, 0);
 });
 
-const currentNutrition = computed(() => {
-  if (!day.value) {
-    return { calories: 0, protein: 0, fat: 0, carbs: 0 };
+const loadData = async () => {
+  if (!planId) return;
+  try {
+    showLoading("数据同步中...");
+    // 1. 获取计划详情
+    const res = await planService.getPlanDetail(planId);
+    planDetail.value = res.data || res;
+
+    // 2. 获取实际记录
+    if (targetDate.value) {
+      await recordStore.fetchRecord(targetDate.value);
+    }
+  } catch (e) {
+    showError("加载数据失败");
+  } finally {
+    hideToast();
   }
-
-  const allMeals = Object.values(day.value.meals).flat();
-  return allMeals.reduce(
-    (total, food) => {
-      const ratio = food.quantity / 100;
-      return {
-        calories: total.calories + Math.round(food.calories * ratio),
-        protein: total.protein + Math.round(food.protein * ratio * 10) / 10,
-        fat: total.fat + Math.round(food.fat * ratio * 10) / 10,
-        carbs: total.carbs + Math.round(food.carbs * ratio * 10) / 10,
-      };
-    },
-    { calories: 0, protein: 0, fat: 0, carbs: 0 }
-  );
-});
-
-const currentCalories = computed(() => {
-  return `${Math.round(currentNutrition.value.calories)}/${
-    targets.value.calories
-  }`;
-});
-
-const quickSuggestions = ref<Food[]>([
-  {
-    name: "煮鸡蛋",
-    quantity: 1,
-    unit: "个",
-    calories: 70,
-    protein: 6,
-    fat: 5,
-    carbs: 1,
-  },
-  {
-    name: "燕麦片",
-    quantity: 50,
-    unit: "g",
-    calories: 180,
-    protein: 6,
-    fat: 3,
-    carbs: 30,
-  },
-  {
-    name: "牛奶",
-    quantity: 250,
-    unit: "ml",
-    calories: 150,
-    protein: 8,
-    fat: 8,
-    carbs: 12,
-  },
-  {
-    name: "香蕉",
-    quantity: 1,
-    unit: "根",
-    calories: 90,
-    protein: 1,
-    fat: 0,
-    carbs: 23,
-  },
-]);
-
-const loadData = () => {
-  // 使用写死的数据，不依赖缓存
-  const mockPlan: Plan = {
-    id: "plan-001",
-    name: "健康饮食计划",
-    dailyPlans: [
-      {
-        id: "day-001",
-        name: "第1天",
-        date: "2025-01-07",
-        targets: {
-          calories: 1800,
-          protein: 120,
-          fat: 50,
-          carbs: 180,
-        },
-        meals: {
-          breakfast: [
-            {
-              name: "煮鸡蛋",
-              quantity: 2,
-              unit: "个",
-              calories: 140,
-              protein: 12,
-              fat: 10,
-              carbs: 2,
-            },
-            {
-              name: "燕麦片",
-              quantity: 50,
-              unit: "g",
-              calories: 180,
-              protein: 6,
-              fat: 3,
-              carbs: 30,
-            },
-          ],
-          lunch: [
-            {
-              name: "鸡胸肉",
-              quantity: 150,
-              unit: "g",
-              calories: 248,
-              protein: 46,
-              fat: 5,
-              carbs: 0,
-            },
-            {
-              name: "糙米饭",
-              quantity: 100,
-              unit: "g",
-              calories: 111,
-              protein: 2.6,
-              fat: 0.9,
-              carbs: 23,
-            },
-          ],
-          dinner: [
-            {
-              name: "三文鱼",
-              quantity: 120,
-              unit: "g",
-              calories: 208,
-              protein: 22,
-              fat: 12,
-              carbs: 0,
-            },
-            {
-              name: "西兰花",
-              quantity: 200,
-              unit: "g",
-              calories: 68,
-              protein: 4.6,
-              fat: 0.8,
-              carbs: 13,
-            },
-          ],
-          snacks: [
-            {
-              name: "苹果",
-              quantity: 1,
-              unit: "个",
-              calories: 95,
-              protein: 0.5,
-              fat: 0.3,
-              carbs: 25,
-            },
-          ],
-        },
-        isCompleted: false,
-        isConfigured: true,
-      },
-    ],
-  };
-
-  plan.value = mockPlan;
-  day.value = mockPlan.dailyPlans[0];
 };
 
-const formatDate = (date: Date): string => {
-  const year = date.getFullYear();
-  const month = date.getMonth() + 1;
-  const day = date.getDate();
-  return `${year}年${month}月${day}日`;
-};
-
-const savePlan = () => {
-  // 使用写死的数据，不需要实际保存到存储
-  // 只显示保存成功的提示
-  console.log("保存功能：数据已更新（使用写死数据）");
-};
-
-const handleMealChange = (
-  meal: "breakfast" | "lunch" | "dinner" | "snacks"
-) => {
+const handleMealChange = (meal: any) => {
   currentMeal.value = meal;
 };
 
@@ -363,58 +213,65 @@ const handleAddFood = () => {
   foodModalVisible.value = true;
 };
 
-const handleEditFood = (_index: number) => {
-  showError("编辑食物功能开发中...");
-};
-
 const handleRemoveFood = async (index: number) => {
-  if (!day.value) return;
+  const food = mappedMealFoods.value[index];
+  if (!food || !food.id) return;
 
   const confirmed = await showModal({
-    content: "确定要删除这个食物吗？",
+    content: `确定要删除「${food.name}」吗？`,
   });
 
   if (confirmed) {
-    day.value.meals[currentMeal.value].splice(index, 1);
-    day.value.isConfigured = true;
-    savePlan();
-    showSuccess("已删除食物");
+    try {
+      await recordStore.removeMealAction(food.id);
+      recordStore.invalidateAllCache();
+      showSuccess("已删除");
+    } catch (e) {
+      showError("删除失败");
+    }
   }
 };
 
-const handleAddQuickFood = (food: Food) => {
-  if (!day.value) return;
-
-  if (!day.value.meals[currentMeal.value]) {
-    day.value.meals[currentMeal.value] = [];
-  }
-
-  day.value.meals[currentMeal.value].push(food);
-  day.value.isConfigured = true;
-  savePlan();
-  showSuccess(`已添加 ${food.name}`);
-};
-
-const handleSelectFood = (result: { food: any; quantity: number }) => {
+// 处理食材库选择
+const handleSelectFood = async (result: { food: any; quantity: number }) => {
   const { food, quantity } = result;
-  const ratio = quantity / (food.baseCount || 100);
-  
-  const foodToAdd: Food = {
-    name: food.name,
-    quantity: quantity,
-    unit: food.unit || 'g',
-    calories: Math.round(food.calories * ratio),
-    protein: Math.round(food.protein * ratio * 10) / 10,
-    fat: Math.round(food.fat * ratio * 10) / 10,
-    carbs: Math.round(food.carbs * ratio * 10) / 10
-  };
-  
-  handleAddQuickFood(foodToAdd);
-  handleCloseFoodModal();
+  try {
+    showLoading("记录中...");
+    await recordStore.addMealLogAction({
+      date: targetDate.value,
+      mealType: currentMeal.value,
+      foodId: food.id,
+      quantity: quantity,
+      isPlanned: false
+    });
+    recordStore.invalidateAllCache();
+    foodModalVisible.value = false;
+    showSuccess("添加成功");
+  } catch (e) {
+    showError("添加失败");
+  } finally {
+    hideToast();
+  }
 };
 
-const handleCloseFoodModal = () => {
-  foodModalVisible.value = false;
+// 处理快速建议点击 (从计划同步)
+const handleAddQuickFood = async (food: any) => {
+  try {
+    showLoading("同步计划中...");
+    await recordStore.addMealLogAction({
+      date: targetDate.value,
+      mealType: currentMeal.value,
+      foodId: food.foodId,
+      quantity: food.quantity,
+      isPlanned: true
+    });
+    recordStore.invalidateAllCache();
+    showSuccess(`已记录 ${food.name}`);
+  } catch (e) {
+    showError("同步失败");
+  } finally {
+    hideToast();
+  }
 };
 
 const handleEditTargets = () => {
@@ -425,71 +282,41 @@ const handleCloseTargetsModal = () => {
   targetsModalVisible.value = false;
 };
 
-const handleSaveTargets = (newTargets: DayTargets) => {
-  if (!day.value) return;
-
-  day.value.targets = newTargets;
-  savePlan();
-  handleCloseTargetsModal();
-  showSuccess("营养目标已更新");
+const handleSaveTargets = async (newTargets: any) => {
+  // 目前 DailyRecord 快照由后端在首次打卡时自动生成，暂不支持手动修改快照
+  // 提示用户此操作将影响当日进度显示
+  showError("单日目标修改功能暂未开放，请在计划配置中统一修改");
 };
 
 const handleCopyMeal = () => {
-  if (!day.value) return;
-
-  const mealData = day.value.meals[currentMeal.value];
-  if (mealData && mealData.length > 0) {
-    // 使用写死数据，不实际保存到存储
-    console.log("复制餐次功能：", mealData);
-    showSuccess("餐次已复制（演示模式）");
-  } else {
-    showError("当前餐次没有食物");
-  }
+  showError("功能开发中");
 };
 
 const handleMarkComplete = async () => {
-  if (!day.value) return;
-
   const confirmed = await showModal({
+    title: "确认打卡",
     content: "确定要将这一天标记为已完成吗？",
   });
 
   if (confirmed) {
-    day.value.isCompleted = true;
-    savePlan();
-    showSuccess("已标记为完成");
+    showSuccess("打卡成功！");
+    // TODO: 调用后端完成接口
   }
 };
 
-const handleSaveAndExit = () => {
-  savePlan();
-  showSuccess("已保存");
-  setTimeout(() => {
-    navigateBack();
-  }, 1000);
+const handleBack = () => {
+  navigateBack();
 };
 
 const handleSaveAndNext = () => {
-  if (!plan.value || !day.value) return;
-
-  savePlan();
-
-  const currentIndex = plan.value.dailyPlans.findIndex(
-    (d) => d.id === dayId.value
-  );
-  const nextIndex = currentIndex + 1;
-
-  if (nextIndex < plan.value.dailyPlans.length) {
-    showSuccess("已保存，跳转到下一天");
-    setTimeout(() => {
-      // TODO: 使用路由跳转到下一天
-      showError("跳转功能开发中...");
-    }, 1000);
+  if (dayNumber < (planDetail.value?.cycleDays || 0)) {
+    navigateTo(ROUTES.DAILY_PLAN, { 
+      planId: String(planId), 
+      day: String(dayNumber + 1) 
+    });
   } else {
-    showError("已是最后一天");
-    setTimeout(() => {
-      navigateBack();
-    }, 1000);
+    showSuccess("已完成周期最后一天");
+    navigateBack();
   }
 };
 

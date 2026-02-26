@@ -12,6 +12,7 @@ export const usePlanStore = defineStore('plan', () => {
 
   // 正在创建的计划草稿
   const draft = ref({
+    id: null as number | null,
     name: "",
     type: "custom",
     setActive: true,
@@ -35,6 +36,7 @@ export const usePlanStore = defineStore('plan', () => {
 
   const resetDraft = () => {
     draft.value = {
+      id: null,
       name: "", type: "custom", setActive: true, cycleDays: 7, cycleCount: 3, templates: [],
       carbCycleConfig: {
         weight: 70, baseRatios: { protein: 2.0, carbs: 3.0, fat: 0.8 },

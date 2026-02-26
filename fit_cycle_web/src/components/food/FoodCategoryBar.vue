@@ -4,8 +4,8 @@
     :scroll-y="false"
     width="100%"
     height="100rpx"
-    scroll-view-class="pb-2"
-    content-class="items-center space-x-2 pr-4"
+    scroll-view-class=""
+    content-class="items-center space-x-2 pr-4 pb-2"
   >
     <view
       v-for="cat in unifiedCategories"

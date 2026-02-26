@@ -13,20 +13,8 @@
       >
         <view class="flex items-center justify-between mb-4">
           <h3 class="text-lg font-semibold text-gray-800">创建新计划</h3>
-          <view @click="handleClose" class="text-gray-400 hover:text-gray-600">
-            <svg
-              class="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M6 18L18 6M6 6l12 12"
-              ></path>
-            </svg>
+          <view @click="handleClose" class="text-gray-400 hover:text-gray-600 active:bg-gray-100 rounded-full p-1 transition-colors">
+            <Close font-size="20" />
           </view>
         </view>
 
@@ -162,6 +150,7 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue'
+import { Close } from '@nutui/icons-vue-taro'
 
 interface FormData {
   name: string

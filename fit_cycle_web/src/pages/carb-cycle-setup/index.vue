@@ -344,9 +344,29 @@ const handleNext = async () => {
   }
 
   try {
+    showLoading("检查计划状态...");
+    // 1. 获取最新详情，核实是否已有配置好的明细
+    const currentPlan: any = await planService.getPlanDetail(planId);
+    const hasConfiguredDays = (currentPlan.data || currentPlan).planDays?.some((d: any) => d.isConfigured);
+
+    if (hasConfiguredDays) {
+      const confirmRes = await Taro.showModal({
+        title: "重置确认",
+        content: "重新生成周期数据将覆盖您之前在“日模板”中配置的所有食材明细，确定继续吗？",
+        confirmText: "确认重置",
+        cancelText: "取消",
+        confirmColor: "#ef4444",
+      });
+      if (!confirmRes.confirm) {
+        // 如果取消，直接跳转到模板页查看，不重置
+        navigateTo(ROUTES.PLAN_TEMPLATES, { id: String(planId) });
+        return;
+      }
+    }
+
     showLoading("正在生成周期数据...");
     
-    // 1. 转换算法序列为后端 DTO 格式
+    // 2. 转换算法序列为后端 DTO 格式
     const days = algoResult.value.sequence.map((item, i) => ({
       dayNumber: i + 1,
       carbType: item.type,
@@ -356,15 +376,15 @@ const handleNext = async () => {
       targetCarbs: item.carbs
     }));
 
-    // 2. 调用批量初始化接口
+    // 3. 调用批量初始化接口
     await planService.initPlanDays(planId, { 
       days, 
-      force: true // 在向导流程中默认允许覆盖 
+      force: true 
     });
 
     hideToast();
     
-    // 3. 跳转到日模板列表页
+    // 4. 跳转到日模板列表页
     navigateTo(ROUTES.PLAN_TEMPLATES, { id: String(planId) });
   } catch (e: any) {
     showError(e.message || "初始化日程失败");

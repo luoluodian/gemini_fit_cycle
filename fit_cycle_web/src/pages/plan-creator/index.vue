@@ -29,16 +29,43 @@
 </template>
 
 <script setup lang="ts">
-import Taro from "@tarojs/taro";
+import { onMounted } from "vue";
+import Taro, { useRouter } from "@tarojs/taro";
 import { navigateTo, navigateBack, switchTab, ROUTES } from "@/router";
-import PageLayout from "@/components/common/PageLayout.vue";
-import BasicInfoStep from "@/components/plan-creator/BasicInfoStep.vue";
-import CycleSettingsStep from "@/components/plan-creator/CycleSettingsStep.vue";
-import { usePlanStore } from "@/stores/plan";
-import { planService } from "@/services";
+// ... (omitted imports)
 import { showLoading, hideToast, showError } from "@/utils/toast";
 
 const planStore = usePlanStore();
+const router = useRouter();
+
+onMounted(async () => {
+  const routerId = router.params.id || router.params.planId;
+  if (routerId) {
+    const planId = Number(routerId);
+    // 只有在 Store 中 ID 缺失时才拉取数据（防止覆盖已在内存中的修改）
+    if (planStore.draft.id !== planId) {
+      try {
+        showLoading("加载计划信息...");
+        const res: any = await planService.getPlanDetail(planId);
+        const data = res.data || res;
+        
+        // 恢复草稿状态
+        planStore.draft.id = planId;
+        planStore.draft.name = data.name;
+        planStore.draft.type = data.type;
+        planStore.draft.cycleDays = data.cycleDays;
+        planStore.draft.cycleCount = data.cycleCount;
+        if (data.carbCycleConfig) {
+          planStore.draft.carbCycleConfig = data.carbCycleConfig;
+        }
+      } catch (e) {
+        console.error("Failed to recover draft info", e);
+      } finally {
+        hideToast();
+      }
+    }
+  }
+});
 
 const handleUpdate = (data: any) => {
   Object.assign(planStore.draft, data);
@@ -51,20 +78,33 @@ const handleNext = async () => {
   }
 
   try {
-    showLoading("正在创建计划...");
-    // 1. 调用接口创建 DRAFT 状态的计划
-    const res = await planService.createPlan({
-      name: planStore.draft.name,
-      type: planStore.draft.type as any,
-      cycleDays: Number(planStore.draft.cycleDays),
-      cycleCount: Number(planStore.draft.cycleCount),
-    });
+    const isEdit = !!planStore.draft.id;
+    let planId = planStore.draft.id;
 
-    const planId = res.id;
+    if (isEdit) {
+      showLoading("正在更新计划...");
+      await planService.updatePlan(planId!, {
+        name: planStore.draft.name,
+        type: planStore.draft.type as any,
+        cycleDays: Number(planStore.draft.cycleDays),
+        cycleCount: Number(planStore.draft.cycleCount),
+      });
+    } else {
+      showLoading("正在创建计划...");
+      const res = await planService.createPlan({
+        name: planStore.draft.name,
+        type: planStore.draft.type as any,
+        cycleDays: Number(planStore.draft.cycleDays),
+        cycleCount: Number(planStore.draft.cycleCount),
+      });
+      planId = res.id;
+      planStore.draft.id = planId;
+    }
+
     hideToast();
 
     if (planStore.draft.type === "carb-cycle") {
-      // 关键修复：确保跳转前配置对象已初始化
+      // 检查是否需要跳转配置页或直接生成日程
       if (!planStore.draft.carbCycleConfig) {
         planStore.draft.carbCycleConfig = {
           weight: 70,
@@ -78,18 +118,38 @@ const handleNext = async () => {
       }
       navigateTo(ROUTES.CARB_CYCLE_SETUP, { planId });
     } else {
-      // 常规流程：确保此时 carbType 是空的
-      showLoading("正在生成日程...");
-      const days = [];
-      for (let i = 1; i <= planStore.draft.cycleDays; i++) {
-        days.push({ dayNumber: i, carbType: null }); // 显式传 null
+      // 常规流程：检查是否需要重置日程
+      let shouldInit = true;
+      if (isEdit) {
+        const currentPlan: any = await planService.getPlanDetail(planId!);
+        const detail = currentPlan.data || currentPlan;
+        const hasData = detail.planDays?.some((d: any) => d.isConfigured);
+        
+        // 如果周期没变且已有数据，则询问
+        if (detail.cycleDays === Number(planStore.draft.cycleDays) && hasData) {
+          const confirmRes = await Taro.showModal({
+            title: "保持现有配置？",
+            content: "检测到该计划已有日程配置，是否保留现有配置进入下一步？",
+            confirmText: "保留配置",
+            cancelText: "重新生成",
+          });
+          shouldInit = !confirmRes.confirm;
+        }
       }
-      await planService.initPlanDays(planId, { days });
+
+      if (shouldInit) {
+        showLoading("正在生成日程...");
+        const days = [];
+        for (let i = 1; i <= planStore.draft.cycleDays; i++) {
+          days.push({ dayNumber: i, carbType: null });
+        }
+        await planService.initPlanDays(planId!, { days, force: true });
+      }
 
       navigateTo(ROUTES.PLAN_TEMPLATES, { id: String(planId) });
     }
   } catch (e: any) {
-    showError(e.message || "创建失败");
+    showError(e.message || "操作失败");
   } finally {
     hideToast();
   }
