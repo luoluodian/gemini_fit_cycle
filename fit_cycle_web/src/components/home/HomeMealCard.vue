@@ -20,7 +20,7 @@
         :status="item.status"
         is-snapshot
         :show-delete="item.status !== 'ghost'"
-        :show-edit="item.status === 'completed'"
+        :show-edit="item.status !== 'ghost'"
         @delete="(f) => $emit('delete', f)"
         @edit="(f) => $emit('edit', f)"
         @click="handleItemClick"
@@ -72,14 +72,15 @@ const planStore = usePlanStore();
 
 const mergedMeals = computed(() => {
   const actualLogs = props.meals ? [...props.meals] : [];
-  const template = planStore.getTemplateByDate(props.date);
+  const template = recordStore.plannedDay; // 🚀 优先使用 recordStore 中的当日模板
   
-  // 🚀 兼容处理：优先从后端 planMeals 提取，否则尝试从 store draft.meals 提取
   let plannedItems: any[] = [];
   if (template?.planMeals) {
-    const typeIdMap: Record<string, number> = { breakfast: 1, lunch: 2, dinner: 3, snacks: 4 };
-    const targetTypeId = typeIdMap[props.mealType];
-    const meal = template.planMeals.find((m: any) => m.mealTypeId === targetTypeId || m.mealType?.id === targetTypeId);
+    // 映射餐次类型 (兼容后端结构)
+    const meal = template.planMeals.find((m: any) => {
+      const typeCode = m.mealType?.code || m.mealType;
+      return typeCode === props.mealType;
+    });
     plannedItems = meal?.mealItems || [];
   } else if (template?.meals) {
     plannedItems = template.meals[props.mealType] || [];
@@ -90,12 +91,18 @@ const mergedMeals = computed(() => {
   // 1. 处理计划项
   plannedItems.forEach((pItem: any) => {
     if (!pItem) return;
-    // 兼容后端字段 foodId vs 模板字段 foodId
-    const pFoodId = pItem.foodId || pItem.id; 
+    // 🚀 关键修复：不要将 PlanMealItem 的 ID 当作 foodId
+    const pFoodId = pItem.foodId || null; 
+    const pName = pItem.customName || pItem.foodName;
     
-    const matchIdx = actualLogs.findIndex(log => 
-      log && log.isPlanned && String(log.foodId) === String(pFoodId)
-    );
+    // 🚀 增强匹配：优先匹配 foodId，若无则匹配名称
+    const matchIdx = actualLogs.findIndex(log => {
+      if (!log) return false;
+      // 1. 如果两者都有 foodId，精准匹配
+      if (log.foodId && pFoodId && String(log.foodId) === String(pFoodId)) return true;
+      // 2. 名称匹配（无论是否来自计划，只要名字对上就算占位成功）
+      return log.foodName === pName;
+    });
     
     if (matchIdx > -1) {
       const log = actualLogs[matchIdx];
@@ -148,8 +155,10 @@ const onAdd = () => emit("add", props.mealType);
 const onSyncPlan = async () => {
   try {
     Taro.showLoading({ title: '正在记录...', mask: true });
-    const targets = mergedMeals.value.filter(m => m.status === 'ghost' || m.status === 'draft');
-    for (const item of targets) {
+    // 🚀 核心优化：只同步那些在 mergedMeals 中依然处于 ghost 或 draft 状态的项
+    const syncTargets = mergedMeals.value.filter(m => m.status === 'ghost' || m.status === 'draft');
+    
+    for (const item of syncTargets) {
       if (item.status === 'draft' && item.id) {
         await recordStore.updateMealAction(item.id, { isRecorded: true });
       } else if (item.status === 'ghost') {
@@ -157,6 +166,12 @@ const onSyncPlan = async () => {
           date: props.date,
           mealType: props.mealType,
           foodId: item.foodId,
+          foodName: item.customName || item.foodName,
+          calories: item.calories,
+          protein: item.protein,
+          fat: item.fat,
+          carbs: item.carbs,
+          unit: item.unit,
           quantity: item.quantity,
           isPlanned: true
         });
@@ -182,6 +197,12 @@ const handleItemClick = async (item: any) => {
           date: props.date,
           mealType: props.mealType,
           foodId: item.foodId,
+          foodName: item.customName || item.foodName,
+          calories: item.calories,
+          protein: item.protein,
+          fat: item.fat,
+          carbs: item.carbs,
+          unit: item.unit,
           quantity: item.quantity,
           isPlanned: true
         });

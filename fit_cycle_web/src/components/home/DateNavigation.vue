@@ -73,7 +73,7 @@ const dateText = computed(() => {
 });
 
 const planText = computed(() => {
-  if (!props.plan) return "当前计划：6周减脂计划";
+  if (!props.plan) return "暂未激活饮食计划";
   const { planName, currentDay, cycleDays } = props.plan;
   return `当前计划：${planName} (第${currentDay}/${cycleDays}天)`;
 });

@@ -21,6 +21,7 @@ export const useRecordStore = defineStore("record", {
   state: () => ({
     currentRecord: null as DailyRecord | null,
     mealLogs: [] as MealLog[],
+    plannedDay: null as any, // 🚀 存储当日模板
     isLoading: false,
     activeDate: "",
     recordsCache: new Map<string, RecordInfoResponse>(),
@@ -88,6 +89,7 @@ export const useRecordStore = defineStore("record", {
         const res = await getDailyRecord(date);
         this.currentRecord = res.record;
         this.mealLogs = res.meals || [];
+        this.plannedDay = res.plannedDay || null; // 🚀 更新模板
         this.recordsCache.set(date, res);
       } catch (error) {
         console.error("[Store] Fetch Error", error);
@@ -140,6 +142,7 @@ export const useRecordStore = defineStore("record", {
     clearRecord() {
       this.currentRecord = null;
       this.mealLogs = [];
+      this.plannedDay = null; // 🚀 重置
       this.activeDate = "";
     }
   }

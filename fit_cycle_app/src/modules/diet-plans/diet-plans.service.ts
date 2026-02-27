@@ -70,26 +70,48 @@ export class DietPlansService {
     await queryRunner.startTransaction();
 
     try {
-      // 1. 清理该计划下的所有旧天
-      await queryRunner.manager.delete(PlanDay, { planId });
+      // 🚀 核心优化：智能判定是否需要物理删除
+      // 如果天数一致，执行“原地更新”，保留已配置的餐次和食材
+      const existingDays = plan.planDays || [];
+      if (existingDays.length === dto.days.length) {
+        console.log(`[DietPlans] Performing in-place update for plan ${planId}`);
+        for (const d of dto.days) {
+          const target = existingDays.find(ed => ed.dayNumber === d.dayNumber);
+          if (target) {
+            await queryRunner.manager.update(PlanDay, target.id, {
+              carbType: d.carbType ?? target.carbType,
+              targetCalories: d.targetCalories || 0,
+              targetProtein: d.targetProtein || 0,
+              targetFat: d.targetFat || 0,
+              targetCarbs: d.targetCarbs || 0,
+              // 注意：不重置 isConfigured，保留用户的配置状态
+            });
+          }
+        }
+      } else {
+        // 只有天数不一致时，才执行毁灭性重置
+        console.log(`[DietPlans] Performing full reset for plan ${planId} due to day count mismatch`);
+        // 1. 清理该计划下的所有旧天
+        await queryRunner.manager.delete(PlanDay, { planId });
 
-      // 2. 批量生成新天
-      const dayEntities = dto.days.map(d => {
-        const day = new PlanDay();
-        day.planId = planId;
-        day.dayNumber = d.dayNumber;
-        day.carbType = d.carbType ?? null;
-        day.targetCalories = d.targetCalories || 0;
-        day.targetProtein = d.targetProtein || 0;
-        day.targetFat = d.targetFat || 0;
-        day.targetCarbs = d.targetCarbs || 0;
-        day.isConfigured = false;
-        return day;
-      });
+        // 2. 批量生成新天
+        const dayEntities = dto.days.map(d => {
+          const day = new PlanDay();
+          day.planId = planId;
+          day.dayNumber = d.dayNumber;
+          day.carbType = d.carbType ?? null;
+          day.targetCalories = d.targetCalories || 0;
+          day.targetProtein = d.targetProtein || 0;
+          day.targetFat = d.targetFat || 0;
+          day.targetCarbs = d.targetCarbs || 0;
+          day.isConfigured = false;
+          return day;
+        });
+        await queryRunner.manager.save(PlanDay, dayEntities);
+      }
 
-      await queryRunner.manager.save(PlanDay, dayEntities);
       await queryRunner.commitTransaction();
-      return { success: true, count: dayEntities.length };
+      return { success: true };
     } catch (err) {
       await queryRunner.rollbackTransaction();
       throw new InternalServerErrorException('初始化天数失败: ' + err.message);
@@ -381,6 +403,13 @@ export class DietPlansService {
     if (!plan) throw new NotFoundException('计划不存在');
     if (userId && Number(plan.userId) !== Number(userId))
       throw new NotFoundException('无权限更新该计划');
+    
+    // 🚀 核心纠偏：如果更新涉及激活状态，强制走激活互斥逻辑
+    if (dto.status === PlanStatus.ACTIVE && plan.status !== PlanStatus.ACTIVE && userId) {
+      await this.activatePlan(userId, id);
+      // 激活后，Object.assign 仍会执行，但 activatePlan 已处理了状态
+    }
+
     Object.assign(plan, dto);
     return this.planRepo.save(plan);
   }
@@ -405,10 +434,12 @@ export class DietPlansService {
       );
 
       // 2. 激活目标计划
-      // 如果没有开始日期，默认设为今天
+      // 如果没有开始日期，默认设为今天 (本地日期)
       const updateData: any = { status: PlanStatus.ACTIVE };
       if (!plan.startDate) {
-        updateData.startDate = new Date().toISOString().split('T')[0];
+        const now = new Date();
+        const localDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+        updateData.startDate = localDate;
       }
 
       await queryRunner.manager.update(DietPlan, { id: planId }, updateData);

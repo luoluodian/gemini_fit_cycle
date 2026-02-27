@@ -44,19 +44,19 @@ export class DietRecordsController {
   @Put('meal/:id')
   async updateMeal(
     @Req() req: any,
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id') id: string,
     @Body() dto: UpdateMealLogDto,
   ) {
     const userId = req.user.userId;
-    return this.dietRecordsService.updateMealLog(userId, id, dto);
+    return this.dietRecordsService.updateMealLog(userId, Number(id) > Number.MAX_SAFE_INTEGER ? id : Number(id), dto);
   }
 
   /**
    * 删除餐食记录 (R-3)
    */
   @Delete('meal/:id')
-  async removeMeal(@Req() req: any, @Param('id', ParseIntPipe) id: number) {
+  async removeMeal(@Req() req: any, @Param('id') id: string) {
     const userId = req.user.userId;
-    return this.dietRecordsService.removeMealLog(userId, id);
+    return this.dietRecordsService.removeMealLog(userId, Number(id) > Number.MAX_SAFE_INTEGER ? id : Number(id));
   }
 }

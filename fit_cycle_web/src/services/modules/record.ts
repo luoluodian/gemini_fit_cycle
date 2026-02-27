@@ -32,6 +32,13 @@ export interface DailyRecord {
   targetFat: number;
   targetCarbs: number;
   planId: number | null;
+  plan?: {
+    id: number;
+    name: string;
+    startDate: string;
+    cycleDays: number;
+    cycleCount: number;
+  };
 }
 
 /**
@@ -60,6 +67,7 @@ export interface MealLog {
 export interface RecordInfoResponse {
   record: DailyRecord;
   meals: MealLog[];
+  plannedDay?: any; // 🚀 新增：当日计划模板
 }
 
 /**
@@ -76,8 +84,15 @@ export async function getDailyRecord(date: string): Promise<RecordInfoResponse> 
 export async function addMealLog(data: {
   date: string;
   mealType: string;
-  foodId: number;
+  foodId?: number | null;
+  foodName?: string;
+  calories?: number;
+  protein?: number;
+  fat?: number;
+  carbs?: number;
+  unit?: string;
   quantity: number;
+  isPlanned?: boolean;
 }): Promise<MealLog> {
   return httpRequest.post('/records/meal', data);
 }
@@ -105,6 +120,6 @@ export async function updateMealLog(
 /**
  * 删除餐食记录 (R-3)
  */
-export async function removeMealLog(id: number): Promise<any> {
+export async function removeMealLog(id: number | string): Promise<any> {
   return httpRequest.delete(`/records/meal/${id}`);
 }

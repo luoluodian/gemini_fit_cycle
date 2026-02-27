@@ -24,7 +24,7 @@
             class="font-black text-sm truncate"
             :class="(status === 'ghost' || status === 'draft') ? 'text-gray-500' : 'text-emerald-700'"
           >
-            {{ food.name || food.foodName || '未知食材' }}
+            {{ food.name || food.foodName || food.customName || '未知食材' }}
           </text>
           
           <!-- 核心修复：找回分类标签 -->

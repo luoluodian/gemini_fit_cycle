@@ -15,8 +15,36 @@ export class CreateMealLogDto {
   mealType: MealType;
 
   @IsInt()
-  @IsNotEmpty()
-  foodId: number;
+  @IsOptional()
+  foodId?: number;
+
+  @IsString()
+  @IsOptional()
+  foodName?: string;
+
+  @IsNumber()
+  @IsOptional()
+  calories?: number;
+
+  @IsNumber()
+  @IsOptional()
+  protein?: number;
+
+  @IsNumber()
+  @IsOptional()
+  fat?: number;
+
+  @IsNumber()
+  @IsOptional()
+  carbs?: number;
+
+  @IsString()
+  @IsOptional()
+  unit?: string;
+
+  @IsInt()
+  @IsOptional()
+  baseCount?: number;
 
   @IsNumber({ maxDecimalPlaces: 4 })
   @IsPositive()

@@ -35,8 +35,8 @@ export class MealLog {
   @JoinColumn({ name: 'record_id' })
   dailyRecord: DailyRecord;
 
-  @Column({ type: 'enum', enum: MealType, name: 'meal_type' })
-  mealType: MealType;
+  @Column({ name: 'meal_type', length: 50, comment: '餐次类型标识 (对应字典 code)' })
+  mealType: string;
 
   @Column({ name: 'food_id', type: 'bigint', unsigned: true, nullable: true })
   foodId: number;

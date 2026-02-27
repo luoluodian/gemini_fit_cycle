@@ -30,6 +30,18 @@ export const addDays = (dateStr: string, days: number): string => {
 };
 
 /**
+ * 计算两个 YYYY-MM-DD 字符串之间的天数差 (end - start)
+ */
+export const getDateDiff = (start: string, end: string): number => {
+  const s = new Date(start);
+  const e = new Date(end);
+  // 重置时间部分，确保按天计算
+  s.setHours(0, 0, 0, 0);
+  e.setHours(0, 0, 0, 0);
+  return Math.floor((e.getTime() - s.getTime()) / (1000 * 60 * 60 * 24));
+};
+
+/**
  * 获取友好日期展示 (如：2026年2月9日)
  */
 export const getDisplayDate = (dateStr: string): string => {

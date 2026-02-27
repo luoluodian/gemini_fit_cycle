@@ -350,21 +350,25 @@ const handleNext = async () => {
     const hasConfiguredDays = (currentPlan.data || currentPlan).planDays?.some((d: any) => d.isConfigured);
 
     if (hasConfiguredDays) {
+      const isSameCycle = (currentPlan.data || currentPlan).cycleDays === Number(planStore.draft.cycleDays);
+      
       const confirmRes = await Taro.showModal({
-        title: "重置确认",
-        content: "重新生成周期数据将覆盖您之前在“日模板”中配置的所有食材明细，确定继续吗？",
-        confirmText: "确认重置",
+        title: isSameCycle ? "更新营养目标" : "重置确认",
+        content: isSameCycle 
+          ? "检测到该计划已有日程配置。由于周期天数未变，我们将更新每日营养目标并【保留】您已配置的食材明细，确定继续吗？"
+          : "由于周期天数发生变化，重新生成将【覆盖】您之前在“日模板”中配置的所有食材明细，确定继续吗？",
+        confirmText: isSameCycle ? "确认更新" : "确认重置",
         cancelText: "取消",
-        confirmColor: "#ef4444",
+        confirmColor: isSameCycle ? "#10b981" : "#ef4444",
       });
       if (!confirmRes.confirm) {
-        // 如果取消，直接跳转到模板页查看，不重置
+        // 如果取消，直接跳转到模板页查看，不重置也不更新
         navigateTo(ROUTES.PLAN_TEMPLATES, { id: String(planId) });
         return;
       }
     }
 
-    showLoading("正在生成周期数据...");
+    showLoading(hasConfiguredDays ? "正在更新数据..." : "正在生成周期数据...");
     
     // 2. 转换算法序列为后端 DTO 格式
     const days = algoResult.value.sequence.map((item, i) => ({

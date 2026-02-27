@@ -3,7 +3,7 @@
     <BaseNavBar title="今日记录" />
     
     <view class="px-4 py-6 pb-tabbar">
-      <DateNavigation v-model="currentDate" :plan-id="currentRecord?.planId" />
+      <DateNavigation v-model="currentDate" :plan="computedPlanInfo" />
 
       <view v-if="isLoading" class="animate-pulse mb-6">
         <view class="h-48 bg-white rounded-2xl shadow-sm"></view>
@@ -40,9 +40,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import { ref, watch, computed } from "vue";
 import Taro, { useDidShow } from "@tarojs/taro";
-import { getTodayString } from "@/utils";
+import { getTodayString, getDateDiff } from "@/utils";
 import { useNutritionStats } from "@/composables/useNutritionStats";
 import { useRecordStore } from "@/stores/record";
 import DateNavigation from "@/components/home/DateNavigation.vue";
@@ -63,12 +63,61 @@ const currentMealType = ref("");
 const isSubmitting = ref(false);
 const navStore = useNavigationStore();
 
-const mealTypes = [
-  { key: 'breakfast', label: '早餐' },
-  { key: 'lunch', label: '午餐' },
-  { key: 'dinner', label: '晚餐' },
-  { key: 'snacks', label: '加餐' }
-];
+/**
+ * 🚀 核心优化：动态餐次列表
+ * 将标准 4 餐与计划中的自定义餐次合并并去重
+ */
+const mealTypes = computed(() => {
+  const standard = [
+    { key: 'breakfast', label: '早餐', order: 1 },
+    { key: 'lunch', label: '午餐', order: 2 },
+    { key: 'dinner', label: '晚餐', order: 3 },
+    { key: 'snacks', label: '加餐', order: 4 }
+  ];
+
+  const plannedDay = recordStore.plannedDay;
+  if (!plannedDay?.planMeals) return standard;
+
+  // 🚀 核心优化：基于计划模板构建动态排序列表
+  const result: { key: string; label: string; order: number }[] = [];
+  
+  plannedDay.planMeals.forEach((pm: any) => {
+    const code = pm.mealType?.code;
+    const text = pm.mealType?.text || pm.note;
+    const order = pm.mealType?.value || pm.mealType?.sortOrder || 99;
+    
+    if (code && !result.some(r => r.key === code)) {
+      result.push({ key: code, label: text || '自定义餐次', order });
+    }
+  });
+
+  // 合并标准 4 餐中未在计划中出现的餐次（支持手动添加）
+  standard.forEach(s => {
+    if (!result.some(r => r.key === s.key)) {
+      result.push(s);
+    }
+  });
+
+  // 按 order 排序
+  return result.sort((a, b) => a.order - b.order);
+});
+
+/**
+ * 聚合计划展示信息
+ */
+const computedPlanInfo = computed(() => {
+  const plan = currentRecord.value?.plan;
+  if (!plan) return undefined;
+
+  const dayOffset = getDateDiff(plan.startDate, currentDate.value);
+  const totalDays = plan.cycleDays * plan.cycleCount;
+  
+  return {
+    planName: plan.name,
+    currentDay: dayOffset + 1,
+    cycleDays: totalDays
+  };
+});
 
 const handleShowPicker = (type: string) => {
   currentMealType.value = type;
