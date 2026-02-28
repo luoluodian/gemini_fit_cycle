@@ -136,8 +136,9 @@ export class DietPlansService {
     });
 
     if (!day) throw new NotFoundException('计划日不存在');
-    // 使用字符串比较，这是最稳健的跨类型 bigint 校验方案
-    if (String(day.plan.userId) !== String(userId)) {
+    
+    // 权限校验：如果是非模板计划，必须属于当前用户
+    if (!day.plan.isTemplate && String(day.plan.userId) !== String(userId)) {
       throw new ForbiddenException(`无权限访问: 计划属于 ${day.plan.userId}, 当前用户 ${userId}`);
     }
 
@@ -274,21 +275,21 @@ export class DietPlansService {
             mealItems: []
           });
 
-          for (const itemDto of mealDto.items) {
-            const item = this.planMealItemRepo.create({
-              customName: itemDto.customName,
-              quantity: itemDto.quantity,
-              unit: itemDto.unit,
-              calories: itemDto.calories,
-              protein: itemDto.protein,
-              fat: itemDto.fat,
-              carbs: itemDto.carbs,
-              fiber: itemDto.fiber,
-              sortOrder: itemDto.sortOrder,
-            });
-            meal.mealItems.push(item);
-          }
-          day.planMeals.push(meal);
+                      for (const itemDto of mealDto.items) {
+                        const item = this.planMealItemRepo.create({
+                          foodItemId: itemDto.foodItemId,
+                          customName: itemDto.customName,
+                          quantity: itemDto.quantity,
+                          unit: itemDto.unit,
+                          calories: itemDto.calories,
+                          protein: itemDto.protein,
+                          fat: itemDto.fat,
+                          carbs: itemDto.carbs,
+                          fiber: itemDto.fiber,
+                          sortOrder: itemDto.sortOrder,
+                        });
+                        meal.mealItems.push(item);
+                      }          day.planMeals.push(meal);
         }
         dayEntities.push(day);
       }
@@ -317,6 +318,10 @@ export class DietPlansService {
     page: number = 1,
     limit: number = 20,
   ) {
+    if (!userId || isNaN(Number(userId))) {
+      throw new ForbiddenException('无效的用户标识');
+    }
+
     const where: any = { userId };
     if (status) where.status = status;
     
@@ -379,6 +384,7 @@ export class DietPlansService {
       relations: {
         planDays: {
           planMeals: {
+            mealType: true,
             mealItems: true,
           },
         },

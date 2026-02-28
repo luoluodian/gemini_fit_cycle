@@ -117,18 +117,27 @@ const handleCopyTemplate = async (index: number) => {
   const sourceDay = planData.value.planDays[index];
   if (!sourceDay) return;
 
-  try {
-    // 构造复制后的列表
-    const newList = [...planData.value.planDays];
-    const copiedDay = JSON.parse(JSON.stringify(sourceDay));
-    // 插入到当前项之后
-    newList.splice(index + 1, 0, copiedDay);
-    
-    await convertAndSave(newList);
-    showSuccess("复制成功");
-  } catch (e) {
-    showError("复制失败");
-  }
+  // 🚀 核心优化：由于复制是全量覆盖同步，提醒用户保存状态
+  Taro.showModal({
+    title: '确认复制',
+    content: '复制将同步所有日程配置，请确保已保存其他日期的编辑。',
+    success: async (res) => {
+      if (res.confirm) {
+        try {
+          // 构造复制后的列表
+          const newList = [...planData.value.planDays];
+          const copiedDay = JSON.parse(JSON.stringify(sourceDay));
+          // 插入到当前项之后
+          newList.splice(index + 1, 0, copiedDay);
+          
+          await convertAndSave(newList);
+          showSuccess("复制成功");
+        } catch (e) {
+          showError("复制失败");
+        }
+      }
+    }
+  });
 };
 
 const handleDeleteTemplate = async (index: number) => {
@@ -161,16 +170,24 @@ const handleMoveTemplate = async (fromIndex: number, direction: 'up' | 'down') =
   const toIndex = direction === 'up' ? fromIndex - 1 : fromIndex + 1;
   if (toIndex < 0 || toIndex >= planData.value.planDays.length) return;
 
-  try {
-    const newList = [...planData.value.planDays];
-    const item = newList.splice(fromIndex, 1)[0];
-    newList.splice(toIndex, 0, item);
-    
-    await convertAndSave(newList);
-    showSuccess("移动成功");
-  } catch (e) {
-    showError("移动失败");
-  }
+  // 🚀 核心优化：移动同样涉及全量同步，增加安全确认
+  Taro.showModal({
+    title: '确认移动',
+    content: '调整顺序将同步当前所有配置，确定吗？',
+    success: async (res) => {
+      if (res.confirm) {
+        try {
+          const newList = [...planData.value.planDays];
+          const item = newList.splice(fromIndex, 1)[0];
+          newList.splice(toIndex, 0, item);
+          await convertAndSave(newList);
+          showSuccess("移动成功");
+        } catch (e) {
+          showError("移动失败");
+        }
+      }
+    }
+  });
 };
 
 const convertAndSave = async (newList: any[]) => {
@@ -183,20 +200,20 @@ const convertAndSave = async (newList: any[]) => {
     targetFat: day.targetFat || 0,
     targetCarbs: day.targetCarbs || 0,
     meals: day.planMeals?.map((meal: any) => ({
-      mealTypeId: meal.mealType?.id || meal.mealTypeId,
+      mealTypeId: Number(meal.mealType?.id || meal.mealTypeId),
       scheduledTime: meal.scheduledTime,
       note: meal.note,
       items: meal.mealItems?.map((item: any) => ({
-        foodItemId: item.foodItemId,
+        foodItemId: item.foodItemId ? Number(item.foodItemId) : undefined,
         customName: item.customName,
-        quantity: item.quantity,
+        quantity: Number(item.quantity),
         unit: item.unit,
-        calories: item.calories,
-        protein: item.protein,
-        fat: item.fat,
-        carbs: item.carbs,
-        fiber: item.fiber,
-        sortOrder: item.sortOrder
+        calories: Number(item.calories || 0),
+        protein: Number(item.protein || 0),
+        fat: Number(item.fat || 0),
+        carbs: Number(item.carbs || 0),
+        fiber: Number(item.fiber || 0),
+        sortOrder: Number(item.sortOrder || 0)
       })) || []
     })) || []
   }));

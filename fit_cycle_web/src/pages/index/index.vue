@@ -22,6 +22,15 @@
           @edit="handleRequestEdit"
           @delete="handlePerformDelete"
         />
+
+        <!-- 🚀 补全入口：如果计划外还有未显示的分类，提供快速入口 -->
+        <view 
+          v-if="availableExtraMeals.length > 0"
+          class="p-4 bg-gray-100/50 rounded-2xl border border-dashed border-gray-200 flex items-center justify-center space-x-4 active:bg-gray-100 transition-colors"
+          @click="handleShowExtraMenu"
+        >
+          <text class="text-xs text-gray-400 font-bold tracking-widest">+ 记录计划外餐次</text>
+        </view>
       </view>
     </view>
 
@@ -76,29 +85,35 @@ const mealTypes = computed(() => {
   ];
 
   const plannedDay = recordStore.plannedDay;
-  if (!plannedDay?.planMeals) return standard;
-
-  // 🚀 核心优化：基于计划模板构建动态排序列表
+  const actualLogs = recordStore.mealLogs || [];
   const result: { key: string; label: string; order: number }[] = [];
-  
-  plannedDay.planMeals.forEach((pm: any) => {
-    const code = pm.mealType?.code;
-    const text = pm.mealType?.text || pm.note;
-    const order = pm.mealType?.value || pm.mealType?.sortOrder || 99;
-    
-    if (code && !result.some(r => r.key === code)) {
-      result.push({ key: code, label: text || '自定义餐次', order });
-    }
-  });
 
-  // 合并标准 4 餐中未在计划中出现的餐次（支持手动添加）
+  // 1. 提取计划中的餐次
+  if (plannedDay?.planMeals) {
+    plannedDay.planMeals.forEach((pm: any) => {
+      const code = pm.mealType?.code;
+      const text = pm.note || pm.mealType?.text;
+      const order = pm.mealType?.value || pm.mealType?.sortOrder || 99;
+      const finalKey = code || `custom_${pm.id}`;
+      if (!result.some(r => r.key === finalKey)) {
+        result.push({ key: finalKey, label: text || '自定义餐次', order });
+      }
+    });
+  }
+
+  // 2. 核心补全：如果某标准餐次不在计划中，但已有记录，必须显示
   standard.forEach(s => {
-    if (!result.some(r => r.key === s.key)) {
+    const hasLogs = actualLogs.some(log => log.mealType === s.key);
+    if (hasLogs && !result.some(r => r.key === s.key)) {
       result.push(s);
     }
   });
 
-  // 按 order 排序
+  // 3. 兜底策略：如果没有任何餐次（空计划），显示标准 4 餐以供记录
+  if (result.length === 0) {
+    return standard;
+  }
+
   return result.sort((a, b) => a.order - b.order);
 });
 
@@ -118,6 +133,29 @@ const computedPlanInfo = computed(() => {
     cycleDays: totalDays
   };
 });
+
+// 计算还未显示的标准餐次
+const availableExtraMeals = computed(() => {
+  const standard = [
+    { key: 'breakfast', label: '早餐' },
+    { key: 'lunch', label: '午餐' },
+    { key: 'dinner', label: '晚餐' },
+    { key: 'snacks', label: '加餐' }
+  ];
+  const shownKeys = mealTypes.value.map(t => t.key);
+  return standard.filter(s => !shownKeys.includes(s.key));
+});
+
+const handleShowExtraMenu = () => {
+  const options = availableExtraMeals.value.map(m => m.label);
+  Taro.showActionSheet({
+    itemList: options,
+    success: (res) => {
+      const selected = availableExtraMeals.value[res.tapIndex];
+      handleShowPicker(selected.key);
+    }
+  });
+};
 
 const handleShowPicker = (type: string) => {
   currentMealType.value = type;

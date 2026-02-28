@@ -98,13 +98,18 @@ const totalFoodsCount = computed(() => {
 });
 
 const getMealLabel = (type: string) => {
+  // 核心修正：优先使用自定义名称
+  if (props.customLabels && props.customLabels[type]) {
+    return props.customLabels[type];
+  }
+
   const map: any = {
     breakfast: "早餐",
     lunch: "午餐",
     dinner: "晚餐",
     snacks: "加餐",
   };
-  return map[type] || props.customLabels[type] || type;
+  return map[type] || type;
 };
 
 const getMealIcon = (type: string) => {

@@ -345,24 +345,40 @@ const handleNext = async () => {
 
   try {
     showLoading("检查计划状态...");
-    // 1. 获取最新详情，核实是否已有配置好的明细
     const currentPlan: any = await planService.getPlanDetail(planId);
-    const hasConfiguredDays = (currentPlan.data || currentPlan).planDays?.some((d: any) => d.isConfigured);
+    const planRaw = currentPlan.data || currentPlan;
+    const hasConfiguredDays = planRaw.planDays?.some((d: any) => d.isConfigured);
 
     if (hasConfiguredDays) {
-      const isSameCycle = (currentPlan.data || currentPlan).cycleDays === Number(planStore.draft.cycleDays);
+      // 🚀 核心优化：增加 isDirty 检测，只有参数变动才弹窗
+      const isSameCycle = planRaw.cycleDays === Number(planStore.draft.cycleDays);
+      const isSameWeight = Number(planRaw.carbCycleConfig?.weight) === Number(planStore.draft.carbCycleConfig.weight);
       
-      const confirmRes = await Taro.showModal({
-        title: isSameCycle ? "更新营养目标" : "重置确认",
-        content: isSameCycle 
-          ? "检测到该计划已有日程配置。由于周期天数未变，我们将更新每日营养目标并【保留】您已配置的食材明细，确定继续吗？"
-          : "由于周期天数发生变化，重新生成将【覆盖】您之前在“日模板”中配置的所有食材明细，确定继续吗？",
-        confirmText: isSameCycle ? "确认更新" : "确认重置",
-        cancelText: "取消",
-        confirmColor: isSameCycle ? "#10b981" : "#ef4444",
-      });
-      if (!confirmRes.confirm) {
-        // 如果取消，直接跳转到模板页查看，不重置也不更新
+      // 数值对比，防止 2.00 vs 2 的字符串对比陷阱
+      const oldRatios = planRaw.carbCycleConfig?.baseRatios || {};
+      const newRatios = planStore.draft.carbCycleConfig.baseRatios || {};
+      const isSameRatios = 
+        Number(oldRatios.protein) === Number(newRatios.protein) &&
+        Number(oldRatios.carbs) === Number(newRatios.carbs) &&
+        Number(oldRatios.fat) === Number(newRatios.fat);
+      
+      const isDirty = !isSameWeight || !isSameRatios || !isSameCycle;
+
+      if (isDirty) {
+        const confirmRes = await Taro.showModal({
+          title: isSameCycle ? "更新营养目标" : "重置确认",
+          content: isSameCycle 
+            ? "检测到该计划已有日程配置。由于配置参数已变动，我们将更新每日营养目标并【保留】您已配置的食材明细（需自行根据新目标微调食材），确定继续吗？"
+            : "由于周期天数发生变化，重新生成将【清空】您之前在“日模板”中配置的所有食材明细，确定继续吗？",
+          confirmText: isSameCycle ? "确认更新" : "确认重置",
+          cancelText: "取消",
+          confirmColor: isSameCycle ? "#10b981" : "#ef4444",
+        });
+
+        if (!confirmRes.confirm) return;
+      } else {
+        // 参数没变，直接跳转，不重新执行初始化接口（保护数据且提升速度）
+        hideToast();
         navigateTo(ROUTES.PLAN_TEMPLATES, { id: String(planId) });
         return;
       }

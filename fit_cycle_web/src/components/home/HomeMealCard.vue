@@ -76,10 +76,11 @@ const mergedMeals = computed(() => {
   
   let plannedItems: any[] = [];
   if (template?.planMeals) {
-    // 映射餐次类型 (兼容后端结构)
+    // 映射餐次类型 (支持标准 code 和自定义 ID)
     const meal = template.planMeals.find((m: any) => {
       const typeCode = m.mealType?.code || m.mealType;
-      return typeCode === props.mealType;
+      const customId = `custom_${m.id}`;
+      return typeCode === props.mealType || customId === props.mealType;
     });
     plannedItems = meal?.mealItems || [];
   } else if (template?.meals) {
@@ -91,8 +92,8 @@ const mergedMeals = computed(() => {
   // 1. 处理计划项
   plannedItems.forEach((pItem: any) => {
     if (!pItem) return;
-    // 🚀 关键修复：不要将 PlanMealItem 的 ID 当作 foodId
-    const pFoodId = pItem.foodId || null; 
+    // 🚀 核心优化：兼容多种 ID 命名
+    const pFoodId = pItem.foodItemId || pItem.foodId || null; 
     const pName = pItem.customName || pItem.foodName;
     
     // 🚀 增强匹配：优先匹配 foodId，若无则匹配名称

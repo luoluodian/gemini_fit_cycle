@@ -1,5 +1,5 @@
 // src/auth/jwt.strategy.ts
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
@@ -19,7 +19,14 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: any) {
-    // payload: { uid: number, iat, exp }
-    return { userId: payload.uid };
+    // 兼容多种 payload 格式 (uid 或 id)
+    const userId = payload.uid || payload.id;
+    
+    // 核心安全防御：如果 Token 中没有有效的用户标识，直接拒绝
+    if (!userId || isNaN(Number(userId))) {
+      throw new UnauthorizedException('无效的令牌：缺少或非法的用户标识');
+    }
+
+    return { userId: Number(userId) };
   }
 }

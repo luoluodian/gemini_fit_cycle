@@ -264,14 +264,18 @@ const fetchDetail = async () => {
           3: "dinner",
           4: "snacks",
         };
-        const key = typeMap[m.mealType?.id] || `custom_${m.id}`;
+        // 核心修正：如果有 note，说明是自定义命名的餐次，使用 custom_ 键名防止与标准餐次碰撞
+        const isStandard = typeMap[m.mealType?.id] && !m.note;
+        const key = isStandard ? typeMap[m.mealType?.id] : `custom_${m.id || Date.now() + Math.random()}`;
+        
         order.push(key);
-        // 如果是自定义餐次且有 note，记录为 label
-        if (!typeMap[m.mealType?.id] && m.note) {
+        // 记录自定义标签
+        if (m.note) {
           labels[key] = m.note;
         }
         mealsObj[key] =
           m.mealItems?.map((mi: any) => ({
+            foodItemId: mi.foodItemId,
             name: mi.customName,
             quantity: mi.quantity,
             unit: mi.unit,
@@ -376,6 +380,7 @@ const handleSave = async () => {
       mealTypeId: typeIdMap[key] || 4,
       note: localTemplate.value.customLabels?.[key] || "",
       items: (localTemplate.value.meals[key] || []).map((f: any) => ({
+        foodItemId: f.foodItemId || f.id,
         customName: f.name,
         quantity: f.quantity,
         unit: f.unit,
@@ -435,7 +440,16 @@ const handleMealMenu = (mealType: string) => {
 const handleCopyMeal = (mealType: string) => {
   const foods = localTemplate.value.meals[mealType];
   const newKey = `custom_${Date.now()}`;
-  const label = (localTemplate.value.customLabels?.[mealType] || "未命名") + " 副本";
+  
+  // 处理标准餐次的显示名称
+  const standardNames: any = { 
+    breakfast: "早餐", 
+    lunch: "午餐", 
+    dinner: "晚餐", 
+    snacks: "加餐" 
+  };
+  const baseName = localTemplate.value.customLabels?.[mealType] || standardNames[mealType] || "未命名";
+  const label = baseName + " 副本";
   
   localTemplate.value.meals[newKey] = JSON.parse(JSON.stringify(foods));
   if (!localTemplate.value.customLabels) localTemplate.value.customLabels = {};
@@ -448,14 +462,15 @@ const handleCopyMeal = (mealType: string) => {
 
 const handleDeleteMeal = (mealType: string) => {
   const standardMeals = ["breakfast", "lunch", "dinner", "snacks"];
-  if (standardMeals.includes(mealType)) {
+  // 只有非碳循环模式下，才禁止删除标准餐次
+  if (!isCarbCycle.value && standardMeals.includes(mealType)) {
     Taro.showToast({ title: "标准餐次只能清空，不能删除", icon: "none" });
     return;
   }
   
   Taro.showModal({
     title: "确认删除",
-    content: "确定要删除该自定义餐次吗？",
+    content: "确定要删除该餐次吗？",
     success: (res) => {
       if (res.confirm) {
         delete localTemplate.value.meals[mealType];

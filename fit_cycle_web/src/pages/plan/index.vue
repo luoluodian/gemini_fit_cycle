@@ -140,7 +140,10 @@ const filteredPlans = computed(() => {
   const filtered = allPlans.value.filter((p) => {
     if (currentTab.value === "active") {
       return (
-        p.status === "active" || p.status === "paused" || p.status === "draft"
+        p.status === "active" ||
+        p.status === "paused" ||
+        p.status === "draft" ||
+        p.status === "configured"
       );
     }
     return p.status === "completed";
@@ -187,6 +190,12 @@ function formatPlans(plans: any[]) {
       description = `剩余：${calculateDaysLeft(plan.endDate)}天`;
       targets = `目标热量：${plan.targetCalories || 0} ${displayUnit('kcal')}`;
       progressColor = "#f59e0b";
+    } else if (plan.status === "completed") {
+      tags.push("已完成");
+      description = `结束日期：${formatDate(plan.updatedAt || plan.endDate)}`;
+      targets = `目标热量：${plan.targetCalories || 0} ${displayUnit('kcal')}`;
+      progress = 100;
+      progressColor = "#10b981";
     }
 
     const actions: any[] = [];

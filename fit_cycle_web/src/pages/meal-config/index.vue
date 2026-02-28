@@ -1,7 +1,7 @@
 <template>
   <PageLayout
     v-if="foods"
-    :title="mealLabel + '食材配置'"
+    title="餐次配置"
     :use-scroll-view="false"
   >
     <!-- 1. 顶部固定区：营养汇总 (Sticky) -->
@@ -241,21 +241,20 @@ const foods = computed(() => {
 });
 
 const mealLabel = computed(() => {
+  // 处理模板引用逻辑
+  const template = planStore.templates[0] || planStore.draft.templates[currentDayIndex];
+
+  // 🚀 核心修正：优先使用自定义餐次名
+  if (template?.customLabels?.[currentMealType]) {
+    return template.customLabels[currentMealType];
+  }
+
   const map: any = {
     breakfast: "早餐",
     lunch: "午餐",
     dinner: "晚餐",
     snacks: "加餐",
   };
-
-  // 同样处理模板引用逻辑
-  const template =
-    planStore.templates[0] || planStore.draft.templates[currentDayIndex];
-
-  // 兼容自定义餐次名
-  if (template?.customLabels?.[currentMealType]) {
-    return template.customLabels[currentMealType];
-  }
   return map[currentMealType] || currentMealType;
 });
 

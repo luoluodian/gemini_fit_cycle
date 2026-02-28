@@ -58,7 +58,7 @@ export class AuthService {
     const accessToken = this.createAccessToken(user.id);
 
     // 3. 只有在非 Mock 模式或有 rawData 更新时才执行数据库写入，减少锁竞争
-    if (dto.code !== "mock_code" || dto.rawData) {
+    if (!dto.code.startsWith("mock_code") || dto.rawData) {
       let needsSave = false;
       if (dto.rawData) {
         try {
@@ -74,7 +74,7 @@ export class AuthService {
       }
 
       // 为了安全和静默登录，非 Mock 情况下还是保存一下 refreshToken
-      if (dto.code !== "mock_code") {
+      if (!dto.code.startsWith("mock_code")) {
         user.refreshToken = refreshToken;
         needsSave = true;
       }
@@ -97,10 +97,11 @@ export class AuthService {
    * ===============================
    */
   async code2Session(code: string) {
-    // Mock bypass for testing
-    if (code === "mock_code") {
+    // Mock bypass for testing: 支持动态身份 (例如: mock_code_userA)
+    if (code && code.startsWith("mock_code")) {
+      const suffix = code.replace("mock_code", "") || "_123456"; // 默认回退
       return {
-        openid: "mock_openid_123456",
+        openid: `mock_openid${suffix}`,
         session_key: "mock_session_key",
       };
     }

@@ -164,7 +164,14 @@ export class DietRecordsService {
     const dayOffset = this.getDateDiff(activePlan.startDate, date);
     const targetDayNum = (dayOffset % activePlan.cycleDays) + 1;
     const planDay = activePlan.planDays?.find(d => d.dayNumber === targetDayNum);
-    const planMeal = planDay?.planMeals?.find(m => m.mealType?.code === mealType);
+
+    // 🚀 核心优化：同时支持标准 code 和自定义 ID 查找
+    const planMeal = planDay?.planMeals?.find(m => {
+      const code = m.mealType?.code;
+      const customId = `custom_${m.id}`;
+      return code === mealType || customId === mealType;
+    });
+    
     const items = planMeal?.mealItems || [];
 
     if (items.length === 0) return [];
@@ -177,32 +184,31 @@ export class DietRecordsService {
       const filteredItems = items.filter(item => {
         const pName = item.customName || '计划食物';
         return !existingMeals.some(em => 
-          (item.foodId && String(em.foodId) === String(item.foodId)) || 
-          (em.foodName === pName)
+          em.foodName === pName
         );
       });
 
       if (filteredItems.length === 0) return [];
 
-      const logs = filteredItems.map(item => ({
-        userId,
-        recordId: record.id,
-        mealType: mealType as any,
-        foodName: item.customName || '计划食物',
-        quantity: Number(item.quantity),
-        unit: item.unit || 'g',
-        calories: Math.round(Number(item.calories) || 0),
-        protein: Number(item.protein) || 0,
-        fat: Number(item.fat) || 0,
-        carbs: Number(item.carbs) || 0,
-        baseCalories: Math.round((Number(item.calories) || 0) / (Number(item.quantity) / 100)),
-        baseProtein: item.protein,
-        baseFat: item.fat,
-        baseCarbs: item.carbs,
-        isPlanned: true,
-        isRecorded: true
-      }));
-
+              const logs = filteredItems.map(item => ({
+                userId,
+                recordId: record.id,
+                mealType: mealType as any,
+                foodId: item.foodItemId,
+                foodName: item.customName || '计划食物',
+                quantity: Number(item.quantity),
+                unit: item.unit || 'g',
+                calories: Math.round(Number(item.calories) || 0),
+                protein: Number(item.protein) || 0,
+                fat: Number(item.fat) || 0,
+                carbs: Number(item.carbs) || 0,
+                baseCalories: Math.round((Number(item.calories) || 0) / (Number(item.quantity) / 100)),
+                baseProtein: item.protein,
+                baseFat: item.fat,
+                baseCarbs: item.carbs,
+                isPlanned: true,
+                isRecorded: true
+              }));
       const res = await manager.createQueryBuilder().insert().into(MealLog).values(logs).execute();
       return await manager.find(MealLog, { where: { id: In(res.identifiers.map(i => i.id)) } });
     });

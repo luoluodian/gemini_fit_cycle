@@ -32,7 +32,8 @@ export const ERROR_MESSAGES: Record<ErrorCode, string> = {
  * 获取错误消息
  */
 export function getErrorMessage(code: number, defaultMsg?: string): string {
-  return ERROR_MESSAGES[code as ErrorCode] || defaultMsg || "未知错误";
+  // 优先使用后端返回的具体消息，如果没有则使用错误码映射的通用消息
+  return defaultMsg || ERROR_MESSAGES[code as ErrorCode] || "未知错误";
 }
 
 /**
