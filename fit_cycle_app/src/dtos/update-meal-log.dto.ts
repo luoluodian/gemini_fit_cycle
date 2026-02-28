@@ -10,8 +10,28 @@ export class UpdateMealLogDto {
   @IsNumber()
   quantity?: number;
 
-  // 🚀 核心补全：允许手动切换记录状态
-  @IsOptional()
-  @IsBoolean()
-  isRecorded?: boolean;
-}
+    // 🚀 核心补全：允许手动切换记录状态
+    @IsOptional()
+    @IsBoolean()
+    isRecorded?: boolean;
+  
+    @IsOptional()
+    @IsNumber()
+    baseCalories?: number;
+  
+    @IsOptional()
+    @IsNumber()
+    baseProtein?: number;
+  
+    @IsOptional()
+    @IsNumber()
+    baseFat?: number;
+  
+    @IsOptional()
+    @IsNumber()
+    baseCarbs?: number;
+  
+    @IsOptional()
+    sourceUpdatedAt?: Date;
+  }
+  

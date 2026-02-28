@@ -10,6 +10,7 @@ export class DictTransformer {
       value: item.value,
       text: item.text,
       description: item.description ?? undefined,
+      extInfo: item.extInfo,
     };
   }
 

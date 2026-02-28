@@ -34,6 +34,8 @@ export interface FoodItem {
   carbs: number;
   unit: string;
   baseCount: number;
+  referenceCount: number;
+  isArchived: boolean;
   tags?: string[];
   isFavorite?: boolean;
   createdAt?: string;

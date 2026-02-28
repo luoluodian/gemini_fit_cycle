@@ -91,4 +91,7 @@ export class DictResponseDto {
 
   /** 描述（可选） */
   description?: string;
+
+  /** 额外信息 */
+  extInfo?: any;
 }

@@ -127,6 +127,17 @@ export const useRecordStore = defineStore("record", {
       return updated;
     },
 
+    async syncMealAction(id: string | number, foodItem: any) {
+      console.log(`[Store] Syncing log ${id} with latest food data...`);
+      return await this.updateMealAction(id, {
+        baseCalories: foodItem.calories,
+        baseProtein: foodItem.protein,
+        baseFat: foodItem.fat,
+        baseCarbs: foodItem.carbs,
+        sourceUpdatedAt: foodItem.updatedAt,
+      } as any);
+    },
+
     async removeMealAction(id: string | number) {
       console.log(`[Store] Removing log ${id}...`);
       await removeMealLog(id);

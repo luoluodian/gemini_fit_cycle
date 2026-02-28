@@ -8,12 +8,14 @@ import { FoodItem } from '@/database/entity/food-item.entity';
 import { DietPlan } from '@/database/entity/diet-plan.entity';
 import { DietPlansModule } from '../diet-plans/diet-plans.module';
 import { UserModule } from '../user/user.module';
+import { FoodItemModule } from '../food-items/food-items.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([DailyRecord, MealLog, FoodItem, DietPlan]),
     DietPlansModule,
     UserModule,
+    FoodItemModule,
   ],
   controllers: [DietRecordsController],
   providers: [DietRecordsService],

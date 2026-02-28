@@ -146,6 +146,7 @@
       @submit="fetchInitialData"
       @delete="handleDeleteFood"
       @toggleFavorite="handleToggleFavorite"
+      @select-similar="handleSelectSimilar"
     />
   </view>
 </template>
@@ -259,8 +260,12 @@ const handleCategoryChange = (key: string) => {
   fetchPopular();
 };
 
+/**
+ * 审计点：差异化详情处理
+ * 1. 自建食物 (custom): 直接进入编辑弹窗，支持全量修改
+ * 2. 系统食物 (system): 进入详情展示弹窗，仅支持查看与收藏
+ */
 const handleViewDetail = (food: FoodItem) => {
-  // 核心逻辑：自建食物直接进编辑弹窗，系统食物进入详情弹窗
   if (food.type === "custom") {
     handleEditFood(food);
     return;
@@ -276,6 +281,7 @@ const handleCloseDetailModal = () => {
 const handleEditFood = (food: FoodItem) => {
   editingFood.value = food;
   showDetailModal.value = false;
+  // 延迟 100ms 以确保 Modal 切换动画不冲突
   setTimeout(() => {
     showCustomFoodModal.value = true;
   }, 100);
@@ -290,6 +296,23 @@ const handleCloseCustomFoodModal = () => {
   showCustomFoodModal.value = false;
 };
 
+/**
+ * 审计点：相似食材联动
+ * 点击推荐的相似官方食材后，自动关闭创建弹窗并开启详情页，
+ * 引导用户复用已有数据。
+ */
+const handleSelectSimilar = (food: FoodItem) => {
+  showCustomFoodModal.value = false;
+  setTimeout(() => {
+    handleViewDetail(food);
+  }, 300);
+};
+
+/**
+ * 审计点：收藏状态同步
+ * 实现 Optimistic UI (乐观UI) 思想，操作后立即修改本地 Ref，
+ * 同时异步同步服务器，提升交互流畅度。
+ */
 const handleToggleFavorite = async (food: any) => {
   if (!food) return;
   try {
@@ -302,11 +325,12 @@ const handleToggleFavorite = async (food: any) => {
       food.isFavorite = true;
       showSuccess("已收藏");
     }
-    // 同步更新列表中的状态
+    // 同步更新全部列表/热门列表中的状态
     const target = allFoods.value.find((f) => f.id === food.id);
     if (target) target.isFavorite = food.isFavorite;
 
     fetchPopular();
+    // 若当前在“我的收藏”分类，则需重刷列表
     if (selectedCategory.value === "favorites") fetchFoods();
   } catch (e: any) {
     showError(e.message || "操作失败");

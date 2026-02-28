@@ -44,6 +44,7 @@
       mode="edit"
       @close="closeEditModal"
       @confirm="handleConfirmEdit"
+      @sync="handleSyncFoodData"
     />
   </view>
 </template>
@@ -203,6 +204,20 @@ const handleConfirmEdit = async (payload: { food: any; quantity: number }) => {
     Taro.showToast({ title: '修改成功', icon: 'success' });
   } catch (e) {
     Taro.showToast({ title: '修改失败', icon: 'none' });
+  } finally {
+    Taro.hideLoading();
+  }
+};
+
+const handleSyncFoodData = async (latestFoodItem: any) => {
+  if (!editingFood.value?.id) return;
+  try {
+    Taro.showLoading({ title: '同步数据中...', mask: true });
+    await recordStore.syncMealAction(editingFood.value.id, latestFoodItem);
+    Taro.showToast({ title: '同步完成', icon: 'success' });
+    closeEditModal();
+  } catch (e) {
+    Taro.showToast({ title: '同步失败', icon: 'none' });
   } finally {
     Taro.hideLoading();
   }

@@ -91,6 +91,9 @@ export class MealLog {
   @Column({ name: 'is_recorded', type: 'boolean', default: true })
   isRecorded: boolean;
 
+  @Column({ name: 'source_updated_at', type: 'datetime', nullable: true, comment: '快照时原食材最后更新时间' })
+  sourceUpdatedAt: Date;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 

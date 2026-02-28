@@ -39,9 +39,7 @@
               >{{ currentTabLabel }}计划</text
             >
           </view>
-          <text
-            class="text-[18rpx] text-gray-300 font-black"
-          >
+          <text class="text-[18rpx] text-gray-300 font-black">
             共 {{ filteredPlans.length }} 个计划
           </text>
         </view>
@@ -103,7 +101,6 @@ import { showSuccess, showError, showLoading, hideToast } from "@/utils/toast";
 import { useNavigationStore } from "@/stores/navigation";
 import { usePlanStore } from "@/stores/plan";
 import { planService } from "@/services";
-import { PlanStatus } from "@/types/plan";
 import { Uploader } from "@nutui/icons-vue-taro";
 import { displayUnit } from "@/utils";
 
@@ -169,7 +166,7 @@ function formatPlans(plans: any[]) {
         "carb-cycle": "碳循环",
       };
       description = `类型：${typeMap[plan.type] || plan.type} | 剩余：${calculateDaysLeft(plan.endDate)}天`;
-      targets = `目标热量：${plan.targetCalories || 0} ${displayUnit('kcal')}`;
+      targets = `目标热量：${plan.targetCalories || 0} ${displayUnit("kcal")}`;
     } else if (plan.status === "draft") {
       tags.push("草稿", "待配置");
       description = `创建时间：${formatDate(plan.createdAt)}`;
@@ -183,17 +180,17 @@ function formatPlans(plans: any[]) {
         "carb-cycle": "碳循环",
       };
       description = `类型：${typeMap[plan.type] || plan.type} | ${plan.cycleDays}天 × ${plan.cycleCount}周期`;
-      targets = `目标热量：${plan.targetCalories || 0} ${displayUnit('kcal')}`;
+      targets = `目标热量：${plan.targetCalories || 0} ${displayUnit("kcal")}`;
       progressColor = "#10b981";
     } else if (plan.status === "paused") {
       tags.push("暂停中");
       description = `剩余：${calculateDaysLeft(plan.endDate)}天`;
-      targets = `目标热量：${plan.targetCalories || 0} ${displayUnit('kcal')}`;
+      targets = `目标热量：${plan.targetCalories || 0} ${displayUnit("kcal")}`;
       progressColor = "#f59e0b";
     } else if (plan.status === "completed") {
       tags.push("已完成");
       description = `结束日期：${formatDate(plan.updatedAt || plan.endDate)}`;
-      targets = `目标热量：${plan.targetCalories || 0} ${displayUnit('kcal')}`;
+      targets = `目标热量：${plan.targetCalories || 0} ${displayUnit("kcal")}`;
       progress = 100;
       progressColor = "#10b981";
     }

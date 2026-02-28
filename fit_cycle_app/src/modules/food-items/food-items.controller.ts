@@ -137,6 +137,11 @@ export class FoodItemsController {
     return this.service.checkNameExists(name);
   }
 
+  @Get('check-similarity')
+  async checkSimilarity(@Query('name') name: string) {
+    return this.service.checkSimilarity(name);
+  }
+
   /**
    * ========================================
    * 🔄 8. 同步系统食材

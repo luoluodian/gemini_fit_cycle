@@ -77,3 +77,10 @@ export async function unfavoriteFood(id: number | string): Promise<void> {
   return httpRequest.delete(`/food-items/${id}/favorite`);
 }
 
+/**
+ * 检查相似食材
+ */
+export async function checkFoodSimilarity(name: string): Promise<FoodItem[]> {
+  return httpRequest.get('/food-items/check-similarity', { name });
+}
+

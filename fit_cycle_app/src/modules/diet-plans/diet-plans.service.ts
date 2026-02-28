@@ -8,6 +8,8 @@ import { PlanMeal } from '@/database/entity/plan-meal.entity';
 import { PlanMealItem } from '@/database/entity/plan-meal-item.entity';
 import { DataDictionary } from '@/database/entity/data-dictionary.entity';
 import { PlanShare } from '@/database/entity/plan-share.entity';
+import { FoodItem } from '@/database/entity/food-item.entity';
+import { FoodItemsService } from '../food-items/food-items.service';
 import { CreateDietPlanDto } from '@/dtos/create-diet-plan.dto';
 import { UpdateDietPlanDto } from '@/dtos/update-diet-plan.dto';
 import { CreatePlanDayDto } from '@/dtos/create-plan-day.dto';
@@ -40,6 +42,7 @@ export class DietPlansService {
     private readonly dictRepo: Repository<DataDictionary>,
     @InjectRepository(PlanShare)
     private readonly shareRepo: Repository<PlanShare>,
+    private readonly foodItemsService: FoodItemsService,
     private readonly dataSource: DataSource,
   ) {}
 
@@ -91,6 +94,22 @@ export class DietPlansService {
       } else {
         // 只有天数不一致时，才执行毁灭性重置
         console.log(`[DietPlans] Performing full reset for plan ${planId} due to day count mismatch`);
+        
+        // 🚀 审计修复：重置前必须清理引用计数
+        const oldDays = await queryRunner.manager.find(PlanDay, {
+          where: { planId },
+          relations: { planMeals: { mealItems: true } }
+        });
+        const oldFoodItemIds: number[] = [];
+        oldDays.forEach(day => {
+          day.planMeals?.forEach(meal => {
+            meal.mealItems?.forEach(item => {
+              if (item.foodItemId) oldFoodItemIds.push(Number(item.foodItemId));
+            });
+          });
+        });
+        await this.decrementReferenceCounts(queryRunner.manager, oldFoodItemIds);
+
         // 1. 清理该计划下的所有旧天
         await queryRunner.manager.delete(PlanDay, { planId });
 
@@ -182,6 +201,15 @@ export class DietPlansService {
       const oldMealIds = oldMeals.map(m => m.id);
 
       if (oldMealIds.length > 0) {
+        const oldItems = await queryRunner.manager.find(PlanMealItem, {
+          where: { planMealId: In(oldMealIds) },
+          select: ['foodItemId']
+        });
+        for (const oi of oldItems) {
+          if (oi.foodItemId) {
+            await queryRunner.manager.decrement(FoodItem, { id: oi.foodItemId }, 'referenceCount', 1);
+          }
+        }
         await queryRunner.manager.delete(PlanMealItem, { planMealId: In(oldMealIds) });
         await queryRunner.manager.delete(PlanMeal, { id: In(oldMealIds) });
       }
@@ -200,17 +228,23 @@ export class DietPlansService {
           mealType,
           scheduledTime: mealDto.scheduledTime,
           note: mealDto.note,
-          mealItems: mealDto.items.map(itemDto => this.planMealItemRepo.create({
-            customName: itemDto.customName,
-            quantity: itemDto.quantity,
-            unit: itemDto.unit,
-            calories: itemDto.calories,
-            protein: itemDto.protein,
-            fat: itemDto.fat,
-            carbs: itemDto.carbs,
-            fiber: itemDto.fiber,
-            sortOrder: itemDto.sortOrder,
-          }))
+          mealItems: mealDto.items.map(itemDto => {
+            if (itemDto.foodItemId) {
+              queryRunner.manager.increment(FoodItem, { id: itemDto.foodItemId }, 'referenceCount', 1);
+            }
+            return this.planMealItemRepo.create({
+              foodItemId: itemDto.foodItemId,
+              customName: itemDto.customName,
+              quantity: itemDto.quantity,
+              unit: itemDto.unit,
+              calories: itemDto.calories,
+              protein: itemDto.protein,
+              fat: itemDto.fat,
+              carbs: itemDto.carbs,
+              fiber: itemDto.fiber,
+              sortOrder: itemDto.sortOrder,
+            });
+          })
         });
         newMeals.push(meal);
       }
@@ -230,10 +264,30 @@ export class DietPlansService {
   }
 
   /**
+   * 批量减少食材引用计数的辅助方法
+   */
+  private async decrementReferenceCounts(manager: any, foodItemIds: number[]) {
+    const validIds = foodItemIds.filter(id => !!id);
+    if (validIds.length === 0) return;
+    
+    const countMap = validIds.reduce((acc, id) => {
+      acc[id] = (acc[id] || 0) + 1;
+      return acc;
+    }, {});
+
+    for (const [id, count] of Object.entries(countMap)) {
+      await this.foodItemsService.adjustReferenceCount(manager, Number(id), -(count as number));
+    }
+  }
+
+  /**
    * 批量保存计划模板 (覆盖式)
    */
   async saveTemplates(planId: number, userId: number, dto: SavePlanTemplatesDto) {
-    const plan = await this.planRepo.findOne({ where: { id: planId, userId } });
+    const plan = await this.planRepo.findOne({ 
+      where: { id: planId, userId },
+      relations: { planDays: { planMeals: { mealItems: true } } }
+    });
     if (!plan) throw new NotFoundException('计划不存在或无权限');
 
     const queryRunner = this.dataSource.createQueryRunner();
@@ -241,31 +295,39 @@ export class DietPlansService {
     await queryRunner.startTransaction();
 
     try {
+      // 🚀 审计修复：清理旧数据前，先扣减引用计数
+      const oldFoodItemIds: number[] = [];
+      plan.planDays?.forEach(day => {
+        day.planMeals?.forEach(meal => {
+          meal.mealItems?.forEach(item => {
+            if (item.foodItemId) oldFoodItemIds.push(Number(item.foodItemId));
+          });
+        });
+      });
+      await this.decrementReferenceCounts(queryRunner.manager, oldFoodItemIds);
+
       // 1. 清理现有配置 (物理删除 plan_days，会级联删除 meals 和 items)
       await queryRunner.manager.delete(PlanDay, { planId });
 
       // 2. 构建实体树
       const dayEntities: PlanDay[] = [];
-      
-      // 预加载所有需要的 MealType 字典，避免循环查询
       const mealTypes = await this.dictRepo.find({ where: { category: 'MealType' } });
       const mealTypeMap = new Map(mealTypes.map(m => [Number(m.id), m]));
 
       for (const dayDto of dto.templates) {
         const day = this.planDayRepo.create({
-          planId, // 关联 ID
+          planId,
           dayNumber: dayDto.dayNumber,
           carbType: dayDto.carbType,
           targetCalories: dayDto.targetCalories,
           targetProtein: dayDto.targetProtein,
           targetFat: dayDto.targetFat,
           targetCarbs: dayDto.targetCarbs,
-          planMeals: [] // 初始化数组
+          planMeals: []
         });
 
         for (const mealDto of dayDto.meals) {
           const mealType = mealTypeMap.get(Number(mealDto.mealTypeId));
-          // 如果找不到类型，跳过或报错？这里选择宽容跳过或使用默认，或报错
           if (!mealType) throw new NotFoundException(`餐次类型 ID ${mealDto.mealTypeId} 不存在`);
 
           const meal = this.planMealRepo.create({
@@ -275,26 +337,29 @@ export class DietPlansService {
             mealItems: []
           });
 
-                      for (const itemDto of mealDto.items) {
-                        const item = this.planMealItemRepo.create({
-                          foodItemId: itemDto.foodItemId,
-                          customName: itemDto.customName,
-                          quantity: itemDto.quantity,
-                          unit: itemDto.unit,
-                          calories: itemDto.calories,
-                          protein: itemDto.protein,
-                          fat: itemDto.fat,
-                          carbs: itemDto.carbs,
-                          fiber: itemDto.fiber,
-                          sortOrder: itemDto.sortOrder,
-                        });
-                        meal.mealItems.push(item);
-                      }          day.planMeals.push(meal);
+          for (const itemDto of mealDto.items) {
+            if (itemDto.foodItemId) {
+              await this.foodItemsService.adjustReferenceCount(queryRunner.manager, itemDto.foodItemId, 1);
+            }
+            const item = this.planMealItemRepo.create({
+              foodItemId: itemDto.foodItemId,
+              customName: itemDto.customName,
+              quantity: itemDto.quantity,
+              unit: itemDto.unit,
+              calories: itemDto.calories,
+              protein: itemDto.protein,
+              fat: itemDto.fat,
+              carbs: itemDto.carbs,
+              fiber: itemDto.fiber,
+              sortOrder: itemDto.sortOrder,
+            });
+            meal.mealItems.push(item);
+          }
+          day.planMeals.push(meal);
         }
         dayEntities.push(day);
       }
 
-      // 3. 批量保存 (依赖 cascade: true)
       if (dayEntities.length > 0) {
         await queryRunner.manager.save(PlanDay, dayEntities);
       }
@@ -560,8 +625,13 @@ export class DietPlansService {
     if (userId && Number(meal.planDay.plan.userId) !== Number(userId))
       throw new NotFoundException('无权限操作');
     
-    const item = this.planMealItemRepo.create({ ...dto, planMeal: meal });
-    return this.planMealItemRepo.save(item);
+    return await this.dataSource.transaction(async (manager) => {
+      if (dto.foodItemId) {
+        await this.foodItemsService.adjustReferenceCount(manager, dto.foodItemId, 1);
+      }
+      const item = this.planMealItemRepo.create({ ...dto, planMeal: meal });
+      return await manager.save(item);
+    });
   }
 
   /**
@@ -579,8 +649,20 @@ export class DietPlansService {
     if (!item) throw new NotFoundException('餐次食材明细不存在');
     if (userId && Number(item.planMeal.planDay.plan.userId) !== Number(userId))
       throw new NotFoundException('无权限操作');
-    Object.assign(item, dto);
-    return this.planMealItemRepo.save(item);
+
+    return await this.dataSource.transaction(async (manager) => {
+      // 🚀 审计修复：如果食材 ID 变更，需要同步更新计数
+      if (dto.foodItemId !== undefined && Number(dto.foodItemId) !== Number(item.foodItemId)) {
+        if (item.foodItemId) {
+          await this.foodItemsService.adjustReferenceCount(manager, item.foodItemId, -1);
+        }
+        if (dto.foodItemId) {
+          await this.foodItemsService.adjustReferenceCount(manager, dto.foodItemId, 1);
+        }
+      }
+      Object.assign(item, dto);
+      return await manager.save(item);
+    });
   }
 
   /**
@@ -589,24 +671,40 @@ export class DietPlansService {
   async removePlanDay(id: number, userId?: number) {
     const day = await this.planDayRepo.findOne({
       where: { id },
-      relations: { plan: true },
+      relations: { plan: true, planMeals: { mealItems: true } },
     });
     if (!day) throw new NotFoundException('计划日不存在');
     if (userId && Number(day.plan.userId) !== Number(userId))
       throw new NotFoundException('无权限操作');
-    await this.planDayRepo.remove(day);
+
+    await this.dataSource.transaction(async (manager) => {
+      const foodItemIds: number[] = [];
+      day.planMeals?.forEach(meal => {
+        meal.mealItems?.forEach(item => {
+          if (item.foodItemId) foodItemIds.push(Number(item.foodItemId));
+        });
+      });
+      await this.decrementReferenceCounts(manager, foodItemIds);
+      await manager.remove(day);
+    });
+    
     return { success: true };
   }
 
   async removePlanMeal(id: number, userId?: number) {
     const meal = await this.planMealRepo.findOne({
       where: { id },
-      relations: { planDay: { plan: true } },
+      relations: { planDay: { plan: true }, mealItems: true },
     });
     if (!meal) throw new NotFoundException('计划餐次不存在');
     if (userId && Number(meal.planDay.plan.userId) !== Number(userId))
       throw new NotFoundException('无权限操作');
-    await this.planMealRepo.remove(meal);
+
+    await this.dataSource.transaction(async (manager) => {
+      const foodItemIds = meal.mealItems?.map(i => Number(i.foodItemId)).filter(id => !!id) || [];
+      await this.decrementReferenceCounts(manager, foodItemIds);
+      await manager.remove(meal);
+    });
     return { success: true };
   }
 
@@ -615,10 +713,16 @@ export class DietPlansService {
       where: { id },
       relations: { planMeal: { planDay: { plan: true } } },
     });
-    if (!item) throw new NotFoundException('餐次明细不存在');
+    if (!item) throw new NotFoundException('餐次食材明细不存在');
     if (userId && Number(item.planMeal.planDay.plan.userId) !== Number(userId))
       throw new NotFoundException('无权限操作');
-    await this.planMealItemRepo.remove(item);
+
+    await this.dataSource.transaction(async (manager) => {
+      if (item.foodItemId) {
+        await manager.decrement(FoodItem, { id: item.foodItemId }, 'referenceCount', 1);
+      }
+      await manager.remove(item);
+    });
     return { success: true };
   }
 
@@ -735,8 +839,12 @@ export class DietPlansService {
           const savedMeal = await queryRunner.manager.save(newMeal);
 
           for (const oldItem of oldMeal.mealItems) {
+            if (oldItem.foodItemId) {
+              await this.foodItemsService.adjustReferenceCount(queryRunner.manager, oldItem.foodItemId, 1);
+            }
             const newItem = queryRunner.manager.create(PlanMealItem, {
               planMeal: savedMeal,
+              foodItemId: oldItem.foodItemId,
               customName: oldItem.customName,
               quantity: oldItem.quantity,
               unit: oldItem.unit,
@@ -788,13 +896,28 @@ export class DietPlansService {
    * 删除计划 (软删除)
    */
   async removePlan(id: number, userId?: number) {
-    const plan = await this.planRepo.findOne({ where: { id } });
+    const plan = await this.planRepo.findOne({ 
+      where: { id },
+      relations: { planDays: { planMeals: { mealItems: true } } }
+    });
     if (!plan) throw new NotFoundException('计划不存在');
     if (userId && Number(plan.userId) !== Number(userId))
       throw new NotFoundException('无权限删除该计划');
     
-    // 使用 softRemove
-    await this.planRepo.softRemove(plan);
+    await this.dataSource.transaction(async (manager) => {
+      const foodItemIds: number[] = [];
+      plan.planDays?.forEach(day => {
+        day.planMeals?.forEach(meal => {
+          meal.mealItems?.forEach(item => {
+            if (item.foodItemId) foodItemIds.push(Number(item.foodItemId));
+          });
+        });
+      });
+      await this.decrementReferenceCounts(manager, foodItemIds);
+      // 使用 softRemove
+      await manager.softRemove(plan);
+    });
+
     return { success: true };
   }
 }

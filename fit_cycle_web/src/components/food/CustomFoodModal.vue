@@ -51,6 +51,7 @@
             type="text"
             class="flex-1 px-3 py-1.5 border-[1rpx] border-solid border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 transition-all text-sm"
             placeholder="例如：自制沙拉"
+            @input="(e: any) => handleNameInput(e.detail.value)"
           />
         </view>
         <view class="flex items-center gap-2 w-32">
@@ -75,6 +76,22 @@
               />
             </view>
           </picker>
+        </view>
+      </view>
+
+      <!-- 相似食材提醒 -->
+      <view v-if="similarFoods.length > 0" class="px-2 animate-fade-in">
+        <text class="text-[18rpx] text-gray-400 font-bold mb-1 block">库中已有类似食材：</text>
+        <view class="flex flex-wrap gap-2">
+          <view 
+            v-for="sf in similarFoods" 
+            :key="sf.id"
+            class="px-2 py-0.5 bg-gray-50 border border-solid border-gray-200 rounded-md flex items-center gap-1 active:bg-emerald-50"
+            @click="$emit('select-similar', sf)"
+          >
+            <text class="text-[18rpx]">{{ sf.imageUrl || '🥗' }}</text>
+            <text class="text-[18rpx] text-gray-600 font-bold">{{ sf.name }}</text>
+          </view>
         </view>
       </view>
 
@@ -232,7 +249,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, computed } from "vue";
+import { ref, watch, computed, onMounted } from "vue";
 import Taro from "@tarojs/taro";
 import BaseModal from "../common/BaseModal.vue";
 import { Heart, HeartFill, Del } from "@nutui/icons-vue-taro";
@@ -240,10 +257,17 @@ import {
   FoodCategory,
   createFoodItem,
   updateFoodItem,
+  checkFoodSimilarity,
 } from "@/services/modules/food";
 import type { FoodItem } from "@/services/modules/food";
+import {
+  getDictByCategory,
+  type DictItem,
+} from "@/services/modules/dict";
 import { showError, showSuccess } from "@/utils/toast";
 import { displayUnit } from "@/utils";
+import { getTheoreticalCalories } from "@/utils/nutrition";
+import { debounce } from "lodash-es";
 
 const props = defineProps<{
   visible: boolean;
@@ -258,10 +282,48 @@ const emit = defineEmits<{
 }>();
 
 const submitting = ref(false);
+const similarFoods = ref<FoodItem[]>([]);
+const dictUnits = ref<DictItem[]>([]);
 
-const unitLabels = ["克", "毫升", "个/片", "杯", "勺"];
-const units = ["g", "ml", "piece", "cup", "tbsp"];
+const loadUnits = async () => {
+  try {
+    const res = await getDictByCategory("unit");
+    dictUnits.value = res;
+  } catch (e) {
+    console.error("Failed to load units", e);
+  }
+};
+
+/**
+ * 🚀 审计修复：维度锁定逻辑
+ * 若正在编辑已有食材，锁定单位列表，仅显示同维度单位（如重量类只能选 g/kg）
+ */
+const filteredUnits = computed(() => {
+  if (!props.editingFood || dictUnits.value.length === 0) return dictUnits.value;
+  
+  const currentUnit = dictUnits.value.find(u => u.code === props.editingFood?.unit);
+  const currentDim = currentUnit?.extInfo?.dimension;
+  
+  if (!currentDim) return dictUnits.value;
+  
+  return dictUnits.value.filter(u => u.extInfo?.dimension === currentDim);
+});
+
+const unitLabels = computed(() => filteredUnits.value.map(u => u.text));
+const units = computed(() => filteredUnits.value.map(u => u.code));
 const unitIndex = ref(0);
+
+const handleNameInput = debounce(async (val: string) => {
+  if (!val || props.editingFood) {
+    similarFoods.value = [];
+    return;
+  }
+  try {
+    similarFoods.value = await checkFoodSimilarity(val);
+  } catch (e) {
+    console.error("Similarity check failed", e);
+  }
+}, 500);
 
 const categoryOptions = [
   {
@@ -394,6 +456,10 @@ watch(
   },
 );
 
+onMounted(() => {
+  loadUnits();
+});
+
 const handleUnitChange = (e: any) => {
   const index = e.detail.value;
   unitIndex.value = index;
@@ -419,23 +485,38 @@ const handleSubmit = async () => {
   const p = Number(formData.value.protein || 0);
   const f = Number(formData.value.fat || 0);
   const c = Number(formData.value.carbs || 0);
+  const bc = Number(formData.value.baseCount || 100);
 
-  // 1g碳水4kcal, 1g脂肪9kcal, 1g蛋白质4kcal
-  const expectedCalories = Math.round(p * 4 + f * 9 + c * 4);
+  /**
+   * 审计点 1：物理平衡校验 (Physics Balance)
+   * 逻辑：蛋白质+脂肪+碳水的总重量不能超过基数总量 (通常为100g)
+   * 若不通过，直接拦截，因为该数据违反物理定律。
+   */
+  if (p + f + c > bc) {
+    showError("营养素总和不能超过基准重量");
+    return;
+  }
+
+  /**
+   * 审计点 2：热量平衡校验 (Thermal Validation)
+   * 使用 NutritionUtil 计算理论热量
+   */
+  const expectedCalories = getTheoreticalCalories(p, f, c);
 
   let shouldRemind = false;
   if (inputCalories < expectedCalories) {
-    // 输入值小于理论最小值，直接提醒
+    // 物理拦截：输入热量小于三大营养素最低理论热量
     shouldRemind = true;
   } else if (inputCalories > expectedCalories) {
-    // 输入值大于理论值，走阈值逻辑 (差异 > 10% 且 > 15kcal)
+    // 弹性提醒：输入热量大于理论热量（可能含有酒精或其他热量源）
+    // 策略：差异超过 10% 且 绝对值超过 15kcal 时触发提醒
     const diff = inputCalories - expectedCalories;
     if (diff > inputCalories * 0.1 && diff > 15) {
       shouldRemind = true;
     }
   }
 
-  // 校验逻辑
+  // 提醒逻辑：仅作 UI 提示，允许用户强行保存（针对特殊添加剂或算法尾差）
   if (inputCalories > 0 && shouldRemind) {
     const res = await Taro.showModal({
       title: "数据校验提醒",

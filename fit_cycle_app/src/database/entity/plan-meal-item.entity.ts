@@ -8,7 +8,7 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { PlanMeal } from './plan-meal.entity';
-// import { FoodItem } from './food-item.entity';
+import { FoodItem } from './food-item.entity';
 
 /**
  * 计划餐次食材明细表。
@@ -29,9 +29,9 @@ export class PlanMealItem {
   @JoinColumn({ name: 'plan_meal_id' })
   planMeal: PlanMeal; // 所属餐次
 
-  // @ManyToOne(() => FoodItem, (food) => food.planMealItems, { nullable: true })
-  // @JoinColumn({ name: 'food_item_id' })
-  // foodItem?: FoodItem; // 引用的食材
+  @ManyToOne(() => FoodItem, { nullable: true })
+  @JoinColumn({ name: 'food_item_id' })
+  foodItem?: FoodItem; // 引用的食材
 
   @Column({ name: 'custom_name', length: 255, nullable: true })
   customName?: string; // 自定义食材名称（当没有引用食材时）

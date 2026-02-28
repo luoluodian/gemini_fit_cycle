@@ -37,6 +37,9 @@ export class DataDictionary {
   @Column({ type: 'int', default: 0, name: 'sort_order' })
   sortOrder: number; // 排序值
 
+  @Column({ type: 'json', nullable: true, name: 'ext_info', comment: '额外配置信息' })
+  extInfo?: any;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date; // 创建时间
 

@@ -28,6 +28,28 @@
     </view>
 
     <view v-if="food" class="pb-2">
+      <!-- 已下架提醒 -->
+      <view v-if="food.isArchived" class="px-4 mb-4">
+        <view class="bg-gray-100 border border-gray-200 rounded-xl p-3 flex items-center gap-2">
+          <view class="w-2 h-2 rounded-full bg-gray-400"></view>
+          <text class="text-xs text-gray-500 font-bold">该食材已下架 (仅作历史记录展示)</text>
+        </view>
+      </view>
+
+      <!-- 同步提醒 -->
+      <view v-if="needsSync" class="px-4 mb-4">
+        <view class="bg-orange-50 border border-orange-200 rounded-xl p-3 flex items-center justify-between">
+          <view class="flex items-center gap-2">
+            <view class="w-2 h-2 rounded-full bg-orange-500 animate-ping"></view>
+            <text class="text-xs text-orange-700 font-bold">食材营养数据已更新</text>
+          </view>
+          <view 
+            class="px-3 py-1 bg-orange-600 text-white text-[20rpx] font-black rounded-full active:scale-95 transition-all"
+            @click="handleSync"
+          >同步最新数据</view>
+        </view>
+      </view>
+
       <view class="text-center mb-5">
         <text class="text-5xl mb-3 block leading-none animate-pop-in">{{ food.imageUrl || food.emoji || "🍎" }}</text>
         <view class="inline-block px-3 py-1 bg-emerald-50 rounded-full border border-solid border-emerald-100">
@@ -99,6 +121,7 @@ import NutritionMacro from "./NutritionMacro.vue";
 import { Close, Heart, HeartFill, Edit, Del } from "@nutui/icons-vue-taro";
 import { FOOD_CATEGORIES } from "@/constants/food-categories";
 import { displayUnit } from "@/utils";
+import { calculateMacros } from "@/utils/nutrition";
 
 interface Props {
   visible: boolean;
@@ -116,10 +139,31 @@ const props = withDefaults(defineProps<Props>(), {
   isFavorite: false,
   showFavorite: true
 });
-const emit = defineEmits(["close", "confirm", "toggleFavorite", "edit", "delete"]);
+const emit = defineEmits(["close", "confirm", "toggleFavorite", "edit", "delete", "sync"]);
 
 const localQuantity = ref(100);
 const isEditMode = computed(() => props.mode === 'edit');
+
+// 是否需要同步最新食材数据
+/**
+ * 审计点：快照过期检测 (Stale Snapshot Detection)
+ * 场景：用户饮食记录存储的是快照（sourceUpdatedAt）。
+ * 逻辑：若食材原型的最后修改时间 (item.updatedAt) 晚于记录中的快照时间，
+ * 则提示用户进行数据同步，保证营养报告的准确性。
+ */
+const needsSync = computed(() => {
+  if (!props.food || !isEditMode.value) return false;
+  const log = props.food;
+  const item = log.foodItem;
+  if (!item || !log.sourceUpdatedAt || !item.updatedAt) return false;
+  
+  return new Date(item.updatedAt).getTime() > new Date(log.sourceUpdatedAt).getTime();
+});
+
+const handleSync = () => {
+  if (!props.food?.foodItem) return;
+  emit('sync', props.food.foodItem);
+};
 
 // 是否为自定义食物（允许编辑/删除）
 const isCustom = computed(() => props.food?.type === 'custom' || props.food?.isCustom);
@@ -132,22 +176,20 @@ watch([() => props.visible, () => props.food], ([newVis, newFood]) => {
   }
 }, { immediate: true });
 
+/**
+ * 审计点：动态营养素比例计算
+ * 计算公式：(摄入量 / 基准基数) * 基准营养素
+ */
 const displayNutrition = computed(() => {
-  if (!props.food) return { calories: 0, protein: 0, fat: 0, carbs: 0 };
-  const base = props.food.baseCount || 100;
-  // 无论是什么对象，优先取快照基准值，否则取原始值
-  const calories = props.food.baseCalories || props.food.calories || 0;
-  const protein = props.food.baseProtein || props.food.protein || 0;
-  const fat = props.food.baseFat || props.food.fat || 0;
-  const carbs = props.food.baseCarbs || props.food.carbs || 0;
+  if (!props.food) return { calories: 0, protein: '0', fat: '0', carbs: '0' };
   
-  const ratio = localQuantity.value / base;
-  return {
-    calories: Math.round(calories * ratio),
-    protein: (protein * ratio).toFixed(1),
-    fat: (fat * ratio).toFixed(1),
-    carbs: (carbs * ratio).toFixed(1),
-  };
+  // 无论是什么对象（食材原型或饮食记录快照），优先取记录快照值，保证历史一致性
+  return calculateMacros(localQuantity.value, props.food.baseCount, {
+    calories: props.food.baseCalories || props.food.calories || 0,
+    protein: props.food.baseProtein || props.food.protein || 0,
+    fat: props.food.baseFat || props.food.fat || 0,
+    carbs: props.food.baseCarbs || props.food.carbs || 0,
+  });
 });
 
 const modalVisible = computed({

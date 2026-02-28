@@ -6,18 +6,22 @@ import {
   IsEnum,
   Min,
   Max,
+  Validate,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { FoodCategory } from '@/database/entity/food-item.entity';
+import { IsPhysicsBalanced } from '@/common/validators/physics-balance.validator';
 
 /**
  * ================================
  * CreateFoodItemDto
  * 新增食材 DTO
+ * 校验点：集成物理守恒装饰器
  * ================================
  */
 export class CreateFoodItemDto {
   /** 食材名称 */
+  @IsPhysicsBalanced({ message: "食材成分(P+F+C)物理总量不能超过基准重量" })
   @IsString()
   name: string;
 
@@ -79,6 +83,7 @@ export class CreateFoodItemDto {
  */
 export class UpdateFoodItemDto {
   /** 食材名称 */
+  @IsPhysicsBalanced()
   @IsOptional()
   @IsString()
   name?: string;
