@@ -1,6 +1,6 @@
 <template>
   <view class="min-h-screen bg-gray-50">
-    <BaseNavBar title="今日记录" />
+    <BaseNavBar title="今日记录" back-mode="none" />
     
     <view class="px-4 py-6 pb-tabbar">
       <DateNavigation v-model="currentDate" :plan="computedPlanInfo" />
@@ -74,20 +74,28 @@ const isSubmitting = ref(false);
 const navStore = useNavigationStore();
 
 /**
- * 🚀 核心优化：动态餐次列表
- * 将标准 4 餐与计划中的自定义餐次合并并去重
+ * 🚀 核心优化：动态餐次列表 (智能排序)
+ * 排序逻辑：
+ * 1. 待办优先：包含 ghost (计划待记录) 或 draft (已添加待确认) 的餐次置顶
+ * 2. 时间匹配：匹配当前小时所属的餐次紧随其后 (早 5-10, 午 11-14, 晚 17-21)
+ * 3. 自然顺序：早餐 -> 午餐 -> 晚餐 -> 加餐
  */
 const mealTypes = computed(() => {
   const standard = [
-    { key: 'breakfast', label: '早餐', order: 1 },
-    { key: 'lunch', label: '午餐', order: 2 },
-    { key: 'dinner', label: '晚餐', order: 3 },
-    { key: 'snacks', label: '加餐', order: 4 }
+    { key: "breakfast", label: "早餐", order: 1, range: [5, 10] },
+    { key: "lunch", label: "午餐", order: 2, range: [11, 14] },
+    { key: "dinner", label: "晚餐", order: 3, range: [17, 21] },
+    { key: "snacks", label: "加餐", order: 4, range: [0, 24] },
   ];
 
   const plannedDay = recordStore.plannedDay;
   const actualLogs = recordStore.mealLogs || [];
-  const result: { key: string; label: string; order: number }[] = [];
+  const result: {
+    key: string;
+    label: string;
+    order: number;
+    range?: number[];
+  }[] = [];
 
   // 1. 提取计划中的餐次
   if (plannedDay?.planMeals) {
@@ -96,26 +104,87 @@ const mealTypes = computed(() => {
       const text = pm.note || pm.mealType?.text;
       const order = pm.mealType?.value || pm.mealType?.sortOrder || 99;
       const finalKey = code || `custom_${pm.id}`;
-      if (!result.some(r => r.key === finalKey)) {
-        result.push({ key: finalKey, label: text || '自定义餐次', order });
+      if (!result.some((r) => r.key === finalKey)) {
+        // 尝试匹配标准时间范围
+        const std = standard.find((s) => s.key === code);
+        result.push({
+          key: finalKey,
+          label: text || "自定义餐次",
+          order,
+          range: std?.range,
+        });
       }
     });
   }
 
   // 2. 核心补全：如果某标准餐次不在计划中，但已有记录，必须显示
-  standard.forEach(s => {
-    const hasLogs = actualLogs.some(log => log.mealType === s.key);
-    if (hasLogs && !result.some(r => r.key === s.key)) {
+  standard.forEach((s) => {
+    const hasLogs = actualLogs.some((log) => log.mealType === s.key);
+    if (hasLogs && !result.some((r) => r.key === s.key)) {
       result.push(s);
     }
   });
 
   // 3. 兜底策略：如果没有任何餐次（空计划），显示标准 4 餐以供记录
-  if (result.length === 0) {
-    return standard;
-  }
+  const finalResult = result.length === 0 ? [...standard] : result;
 
-  return result.sort((a, b) => a.order - b.order);
+  // 4. 执行智能排序 (多维权重)
+  const currentHour = new Date().getHours();
+
+  return finalResult.sort((a, b) => {
+    // 维度 1: 检查是否有未完成项 (Pending Status) - 绝对最高优先级
+    const checkPending = (key: string) => {
+      const logs = actualLogs.filter((l) => l.mealType === key);
+      // 如果有任何项 isRecorded 为 false (或者是 0)，即为 pending
+      const hasUnconfirmed = logs.some((l) => Number(l.isRecorded) === 0);
+
+      // 检查计划中是否有 ghost (计划中有但 logs 中没对应的)
+      let hasGhost = false;
+      const pMeal = plannedDay?.planMeals?.find(
+        (pm: any) => (pm.mealType?.code || `custom_${pm.id}`) === key,
+      );
+      if (pMeal?.mealItems) {
+        hasGhost = pMeal.mealItems.some((pItem: any) => {
+          const pFoodId = pItem.foodItemId || pItem.foodId;
+          const pName = pItem.customName || pItem.foodName;
+          return !logs.some(
+            (l) =>
+              (l.foodId && pFoodId && String(l.foodId) === String(pFoodId)) ||
+              l.foodName === pName,
+          );
+        });
+      }
+      return hasUnconfirmed || hasGhost;
+    };
+
+    const isAPending = checkPending(a.key);
+    const isBPending = checkPending(b.key);
+    if (isAPending !== isBPending) return isAPending ? -1 : 1;
+
+    // 维度 2: 检查当前时间匹配 (Time Focus) - 针对有定义范围的标准餐次
+    const isATime =
+      a.range && currentHour >= a.range[0] && currentHour <= a.range[1];
+    const isBTime =
+      b.range && currentHour >= b.range[0] && currentHour <= b.range[1];
+    if (isATime !== isBTime) return isATime ? -1 : 1;
+
+    // 维度 3: 最近操作活跃度 (Activity Focus) - 针对所有餐次，尤其是非标准餐次
+    const getLatestTime = (key: string) => {
+      const logs = actualLogs.filter((l) => l.mealType === key);
+      if (logs.length === 0) return 0;
+      return Math.max(
+        ...logs.map((l) =>
+          new Date(l.updatedAt || l.createdAt || 0).getTime(),
+        ),
+      );
+    };
+    const lastA = getLatestTime(a.key);
+    const lastB = getLatestTime(b.key);
+    if (lastA !== lastB) return lastB - lastA; // 刚录入过或修改过的往前排
+
+    // 维度 4: 默认自然顺序 (Order) - 保底逻辑
+    return a.order - b.order;
+  });
 });
 
 /**

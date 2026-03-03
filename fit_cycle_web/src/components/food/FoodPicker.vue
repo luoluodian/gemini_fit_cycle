@@ -5,11 +5,11 @@
           :visible="visible"
           position="bottom"
           :title="title"
-          content-class="bg-white rounded-t-3xl h-[65vh] flex flex-col"
+          content-class="bg-white rounded-t-3xl flex flex-col"
           body-class="p-0 flex flex-col flex-1 min-h-0 overflow-hidden"
           @close="handleClose"      @update:visible="(val) => !val && handleClose()"
     >
-      <!-- 1. 固定头部：搜索与分类 -->
+      <!-- 1. 固定头部：搜索与分类 (不计入 800rpx 列表区) -->
       <view class="flex-shrink-0 z-10 animate-fade-in-up px-4">
         <!-- 搜索栏 -->
         <view class="mb-3">
@@ -29,8 +29,8 @@
         </view>
       </view>
 
-      <!-- 2. 食物列表卡片 (直接使用食材库模块结构) -->
-      <view class="px-4 pb-6 flex-1 min-h-0">
+      <!-- 2. 食物列表卡片 (核心优化：高度锁定为 800rpx) -->
+      <view class="px-4 pb-6 flex-shrink-0 h-[800rpx]">
         <GlassCard
           card-class="py-3 px-4 flex flex-col h-full"
           shadow="lg"
@@ -48,6 +48,7 @@
             :loading="loading"
             :finished="!hasMore && foodsList.length > 0"
             content-class="pr-2 space-y-2"
+            height="100%"
             @reach-end="handleLoadMore"
           >
             <FoodItemCard

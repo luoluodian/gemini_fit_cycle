@@ -380,14 +380,14 @@ const handleSave = async () => {
       mealTypeId: typeIdMap[key] || 4,
       note: localTemplate.value.customLabels?.[key] || "",
       items: (localTemplate.value.meals[key] || []).map((f: any) => ({
-        foodItemId: f.foodItemId || f.id,
+        foodItemId: (f.foodItemId || f.id) ? Number(f.foodItemId || f.id) : undefined,
         customName: f.name,
-        quantity: f.quantity,
+        quantity: Number(f.quantity || 0),
         unit: f.unit,
-        calories: f.calories,
-        protein: f.protein,
-        fat: f.fat,
-        carbs: f.carbs,
+        calories: Number(f.calories || 0),
+        protein: Number(f.protein || 0),
+        fat: Number(f.fat || 0),
+        carbs: Number(f.carbs || 0),
       })),
     }));
 

@@ -135,12 +135,20 @@ export class DietRecordsService {
       foodData = {
         foodId,
         foodName: food.name,
-        unit: food.unit || 'g',
+        unit: food.unit || "g",
         baseCount: bc,
-        calories: Math.round(NutritionUtil.calculate(food.calories, quantity, bc)),
-        protein: NutritionUtil.format(NutritionUtil.calculate(food.protein, quantity, bc)),
-        fat: NutritionUtil.format(NutritionUtil.calculate(food.fat, quantity, bc)),
-        carbs: NutritionUtil.format(NutritionUtil.calculate(food.carbs, quantity, bc)),
+        calories: Math.round(
+          NutritionUtil.calculate(food.calories, quantity, bc),
+        ),
+        protein: NutritionUtil.format(
+          NutritionUtil.calculate(food.protein, quantity, bc),
+        ),
+        fat: NutritionUtil.format(
+          NutritionUtil.calculate(food.fat, quantity, bc),
+        ),
+        carbs: NutritionUtil.format(
+          NutritionUtil.calculate(food.carbs, quantity, bc),
+        ),
         baseCalories: food.calories,
         baseProtein: food.protein,
         baseFat: food.fat,
@@ -157,37 +165,46 @@ export class DietRecordsService {
       const cal = Number(dto.calories || 0);
 
       if (p + f + c > bc) {
-        throw new BadRequestException(`自定义记录物理数值不合理: 三大营养素之和(${p+f+c}g)超过了基准量(${bc}g)`);
+        throw new BadRequestException(
+          `自定义记录物理数值不合理: 三大营养素之和(${p + f + c}g)超过了基准量(${bc}g)`,
+        );
       }
 
       const theoretical = NutritionUtil.calculateTheoreticalCalories(p, f, c);
       const threshold = Math.max(theoretical * 0.2, 30);
       if (cal < theoretical - threshold || cal > theoretical + threshold) {
         throw new BadRequestException(
-          `自定义记录热量数值不合理: 录入 ${cal}kcal, 理论计算约 ${Math.round(theoretical)}kcal.`
+          `自定义记录热量数值不合理: 录入 ${cal}kcal, 理论计算约 ${Math.round(theoretical)}kcal.`,
         );
       }
 
       foodData = {
         foodId: null,
-        foodName: dto.foodName || '自定义食材',
-        unit: dto.unit || 'g',
+        foodName: dto.foodName || "自定义食材",
+        unit: dto.unit || "g",
         baseCount: bc,
         calories: cal,
         protein: p,
         fat: f,
         carbs: c,
-        baseCalories: cal, // 对于自定义，基准设为当前
-        baseProtein: p,
-        baseFat: f,
-        baseCarbs: c,
+        // 🚀 核心纠偏：自定义录入时，后端通过输入的 quantity 逆算出基准单价 (per baseCount)
+        // 确保后续在修改该记录重量时，能按正确的比例计算
+        baseCalories: Math.round(NutritionUtil.calculate(cal, bc, quantity)),
+        baseProtein: NutritionUtil.format(
+          NutritionUtil.calculate(p, bc, quantity),
+        ),
+        baseFat: NutritionUtil.format(NutritionUtil.calculate(f, bc, quantity)),
+        baseCarbs: NutritionUtil.format(
+          NutritionUtil.calculate(c, bc, quantity),
+        ),
       };
     }
 
     return await this.dataSource.transaction(async (manager) => {
       const record = await this.getOrCreateDailyRecord(manager, userId, date);
-      
-      const result = await manager.createQueryBuilder()
+
+      const result = await manager
+        .createQueryBuilder()
         .insert()
         .into(MealLog)
         .values({
@@ -213,36 +230,47 @@ export class DietRecordsService {
   async syncMealFromPlan(userId: number, dto: SyncMealDto) {
     const { date, mealType } = dto;
     const activePlan = await this.planRepo.findOne({
-      where: { userId, status: 'active' as any },
-      relations: { planDays: { planMeals: { mealType: true, mealItems: { foodItem: true } } } }
+      where: { userId, status: "active" as any },
+      relations: {
+        planDays: {
+          planMeals: { mealType: true, mealItems: { foodItem: true } },
+        },
+      },
     });
 
-    if (!activePlan || !activePlan.startDate) throw new BadRequestException('无激活计划');
+    if (!activePlan || !activePlan.startDate)
+      throw new BadRequestException("无激活计划");
     const dayOffset = this.getDateDiff(activePlan.startDate, date);
     const targetDayNum = (dayOffset % activePlan.cycleDays) + 1;
-    const planDay = activePlan.planDays?.find(d => d.dayNumber === targetDayNum);
+    const planDay = activePlan.planDays?.find(
+      (d) => d.dayNumber === targetDayNum,
+    );
 
     // 🚀 核心优化：同时支持标准 code 和自定义 ID 查找
-    const planMeal = planDay?.planMeals?.find(m => {
+    const planMeal = planDay?.planMeals?.find((m) => {
       const code = m.mealType?.code;
       const customId = `custom_${m.id}`;
       return code === mealType || customId === mealType;
     });
-    
+
     const items = planMeal?.mealItems || [];
 
     if (items.length === 0) return [];
 
     return await this.dataSource.transaction(async (manager) => {
       const record = await this.getOrCreateDailyRecord(manager, userId, date);
-      
-      // 🚀 核心纠偏：过滤掉该餐次已存在的记录（基于名称或 ID）
-      const existingMeals = await manager.find(MealLog, { where: { recordId: record.id, mealType: mealType as any } });
-      const filteredItems = items.filter(item => {
-        const pName = item.customName || '计划食物';
-        return !existingMeals.some(em => 
-          em.foodName === pName
-        );
+
+      // 🚀 核心纠偏：基于 foodId (优先) 和 foodName 进行双重维度过滤，避免重复同步
+      const existingMeals = await manager.find(MealLog, {
+        where: { recordId: record.id, mealType: mealType as any },
+      });
+      const filteredItems = items.filter((item) => {
+        const pFoodId = item.foodItemId;
+        const pName = item.customName || "计划食物";
+        return !existingMeals.some((em) => {
+          if (em.foodId && pFoodId) return String(em.foodId) === String(pFoodId);
+          return em.foodName === pName;
+        });
       });
 
       if (filteredItems.length === 0) return [];
@@ -316,9 +344,13 @@ export class DietRecordsService {
   }
 
   async updateMealLog(userId: number, id: number | string, dto: UpdateMealLogDto) {
-    const log = await this.mealLogRepo.findOne({ where: { id: id as any, userId } });
-    if (!log) throw new NotFoundException('记录不存在');
-    
+    const log = await this.mealLogRepo.findOne({
+      where: { id: id as any, userId },
+    });
+    if (!log) throw new NotFoundException("记录不存在");
+
+    if (dto.foodName !== undefined) log.foodName = dto.foodName;
+    if (dto.unit !== undefined) log.unit = dto.unit;
     if (dto.baseCalories !== undefined) log.baseCalories = dto.baseCalories;
     if (dto.baseProtein !== undefined) log.baseProtein = dto.baseProtein;
     if (dto.baseFat !== undefined) log.baseFat = dto.baseFat;

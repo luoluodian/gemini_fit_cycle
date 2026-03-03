@@ -15,7 +15,7 @@
     </BaseNavBar>
 
     <!-- 2. Search Box (Fixed Row) -->
-    <view class="px-4 mt-4 flex-shrink-0 animate-fade-in-up">
+    <view class="px-4 flex-shrink-0 animate-fade-in-up mt-4">
       <SearchBar
         v-model="searchQuery"
         placeholder="搜索食材名称..."
@@ -26,7 +26,7 @@
     <!-- 3. Body (Flex-1) -->
     <!-- 修复点：通过 pb-tabbar 彻底避开底部导航栏，space-y-4 统一间距 -->
     <view
-      class="flex-1 min-h-0 flex flex-col px-4 pt-1 overflow-hidden space-y-4 pb-tabbar"
+      class="flex-1 min-h-0 flex flex-col px-4 pt-1 overflow-hidden pb-tabbar"
     >
       <!-- 3.1 Horizontal Categories -->
       <view class="flex-shrink-0">

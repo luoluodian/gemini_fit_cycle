@@ -1,13 +1,14 @@
 import { defineStore } from "pinia";
-import { 
-  getDailyRecord, 
-  addMealLog, 
-  removeMealLog, 
-  updateMealLog, 
+import {
+  getDailyRecord,
+  addMealLog,
+  removeMealLog,
+  updateMealLog,
   syncMealFromPlan,
-  type DailyRecord, 
-  type MealLog, 
-  type RecordInfoResponse 
+  type DailyRecord,
+  type MealLog,
+  type RecordInfoResponse,
+  type UpdateMealLogDto,
 } from "@/services/modules/record";
 
 export interface NutritionSummary {
@@ -34,7 +35,7 @@ export const useRecordStore = defineStore("record", {
     recordSummary(state): NutritionSummary {
       const logs = state.mealLogs || [];
       const res = { calories: 0, protein: 0, fat: 0, carbs: 0 };
-      logs.forEach(log => {
+      logs.forEach((log) => {
         // 关键修复：使用隐式转换判定状态，兼容 0/1 和 false
         if (!log || !log.isRecorded) return;
         res.calories += Number(log.calories) || 0;
@@ -65,7 +66,7 @@ export const useRecordStore = defineStore("record", {
       const sum = this.recordSummary;
       const target = state.currentRecord;
       if (!target) return { calories: 0, protein: 0, fat: 0, carbs: 0 };
-      
+
       const calc = (cur: number, goal: number) => {
         if (!goal || goal <= 0) return 0;
         return Math.min(100, Math.round((cur / goal) * 100));
@@ -77,7 +78,7 @@ export const useRecordStore = defineStore("record", {
         fat: calc(sum.fat, target.targetFat),
         carbs: calc(sum.carbs, target.targetCarbs),
       };
-    }
+    },
   },
 
   actions: {
@@ -114,10 +115,10 @@ export const useRecordStore = defineStore("record", {
       return newLogs;
     },
 
-    async updateMealAction(id: string | number, data: { quantity?: number; isRecorded?: boolean }) {
+    async updateMealAction(id: string | number, data: UpdateMealLogDto) {
       console.log(`[Store] Updating log ${id}...`, data);
       const updated = await updateMealLog(id, data);
-      const idx = this.mealLogs.findIndex(m => String(m.id) === String(id));
+      const idx = this.mealLogs.findIndex((m) => String(m.id) === String(id));
       if (idx > -1) {
         this.mealLogs[idx] = updated;
         // 强制触发响应式更新
@@ -129,19 +130,22 @@ export const useRecordStore = defineStore("record", {
 
     async syncMealAction(id: string | number, foodItem: any) {
       console.log(`[Store] Syncing log ${id} with latest food data...`);
+      // 🚀 核心优化：同步时不仅同步数值，后端也会根据 base 字段同步名称与单位
       return await this.updateMealAction(id, {
+        foodName: foodItem.name,
+        unit: foodItem.unit,
         baseCalories: foodItem.calories,
         baseProtein: foodItem.protein,
         baseFat: foodItem.fat,
         baseCarbs: foodItem.carbs,
         sourceUpdatedAt: foodItem.updatedAt,
-      } as any);
+      });
     },
 
     async removeMealAction(id: string | number) {
       console.log(`[Store] Removing log ${id}...`);
       await removeMealLog(id);
-      this.mealLogs = this.mealLogs.filter(m => String(m.id) !== String(id));
+      this.mealLogs = this.mealLogs.filter((m) => String(m.id) !== String(id));
       console.log("[Store] Remove Success");
     },
 
@@ -155,6 +159,6 @@ export const useRecordStore = defineStore("record", {
       this.mealLogs = [];
       this.plannedDay = null; // 🚀 重置
       this.activeDate = "";
-    }
-  }
+    },
+  },
 });

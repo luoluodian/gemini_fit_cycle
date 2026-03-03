@@ -47,18 +47,42 @@ export interface DailyRecord {
 export interface MealLog {
   id: number;
   recordId: number;
-  mealType: 'breakfast' | 'lunch' | 'dinner' | 'snacks';
+  mealType: "breakfast" | "lunch" | "dinner" | "snacks";
   foodId: number | null;
   foodName: string;
   customName: string | null;
   quantity: number;
   unit: string;
+  baseCount: number;
   calories: number;
   protein: number;
   fat: number;
   carbs: number;
+  // 🚀 后端实态 Base 字段
+  baseCalories?: number;
+  baseProtein?: number;
+  baseFat?: number;
+  baseCarbs?: number;
   isPlanned: boolean;
   isRecorded: boolean;
+  sourceUpdatedAt?: string | Date;
+  updatedAt?: string | Date;
+}
+
+/**
+ * 更新餐食记录 DTO (R-3)
+ */
+export interface UpdateMealLogDto {
+  quantity?: number;
+  isRecorded?: boolean;
+  foodName?: string;
+  unit?: string;
+  // 🚀 支持同步最新食材基准数据
+  baseCalories?: number;
+  baseProtein?: number;
+  baseFat?: number;
+  baseCarbs?: number;
+  sourceUpdatedAt?: string | Date;
 }
 
 /**
@@ -74,7 +98,9 @@ export interface RecordInfoResponse {
  * 获取指定日期的饮食记录
  * 契约：GET /records/:date
  */
-export async function getDailyRecord(date: string): Promise<RecordInfoResponse> {
+export async function getDailyRecord(
+  date: string,
+): Promise<RecordInfoResponse> {
   return httpRequest.get(`/records/${date}`);
 }
 
@@ -94,7 +120,7 @@ export async function addMealLog(data: {
   quantity: number;
   isPlanned?: boolean;
 }): Promise<MealLog> {
-  return httpRequest.post('/records/meal', data);
+  return httpRequest.post("/records/meal", data);
 }
 
 /**
@@ -104,7 +130,7 @@ export async function syncMealFromPlan(data: {
   date: string;
   mealType: string;
 }): Promise<MealLog[]> {
-  return httpRequest.post('/records/meal/sync', data);
+  return httpRequest.post("/records/meal/sync", data);
 }
 
 /**
@@ -112,7 +138,7 @@ export async function syncMealFromPlan(data: {
  */
 export async function updateMealLog(
   id: number | string,
-  data: { quantity?: number; isRecorded?: boolean },
+  data: UpdateMealLogDto,
 ): Promise<MealLog> {
   return httpRequest.put(`/records/meal/${id}`, data);
 }

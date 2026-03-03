@@ -145,7 +145,23 @@ const filteredPlans = computed(() => {
     }
     return p.status === "completed";
   });
-  return formatPlans(filtered);
+
+  // 🚀 核心优化：多维排序逻辑
+  // 1. 进行中 (active) 优先级最高，置顶
+  // 2. 其余按最后修改时间 (updatedAt) 降序排列，若无则按创建时间 (createdAt)
+  const sorted = filtered.sort((a, b) => {
+    const isAActive = a.status === "active";
+    const isBActive = b.status === "active";
+
+    if (isAActive && !isBActive) return -1;
+    if (!isAActive && isBActive) return 1;
+
+    const timeA = new Date(a.updatedAt || a.createdAt || 0).getTime();
+    const timeB = new Date(b.updatedAt || b.createdAt || 0).getTime();
+    return timeB - timeA;
+  });
+
+  return formatPlans(sorted);
 });
 
 // 格式化计划数据 (保持原有逻辑)

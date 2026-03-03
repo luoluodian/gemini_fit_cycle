@@ -301,7 +301,8 @@ const openFoodSelector = () => {
 };
 
 const handleFoodPicked = (result: { food: FoodItem; quantity: number }) => {
-  const { food, quantity } = result;
+  const quantity = Number(result.quantity || 0);
+  const { food } = result;
   const baseCount = food.baseCount || 100;
   const ratio = quantity / baseCount;
 
@@ -349,7 +350,7 @@ const closeEditModal = () => {
 };
 
 const handleUpdateItem = (result: { food: any; quantity: number }) => {
-  const { quantity } = result;
+  const quantity = Number(result.quantity || 0);
   const index = editingIndex.value;
   if (index === -1) return;
 

@@ -1,4 +1,4 @@
-import { IsInt, IsOptional, IsEnum, IsNumber, IsBoolean } from 'class-validator';
+import { IsInt, IsOptional, IsEnum, IsNumber, IsBoolean, IsString } from 'class-validator';
 import { MealType } from '@/database/entity/meal-log.entity';
 
 export class UpdateMealLogDto {
@@ -10,10 +10,18 @@ export class UpdateMealLogDto {
   @IsNumber()
   quantity?: number;
 
-    // 🚀 核心补全：允许手动切换记录状态
-    @IsOptional()
-    @IsBoolean()
-    isRecorded?: boolean;
+  @IsOptional()
+  @IsString()
+  foodName?: string;
+
+  @IsOptional()
+  @IsString()
+  unit?: string;
+
+  // 🚀 核心补全：允许手动切换记录状态
+  @IsOptional()
+  @IsBoolean()
+  isRecorded?: boolean;
   
     @IsOptional()
     @IsNumber()
