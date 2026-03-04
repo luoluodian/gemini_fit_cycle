@@ -10,6 +10,7 @@ import { DataDictionary } from '@/database/entity/data-dictionary.entity';
 import { PlanShare } from '@/database/entity/plan-share.entity';
 import { FoodItem } from '@/database/entity/food-item.entity';
 import { FoodItemsService } from '../food-items/food-items.service';
+import { WechatService } from './wechat.service';
 import { CreateDietPlanDto } from '@/dtos/create-diet-plan.dto';
 import { UpdateDietPlanDto } from '@/dtos/update-diet-plan.dto';
 import { CreatePlanDayDto } from '@/dtos/create-plan-day.dto';
@@ -43,8 +44,23 @@ export class DietPlansService {
     @InjectRepository(PlanShare)
     private readonly shareRepo: Repository<PlanShare>,
     private readonly foodItemsService: FoodItemsService,
+    private readonly wechatService: WechatService,
     private readonly dataSource: DataSource,
   ) {}
+
+  /**
+   * 生成分享小程序码
+   */
+  async getShareQRCode(planId: number, userId: number) {
+    const { code } = await this.sharePlan(planId, userId);
+    
+    // scene 参数最大 32 位，我们的 PLAN-XXXX 格式正好符合
+    // 注意：如果是开发环境且 page 未发布，WechatService 会因 env_version='trial' 允许
+    const page = 'pages/plan-detail/index';
+    const buffer = await this.wechatService.getUnlimitedQRCode(code, page);
+    
+    return `data:image/png;base64,${buffer.toString('base64')}`;
+  }
 
   /**
    * 批量初始化天数结构
@@ -425,9 +441,39 @@ export class DietPlansService {
   }
 
   /**
+   * 校验用户计划配额
+   */
+  private async validateQuota(userId: number) {
+    const user = await this.userRepo.findOne({ where: { id: userId } });
+    if (!user) throw new NotFoundException('用户不存在');
+
+    // 统计当前有效计划数 (非模板，且未软删除)
+    const count = await this.planRepo.count({
+      where: { userId, isTemplate: false },
+    });
+
+    // 🚀 核心纠偏：不仅检查等级，还要检查会员是否过期
+    let currentLimit = 5;
+    const isVip = user.memberLevel === 1 && (!user.memberExpiresAt || user.memberExpiresAt > new Date());
+    
+    if (isVip) {
+      currentLimit = 100;
+    }
+
+    if (count >= currentLimit) {
+      throw new ForbiddenException({
+        code: 'QUOTA_EXCEEDED',
+        message: `您的计划数量已达上限(${currentLimit}个)，请删除部分计划或升级VIP。`,
+        details: { count, limit: currentLimit, memberLevel: user.memberLevel, isVip }
+      });
+    }
+  }
+
+  /**
    * 创建新的饮食计划。
    */
   async createPlan(userId: number, dto: CreateDietPlanDto) {
+    await this.validateQuota(userId);
     const user = await this.userRepo.findOne({ where: { id: userId } });
     if (!user) throw new NotFoundException('用户不存在');
     
@@ -761,15 +807,55 @@ export class DietPlansService {
     return { code, expireAt };
   }
 
+  /**
+   * 通过分享码获取计划预览详情 (公开接口，不暴露用户隐私)
+   */
+  async findDetailByShareCode(code: string) {
+    const share = await this.shareRepo.findOne({ 
+      where: { code },
+      relations: { plan: { user: true } }
+    });
+
+    if (!share) throw new NotFoundException('分享码不存在');
+    if (share.expireAt && share.expireAt < new Date()) {
+      throw new NotFoundException('分享码已过期');
+    }
+
+    const plan = await this.planRepo.findOne({
+      where: { id: share.planId },
+      relations: {
+        planDays: {
+          planMeals: {
+            mealType: true,
+            mealItems: true,
+          },
+        },
+      },
+    });
+
+    if (!plan) throw new NotFoundException('原计划已被删除');
+
+    // 脱敏处理
+    return {
+      ...plan,
+      originalUserId: plan.userId, // 仅用于前端比对 owner
+      userId: undefined, // 隐藏原作者 ID (安全)
+      author: share.plan?.user?.nickname || '热心厨友', // 返回作者昵称用于展示
+    };
+  }
+
   // 简单的内存限流 (生产环境应使用 Redis)
   private importAttempts = new Map<number, { count: number; lastTime: number }>();
 
   /**
-   * 通过分享码导入计划 (深拷贝)
+   * 通过分享码导入计划 (深拷贝 + 食材克隆)
    */
   async importPlan(userId: number, code: string) {
     // 1. 安全检查：防止暴力枚举
     this.checkRateLimit(userId);
+
+    // 🚀 核心纠偏：导入计划也占用配额
+    await this.validateQuota(userId);
 
     const share = await this.shareRepo.findOne({ 
       where: { code },
@@ -784,12 +870,24 @@ export class DietPlansService {
       throw new NotFoundException('分享码已过期');
     }
 
+    // 🚀 核心纠偏：鲁棒幂等性校验 (基于 userId + sourceShareCode)
+    const existing = await this.planRepo.findOne({
+      where: { 
+        userId, 
+        sourceShareCode: code
+      }
+    });
+
+    if (existing) {
+      this.logger.log(`[Import] Plan from code ${code} already exists for user ${userId}`);
+      return { id: existing.id, exists: true };
+    }
+
     const originalPlan = await this.findDetail(share.planId);
     
-    // 2. 优化名称截断逻辑
+    // 2. 名称处理
     let newName = `${originalPlan.name} (导入)`;
     if (newName.length > 100) {
-      // 保留后缀，截断前缀
       const suffix = " (导入)";
       newName = originalPlan.name.substring(0, 100 - suffix.length) + suffix;
     }
@@ -812,11 +910,12 @@ export class DietPlansService {
         targetCarbs: originalPlan.targetCarbs,
         userId,
         status: PlanStatus.CONFIGURED,
-        isTemplate: false
+        isTemplate: false,
+        sourceShareCode: code // 记录来源以便后续幂等校验
       });
       const savedPlan = await queryRunner.manager.save(newPlan);
 
-      // 4. 循环复制日、餐次、食材
+      // 4. 循环复制日、餐次、食材 (应用克隆策略)
       for (const oldDay of originalPlan.planDays) {
         const newDay = queryRunner.manager.create(PlanDay, {
           plan: savedPlan,
@@ -839,12 +938,20 @@ export class DietPlansService {
           const savedMeal = await queryRunner.manager.save(newMeal);
 
           for (const oldItem of oldMeal.mealItems) {
+            let targetFoodItemId = oldItem.foodItemId;
+            
+            // 🚀 核心纠偏：食材克隆逻辑
             if (oldItem.foodItemId) {
-              await this.foodItemsService.adjustReferenceCount(queryRunner.manager, oldItem.foodItemId, 1);
+              targetFoodItemId = await this.foodItemsService.cloneFoodItem(
+                queryRunner.manager, 
+                oldItem.foodItemId, 
+                userId
+              );
             }
+
             const newItem = queryRunner.manager.create(PlanMealItem, {
               planMeal: savedMeal,
-              foodItemId: oldItem.foodItemId,
+              foodItemId: targetFoodItemId,
               customName: oldItem.customName,
               quantity: oldItem.quantity,
               unit: oldItem.unit,
@@ -914,6 +1021,9 @@ export class DietPlansService {
         });
       });
       await this.decrementReferenceCounts(manager, foodItemIds);
+      // 🚀 核心纠偏：删除时清空来源码，允许用户未来再次导入
+      plan.sourceShareCode = null as any;
+      await manager.save(plan);
       // 使用 softRemove
       await manager.softRemove(plan);
     });

@@ -8,6 +8,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   DeleteDateColumn,
+  Index,
 } from 'typeorm';
 import { User } from './user.entity';
 import { PlanDay } from './plan-day.entity';
@@ -34,6 +35,7 @@ export enum PlanStatus {
  * 饮食计划表：用户制定的长期饮食方案。
  */
 @Entity({ name: 'diet_plans', comment: '饮食计划表 - 用户制定的长期饮食方案' })
+@Index(['userId', 'sourceShareCode'], { unique: true, where: 'source_share_code IS NOT NULL' })
 export class DietPlan {
   @PrimaryGeneratedColumn({ type: 'bigint', unsigned: true })
   id: number;
@@ -69,6 +71,9 @@ export class DietPlan {
 
   @Column({ name: 'is_template', type: 'boolean', default: false, comment: '是否为官方模板' })
   isTemplate: boolean;
+
+  @Column({ name: 'source_share_code', length: 32, nullable: true, comment: '导入来源分享码 (用于幂等性校验)' })
+  sourceShareCode: string;
 
   @Column({ name: 'cycle_days', type: 'int', default: 7, comment: '一个循环的天数' })
   cycleDays: number;

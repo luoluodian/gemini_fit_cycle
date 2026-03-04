@@ -56,6 +56,7 @@ declare module 'vue' {
     QuickStats: typeof import('./src/components/profile/QuickStats.vue')['default']
     SearchBar: typeof import('./src/components/common/SearchBar.vue')['default']
     SettingsMenu: typeof import('./src/components/profile/SettingsMenu.vue')['default']
+    ShareModal: typeof import('./src/components/plan/ShareModal.vue')['default']
     StatsCard: typeof import('./src/components/daily-list/StatsCard.vue')['default']
     TemplateManagementStep: typeof import('./src/components/plan-creator/TemplateManagementStep.vue')['default']
     WeeklyProgressChart: typeof import('./src/components/profile/WeeklyProgressChart.vue')['default']

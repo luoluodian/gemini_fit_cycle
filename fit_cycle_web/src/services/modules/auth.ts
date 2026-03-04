@@ -11,6 +11,8 @@ export interface UserInfo {
     email?: string;
     phone?: string;
     isCompleted?: boolean;
+    memberLevel: number;
+    memberExpiresAt?: string;
   };
   health: {
     genderId?: number;

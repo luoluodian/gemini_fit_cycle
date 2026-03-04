@@ -24,6 +24,7 @@ import { InitPlanDaysDto } from '@/dtos/init-plan-days.dto';
 import { UpdatePlanDayFullDto } from '@/dtos/update-plan-day-full.dto';
 import { PlanStatus } from '@/database/entity/diet-plan.entity';
 import { JwtAuthGuard } from '@/modules/auth/jwt.guard';
+import { Public } from '@/modules/auth/public.decorator';
 
 /**
  * DietPlansController 提供饮食计划管理相关接口。
@@ -32,6 +33,13 @@ import { JwtAuthGuard } from '@/modules/auth/jwt.guard';
 @UseGuards(JwtAuthGuard)
 export class DietPlansController {
   constructor(private readonly dietPlansService: DietPlansService) {}
+
+  /** 通过分享码获取预览详情 (公开) */
+  @Public()
+  @Get('share/:code')
+  async getShareDetail(@Param('code') code: string) {
+    return this.dietPlansService.findDetailByShareCode(code);
+  }
 
   /** 列出用户的所有饮食计划 */
   @Get()
@@ -145,6 +153,13 @@ export class DietPlansController {
   async share(@Req() req: any, @Param('id') id: string) {
     const userId = req.user.userId;
     return this.dietPlansService.sharePlan(Number(id), userId);
+  }
+
+  /** 获取分享小程序码 */
+  @Get(':id/share/qrcode')
+  async getShareQRCode(@Req() req: any, @Param('id') id: string) {
+    const userId = req.user.userId;
+    return this.dietPlansService.getShareQRCode(Number(id), userId);
   }
 
   /** 通过分享码导入计划 */

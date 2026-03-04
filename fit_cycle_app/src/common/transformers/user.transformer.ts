@@ -22,6 +22,8 @@ export class UserTransformer {
         email: user.email ?? undefined,
         phone: user.phone ?? undefined,
         isCompleted,
+        memberLevel: user.memberLevel || 0,
+        memberExpiresAt: user.memberExpiresAt ?? undefined,
       },
       health: {
         genderId: profile?.gender === 'male' ? 1 : (profile?.gender === 'female' ? 2 : undefined),

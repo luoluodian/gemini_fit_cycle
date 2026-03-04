@@ -36,6 +36,12 @@ export class User {
   @Column({ name: 'refresh_token', type: 'text', nullable: true })
   refreshToken?: string;
 
+  @Column({ name: 'member_level', type: 'int', default: 0, comment: '会员等级: 0-普通用户, 1-VIP' })
+  memberLevel: number;
+
+  @Column({ name: 'member_expires_at', type: 'datetime', nullable: true, comment: '会员到期时间' })
+  memberExpiresAt: Date;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 

@@ -58,6 +58,8 @@ export class UserResponseDto {
     email?: string;
     phone?: string;
     isCompleted?: boolean;
+    memberLevel: number;
+    memberExpiresAt?: Date;
   };
 
   health: {

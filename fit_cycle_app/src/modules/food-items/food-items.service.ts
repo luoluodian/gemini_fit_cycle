@@ -391,6 +391,58 @@ export class FoodItemsService {
   }
 
   /**
+   * 🚀 核心纠偏：克隆食材
+   * 场景：分享计划导入时，如果原食材是私有的，为导入者克隆一份，确保其计划独立可编辑。
+   */
+  async cloneFoodItem(manager: any, originalFoodId: number, targetUserId: number): Promise<number> {
+    const original = await manager.findOne(FoodItem, { where: { id: originalFoodId } });
+    if (!original) return originalFoodId;
+
+    // 如果是公共食材或系统食材，直接返回原 ID
+    if (original.isPublic || original.type === FoodType.SYSTEM) {
+      await this.adjustReferenceCount(manager, originalFoodId, 1);
+      return originalFoodId;
+    }
+
+    // 如果该私有食材已经属于目标用户（虽然概率低，但需兼容），直接返回
+    if (Number(original.userId) === Number(targetUserId)) {
+      await this.adjustReferenceCount(manager, originalFoodId, 1);
+      return originalFoodId;
+    }
+
+    // 检查是否已经克隆过该食材（基于名称、分类和用户 ID 的简单判断，防止重复克隆）
+    const existingClone = await manager.findOne(FoodItem, {
+      where: {
+        name: original.name,
+        userId: targetUserId,
+        category: original.category,
+        type: FoodType.CUSTOM
+      }
+    });
+
+    if (existingClone) {
+      await this.adjustReferenceCount(manager, existingClone.id, 1);
+      return Number(existingClone.id);
+    }
+
+    // 执行克隆
+    const clone = manager.create(FoodItem, {
+      ...original,
+      id: undefined, // 关键：移除旧 ID
+      userId: targetUserId,
+      referenceCount: 1, // 初始引用
+      isArchived: false,
+      isPublic: false, // 导入后的私有食材默认仍为私有
+      createdAt: undefined,
+      updatedAt: undefined
+    });
+
+    const saved = await manager.save(FoodItem, clone);
+    this.logger.log({ level: "info", message: "食材克隆完成", originalId: originalFoodId, newId: saved.id, userId: targetUserId });
+    return Number(saved.id);
+  }
+
+  /**
    * 🔄 同步系统食材
    * 🚀 审计修复：改为基于名称的 Upsert 逻辑
    * 目的：保留 ID 稳定性，防止打卡记录与计划中的外键关联失效。

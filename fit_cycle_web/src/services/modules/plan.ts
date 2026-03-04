@@ -24,10 +24,17 @@ export const planService = {
   },
 
   /**
-   * 获取计划详情
+   * 获取计划详情 (带权限校验)
    */
   getPlanDetail(id: number) {
     return http.get<DietPlan>(`/diet-plans/${id}`);
+  },
+
+  /**
+   * 获取分享计划详情 (公开预览)
+   */
+  getShareDetail(code: string) {
+    return http.get<DietPlan & { author: string }>(`/diet-plans/share/${code}`);
   },
 
   /**
@@ -63,6 +70,13 @@ export const planService = {
    */
   sharePlan(id: number) {
     return http.post<{ code: string; expireAt: string }>(`/diet-plans/${id}/share`);
+  },
+
+  /**
+   * 获取分享小程序码
+   */
+  getShareQRCode(id: number) {
+    return http.get<string>(`/diet-plans/${id}/share/qrcode`);
   },
 
   /**

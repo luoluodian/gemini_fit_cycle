@@ -17,7 +17,7 @@
     <view
       class="flex-1 min-h-0 flex flex-col px-4 pt-4 overflow-hidden space-y-4 pb-tabbar"
     >
-      <!-- 2.1 Tab 控制区 (不使用 PlanTabs 中转，直接使用 BaseTabs) -->
+      <!-- 2.1 Tab 控制区 -->
       <view class="flex-shrink-0">
         <BaseTabs
           :tabs="tabs"
@@ -27,7 +27,21 @@
         />
       </view>
 
-      <!-- 2.2 列表内容区 (完全参考 food 模块的 GlassCard 结构) -->
+      <!-- 2.1.5 超额警告横幅 -->
+      <view 
+        v-if="allPlans.length > currentLimit" 
+        class="flex-shrink-0 bg-red-50 border border-solid border-red-100 rounded-2xl p-3 flex items-start animate-fade-in"
+      >
+        <text class="text-base mr-2">⚠️</text>
+        <view class="flex-1">
+          <text class="text-xs font-black text-red-800 block">计划配额已超限</text>
+          <text class="text-[18rpx] text-red-600 font-bold mt-0.5 block leading-relaxed">
+            由于会员过期或调整，当前计划数 ({{ allPlans.length }}) 已超过上限 ({{ currentLimit }}个)。现有计划仍可使用，但删除至上限以下前将无法创建或导入新计划。
+          </text>
+        </view>
+      </view>
+
+      <!-- 2.2 列表内容区 -->
       <GlassCard
         card-class="flex-1 flex flex-col min-h-0 overflow-hidden"
         class="animate-fade-in-up delay-200 flex-1 min-h-0"
@@ -39,9 +53,19 @@
               >{{ currentTabLabel }}计划</text
             >
           </view>
-          <text class="text-[18rpx] text-gray-300 font-black">
-            共 {{ filteredPlans.length }} 个计划
-          </text>
+          <view class="flex flex-col items-end">
+            <text class="text-[18rpx] text-gray-300 font-black">
+              共 {{ filteredPlans.length }} 个计划
+            </text>
+            <text 
+              :class="[
+                'text-[16rpx] font-black mt-0.5',
+                isLimitReached ? 'text-red-500' : 'text-emerald-400'
+              ]"
+            >
+              {{ isLimitReached && allPlans.length > currentLimit ? '已超额' : '配额' }}: {{ allPlans.length }}/{{ currentLimit }}
+            </text>
+          </view>
         </view>
 
         <!-- 核心滑动层：显式设置 flex-1 min-h-0 -->
@@ -100,6 +124,7 @@ import BaseScrollView from "@/components/common/BaseScrollView.vue";
 import { showSuccess, showError, showLoading, hideToast } from "@/utils/toast";
 import { useNavigationStore } from "@/stores/navigation";
 import { usePlanStore } from "@/stores/plan";
+import { useUserStore } from "@/stores/user";
 import { planService } from "@/services";
 import { Uploader } from "@nutui/icons-vue-taro";
 import { displayUnit } from "@/utils";
@@ -108,6 +133,29 @@ type TabType = "active" | "completed";
 
 const navStore = useNavigationStore();
 const planStore = usePlanStore();
+const userStore = useUserStore();
+
+const PLAN_LIMITS = {
+  NORMAL: 5,
+  VIP: 100
+};
+
+const currentLimit = computed(() => {
+  const user = userStore.userInfo?.user;
+  if (!user) return PLAN_LIMITS.NORMAL;
+  
+  // 🚀 核心纠偏：前端同步增加过期判定
+  const memberLevel = user.memberLevel || 0;
+  const expiresAt = user.memberExpiresAt ? new Date(user.memberExpiresAt).getTime() : 0;
+  const isExpired = expiresAt > 0 && expiresAt < Date.now();
+  
+  const isVip = memberLevel === 1 && !isExpired;
+  return isVip ? PLAN_LIMITS.VIP : PLAN_LIMITS.NORMAL;
+});
+
+const isLimitReached = computed(() => {
+  return allPlans.value.length >= currentLimit.value;
+});
 
 const tabs = [
   { key: "active", label: "进行中" },
@@ -129,6 +177,8 @@ useDidShow(() => {
   if (page && typeof page.getTabBar === "function" && page.getTabBar()) {
     page.getTabBar().setData({ selected: 1 });
   }
+  // 🚀 核心纠偏：同步用户信息
+  userStore.fetchUserProfile();
   loadPlanData();
 });
 
@@ -272,12 +322,32 @@ const createNewPlan = () => {
   showCreateOptionsModal.value = true;
 };
 
+const checkQuota = () => {
+  if (isLimitReached.value) {
+    Taro.showModal({
+      title: "配额已满",
+      content: `您的计划数量已达上限(${currentLimit.value}个)，请删除旧计划或升级 VIP。`,
+      confirmText: "了解 VIP",
+      cancelText: "返回",
+      success: (res) => {
+        if (res.confirm) {
+          showError("升级功能开发中...");
+        }
+      }
+    });
+    return false;
+  }
+  return true;
+};
+
 const handleSelectCreate = () => {
+  if (!checkQuota()) return;
   planStore.resetDraft();
   navigateTo(ROUTES.PLAN_CREATOR);
 };
 
 const showImportPlan = () => {
+  if (!checkQuota()) return;
   setTimeout(() => {
     showImportPlanModal.value = true;
   }, 300);

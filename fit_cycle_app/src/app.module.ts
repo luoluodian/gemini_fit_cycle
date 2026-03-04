@@ -11,8 +11,6 @@ import { DictModule } from './modules/dict/dict.module';
 import { DietPlansModule } from './modules/diet-plans/diet-plans.module';
 import { DietRecordsModule } from './modules/diet-records/diet-records.module';
 
-import { ShareModule } from './modules/share/share.module';
-
 import { FoodItemModule } from './modules/food-items/food-items.module';
 import { LoggerModule } from './common/logger/logger.module';
 import { RedisModule } from './redis/redis.module';
@@ -34,7 +32,6 @@ import { TrimInterceptor } from './common/interceptors/trim.interceptor';
     DictModule,
     DietPlansModule,
     DietRecordsModule,
-    ShareModule,
     FoodItemModule,
     LoggerModule,
     RedisModule,
