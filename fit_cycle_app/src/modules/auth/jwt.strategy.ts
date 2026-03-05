@@ -27,6 +27,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException('无效的令牌：缺少或非法的用户标识');
     }
 
-    return { userId: Number(userId) };
+    return { 
+      id: Number(userId),
+      userId: Number(userId), // 兼容旧代码
+      role: payload.role || 'user'
+    };
   }
 }

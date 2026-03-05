@@ -55,7 +55,7 @@ export class AuthService {
 
     // 2. 生成 Token
     const refreshToken = this.createRefreshToken(user.id);
-    const accessToken = this.createAccessToken(user.id);
+    const accessToken = this.createAccessToken(user.id, user.role);
 
     // 3. 只有在非 Mock 模式或有 rawData 更新时才执行数据库写入，减少锁竞争
     if (!dto.code.startsWith("mock_code") || dto.rawData) {
@@ -126,9 +126,9 @@ export class AuthService {
    * ⭐ 创建 Access Token（有效期短）
    * ===============================
    */
-  createAccessToken(uid: number) {
+  createAccessToken(uid: number, role: string = 'user') {
     return this.jwtService.sign(
-      { uid },
+      { uid, role },
       {
         expiresIn: "7d",
         secret: this.config.get("JWT_SECRET"),
@@ -167,7 +167,7 @@ export class AuthService {
     }
 
     // 生成新 token
-    const accessToken = this.createAccessToken(uid);
+    const accessToken = this.createAccessToken(uid, user.role);
     const newRefreshToken = this.createRefreshToken(uid);
 
     // 更新数据库

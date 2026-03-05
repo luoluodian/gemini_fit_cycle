@@ -32,6 +32,7 @@ export const API_BASE_CONFIG = {
  */
 export const AUTH_ROUTES = [
   /\/user\//,
+  /\/admin\//,
   /\/records\//,
   /\/diet-plans\//,
   /\/food-items/,
@@ -64,6 +65,7 @@ export function needAuth(url: string): boolean {
   // 去除结尾斜杠以支持 /food-items?q=... 这种形式
   const authKeywords = [
     "/user/",
+    "/admin/",
     "/records",
     "/diet-plans",
     "/food-items",

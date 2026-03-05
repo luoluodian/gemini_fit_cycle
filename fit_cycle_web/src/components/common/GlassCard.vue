@@ -11,6 +11,8 @@ interface Props {
   clickable?: boolean;
 }
 
+const emit = defineEmits(["tap"]);
+
 const props = withDefaults(defineProps<Props>(), {
   blur: 10,
   opacity: 0.95,
@@ -57,6 +59,7 @@ const shadowMap = {
       backdropFilter: props.background ? 'none' : `blur(${blur}px)`,
       background: props.background || `rgba(255, 255, 255, ${opacity})`,
     }"
+    @tap="$emit('tap', $event)"
   >
     <slot></slot>
   </view>

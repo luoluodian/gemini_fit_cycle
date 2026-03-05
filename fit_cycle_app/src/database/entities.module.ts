@@ -16,6 +16,7 @@ import { WeightRecord } from './entity/weight-record.entity';
 import { UserFavoriteFood } from './entity/user-favorite-food.entity';
 import { HealthProfile } from './entity/health-profile.entity';
 import { PlanShare } from './entity/plan-share.entity';
+import { ActivationCode } from './entity/activation-code.entity';
 // R-1 新增实体
 import { DailyRecord } from './entity/daily-record.entity';
 import { MealLog } from './entity/meal-log.entity';
@@ -41,6 +42,7 @@ import { MealLog } from './entity/meal-log.entity';
       WeightRecord,
       UserFavoriteFood,
       PlanShare,
+      ActivationCode,
       DailyRecord,
       MealLog,
     ]),

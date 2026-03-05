@@ -1,6 +1,8 @@
-import { Injectable, NotFoundException, InternalServerErrorException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, InternalServerErrorException, ForbiddenException, Inject } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource, In } from 'typeorm';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 import { User } from '@/database/entity/user.entity';
 import { DietPlan, PlanStatus } from '@/database/entity/diet-plan.entity';
 import { PlanDay } from '@/database/entity/plan-day.entity';
@@ -46,6 +48,8 @@ export class DietPlansService {
     private readonly foodItemsService: FoodItemsService,
     private readonly wechatService: WechatService,
     private readonly dataSource: DataSource,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER)
+    private readonly logger: Logger,
   ) {}
 
   /**
@@ -452,11 +456,12 @@ export class DietPlansService {
       where: { userId, isTemplate: false },
     });
 
-    // 🚀 核心纠偏：不仅检查等级，还要检查会员是否过期
+    // 🚀 核心纠偏：不仅检查等级，还要检查会员是否过期，且管理员默认享有最高权限
     let currentLimit = 5;
     const isVip = user.memberLevel === 1 && (!user.memberExpiresAt || user.memberExpiresAt > new Date());
+    const isAdmin = user.role === 'admin';
     
-    if (isVip) {
+    if (isVip || isAdmin) {
       currentLimit = 100;
     }
 
@@ -464,7 +469,7 @@ export class DietPlansService {
       throw new ForbiddenException({
         code: 'QUOTA_EXCEEDED',
         message: `您的计划数量已达上限(${currentLimit}个)，请删除部分计划或升级VIP。`,
-        details: { count, limit: currentLimit, memberLevel: user.memberLevel, isVip }
+        details: { count, limit: currentLimit, memberLevel: user.memberLevel, isVip, isAdmin }
       });
     }
   }
@@ -879,7 +884,7 @@ export class DietPlansService {
     });
 
     if (existing) {
-      this.logger.log(`[Import] Plan from code ${code} already exists for user ${userId}`);
+      this.logger.info(`[Import] Plan from code ${code} already exists for user ${userId}`);
       return { id: existing.id, exists: true };
     }
 

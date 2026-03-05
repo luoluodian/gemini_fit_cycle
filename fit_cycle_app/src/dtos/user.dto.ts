@@ -60,6 +60,7 @@ export class UserResponseDto {
     isCompleted?: boolean;
     memberLevel: number;
     memberExpiresAt?: Date;
+    role?: string;
   };
 
   health: {

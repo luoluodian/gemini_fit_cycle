@@ -294,6 +294,7 @@ const handleCreateCustomFood = () => {
 
 const handleCloseCustomFoodModal = () => {
   showCustomFoodModal.value = false;
+  editingFood.value = null;
 };
 
 /**

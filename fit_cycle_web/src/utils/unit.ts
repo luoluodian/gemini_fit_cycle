@@ -4,17 +4,17 @@
  */
 
 const UNIT_MAP: Record<string, string> = {
-  'g': 'g',
-  'ml': 'ml',
-  'kg': 'kg',
-  'l': '升',
-  'kcal': 'kcal',
-  'kcal/100g': 'kcal/100g',
-  'piece': '个',
-  'bar': '根/条',
-  'scoop': '勺',
-  'cup': '杯',
-  'tbsp': '大勺',
+  g: "g",
+  ml: "ml",
+  kg: "kg",
+  l: "升",
+  kcal: "kcal",
+  "kcal/100g": "kcal/100g",
+  piece: "个",
+  bar: "根/条",
+  scoop: "勺",
+  cup: "杯",
+  tbsp: "大勺",
 };
 
 /**

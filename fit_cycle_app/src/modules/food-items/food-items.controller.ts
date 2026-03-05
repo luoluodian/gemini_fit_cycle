@@ -69,6 +69,20 @@ export class FoodItemsController {
     return this.service.create(userId, dto);
   }
 
+  @Get('check-name')
+  async checkName(@Query('name') name: string) {
+    if (!name) {
+      return { error: 'name不能为空' };
+    }
+
+    return this.service.checkNameExists(name);
+  }
+
+  @Get('check-similarity')
+  async checkSimilarity(@Query('name') name: string) {
+    return this.service.checkSimilarity(name);
+  }
+
   /**
    * ========================================
    * 🔎 3. 获取详情
@@ -126,20 +140,6 @@ export class FoodItemsController {
   @Delete(':id/favorite')
   async unfavorite(@Param('id', ParseIntPipe) id: number, @Req() req) {
     return this.service.unfavorite(req.user.userId, id);
-  }
-
-  @Get('check-name')
-  async checkName(@Query('name') name: string) {
-    if (!name) {
-      return { error: 'name不能为空' };
-    }
-
-    return this.service.checkNameExists(name);
-  }
-
-  @Get('check-similarity')
-  async checkSimilarity(@Query('name') name: string) {
-    return this.service.checkSimilarity(name);
   }
 
   /**

@@ -16,7 +16,7 @@ export class WechatService {
   async getAccessToken(): Promise<string> {
     const now = Date.now();
     if (this.accessToken && now < this.tokenExpiresAt) {
-      return this.accessToken;
+      return this.accessToken as string;
     }
 
     const appId = this.configService.get<string>('WECHAT_APPID');
@@ -40,7 +40,7 @@ export class WechatService {
         this.accessToken = res.data.access_token;
         // 缓存失效提前 5 分钟
         this.tokenExpiresAt = now + (res.data.expires_in - 300) * 1000;
-        return this.accessToken;
+        return this.accessToken as string;
       }
       throw new Error(`微信 Token 获取失败: ${JSON.stringify(res.data)}`);
     } catch (err) {

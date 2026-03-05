@@ -3,8 +3,8 @@ import { httpRequest } from "../http";
 export interface DictItem {
   id: number;
   category: string;
-  code: string;
-  value: number;
+  code?: string;
+  value?: number;
   text: string;
   description?: string;
   extInfo?: any;

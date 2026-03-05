@@ -10,6 +10,8 @@ import { UserModule } from './modules/user/user.module';
 import { DictModule } from './modules/dict/dict.module';
 import { DietPlansModule } from './modules/diet-plans/diet-plans.module';
 import { DietRecordsModule } from './modules/diet-records/diet-records.module';
+import { AdminModule } from './modules/admin/admin.module';
+import { ActivationModule } from './modules/activation/activation.module';
 
 import { FoodItemModule } from './modules/food-items/food-items.module';
 import { LoggerModule } from './common/logger/logger.module';
@@ -33,6 +35,8 @@ import { TrimInterceptor } from './common/interceptors/trim.interceptor';
     DietPlansModule,
     DietRecordsModule,
     FoodItemModule,
+    AdminModule,
+    ActivationModule,
     LoggerModule,
     RedisModule,
   ],

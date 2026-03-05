@@ -1,6 +1,6 @@
 <template>
   <view class="min-h-screen">
-    <BaseNavBar title="个人中心" :transparent="true" />
+    <BaseNavBar title="个人中心" />
     <!-- Header -->
     <ProfileHeader :user-data="userData" class="animate-fade-in-up">
       <CurrentPlanCard
@@ -44,6 +44,30 @@
 
         <!-- Import Plan -->
         <ImportPlanCard @import="handleShowImportPlan" />
+
+        <!-- Admin Tools -->
+        <view 
+          v-if="userStore.userInfo?.user?.role === 'admin'"
+          class="bg-white rounded-2xl p-4 shadow-sm border border-emerald-100 flex items-center justify-between active:opacity-70 transition-all"
+          @click="handleShowAdminActivation"
+        >
+          <view class="flex items-center space-x-3">
+            <view class="bg-emerald-100 p-2 rounded-xl text-emerald-600">
+              <text class="nut-icon nut-icon-setting"></text>
+            </view>
+            <view>
+              <text class="text-sm font-bold text-gray-800 block">管理后台</text>
+              <text class="text-[18rpx] text-gray-400">激活码批量生成与导出</text>
+            </view>
+          </view>
+          <text class="nut-icon nut-icon-rect-right text-gray-300"></text>
+        </view>
+
+        <!-- VIP Activation -->
+        <VIPActivationCard 
+          v-if="userStore.userInfo?.user?.memberLevel !== 1 && userStore.userInfo?.user?.role !== 'admin'"
+          @activate="handleShowActivation" 
+        />
       </view>
     </view>
 
@@ -58,13 +82,22 @@
       @close="handleCloseImportPlanModal"
       @import="handleImportPlan"
     />
+    <VIPActivationModal
+      :visible="activationModalVisible"
+      @close="handleCloseActivationModal"
+      @activated="handleActivated"
+    />
+    <AdminActivationModal
+      :visible="adminModalVisible"
+      @close="handleCloseAdminModal"
+    />
   </view>
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from "vue";
 import Taro, { useDidShow } from "@tarojs/taro";
-import { navigateTo } from "@/router";
+import { navigateTo, ROUTES } from "@/router";
 import { showSuccess } from "@/utils/toast";
 import { useUserStore } from "@/stores/user";
 import { useNavigationStore } from "@/stores/navigation";
@@ -75,9 +108,12 @@ import WeeklyProgressChart from "@/components/profile/WeeklyProgressChart.vue";
 import HealthTools from "@/components/profile/HealthTools.vue";
 import SettingsMenu from "@/components/profile/SettingsMenu.vue";
 import ImportPlanCard from "@/components/profile/ImportPlanCard.vue";
+import VIPActivationCard from "@/components/profile/VIPActivationCard.vue";
 import BMRCalculatorModal from "@/components/profile/BMRCalculatorModal.vue";
 import AboutModal from "@/components/profile/AboutModal.vue";
 import ImportPlanModal from "@/components/profile/ProfileImportPlanModal.vue";
+import VIPActivationModal from "@/components/profile/VIPActivationModal.vue";
+import AdminActivationModal from "@/components/profile/AdminActivationModal.vue";
 import { displayUnit } from "@/utils";
 import "./index.scss";
 
@@ -123,6 +159,8 @@ const weeklyStats = ref({
 const bmrModalVisible = ref(false);
 const aboutModalVisible = ref(false);
 const importPlanModalVisible = ref(false);
+const activationModalVisible = ref(false);
+const adminModalVisible = ref(false);
 
 // 事件处理
 const handleViewPlan = async () => {
@@ -178,6 +216,27 @@ const handleShowImportPlan = () => {
 
 const handleCloseImportPlanModal = () => {
   importPlanModalVisible.value = false;
+};
+
+const handleShowActivation = () => {
+  activationModalVisible.value = true;
+};
+
+const handleCloseActivationModal = () => {
+  activationModalVisible.value = false;
+};
+
+const handleShowAdminActivation = () => {
+  adminModalVisible.value = true;
+};
+
+const handleCloseAdminModal = () => {
+  adminModalVisible.value = false;
+};
+
+const handleActivated = async () => {
+  // 刷新用户信息以更新 VIP 状态
+  await userStore.fetchUserProfile();
 };
 
 const handleImportPlan = async (_code: string) => {

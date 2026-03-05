@@ -148,8 +148,9 @@ const currentLimit = computed(() => {
   const memberLevel = user.memberLevel || 0;
   const expiresAt = user.memberExpiresAt ? new Date(user.memberExpiresAt).getTime() : 0;
   const isExpired = expiresAt > 0 && expiresAt < Date.now();
+  const isAdmin = user.role === 'admin';
   
-  const isVip = memberLevel === 1 && !isExpired;
+  const isVip = (memberLevel === 1 && !isExpired) || isAdmin;
   return isVip ? PLAN_LIMITS.VIP : PLAN_LIMITS.NORMAL;
 });
 

@@ -42,6 +42,9 @@ export class User {
   @Column({ name: 'member_expires_at', type: 'datetime', nullable: true, comment: '会员到期时间' })
   memberExpiresAt: Date;
 
+  @Column({ type: 'varchar', length: 20, default: 'user', comment: '用户角色: user-普通用户, admin-管理员' })
+  role: 'user' | 'admin';
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 

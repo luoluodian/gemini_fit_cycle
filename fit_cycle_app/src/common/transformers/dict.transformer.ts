@@ -7,7 +7,8 @@ export class DictTransformer {
     return {
       id: item.id,
       category: item.category,
-      value: item.value,
+      code: item.code ?? undefined,
+      value: item.value ?? undefined,
       text: item.text,
       description: item.description ?? undefined,
       extInfo: item.extInfo,

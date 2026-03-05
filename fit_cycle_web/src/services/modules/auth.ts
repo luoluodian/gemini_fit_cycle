@@ -13,6 +13,7 @@ export interface UserInfo {
     isCompleted?: boolean;
     memberLevel: number;
     memberExpiresAt?: string;
+    role?: string;
   };
   health: {
     genderId?: number;

@@ -11,18 +11,25 @@ import {
  * 新增字典项 DTO
  */
 export class CreateDictDto {
-  /** 字典分类键，例如：food_category、gi_level */
+  /** 字典分类键，例如：food_category、unit */
   @IsString({ message: 'dict_key 格式不正确' })
   @IsNotEmpty({ message: 'dict_key 不能为空' })
   @MaxLength(100, { message: 'dict_key 最多 100 个字符' })
   dict_key: string;
 
-  /** 字典项值（整数） */
+  /** 字典项逻辑代码（字符串，如 'g', 'ml'） */
+  @IsOptional()
+  @IsString({ message: 'dict_code 格式不正确' })
+  @MaxLength(50, { message: 'dict_code 最多 50 个字符' })
+  dict_code?: string;
+
+  /** 字典项值（整数，可选） */
+  @IsOptional()
   @IsInt({ message: 'dict_value 必须为整数' })
   @Min(0, { message: 'dict_value 不能为负数' })
-  dict_value: number;
+  dict_value?: number;
 
-  /** 字典项中文名，例如：主食、水果、低GI */
+  /** 字典项中文名，例如：克、毫升 */
   @IsString({ message: 'value_text 格式不正确' })
   @IsNotEmpty({ message: 'value_text 不能为空' })
   @MaxLength(100, { message: 'value_text 最多 100 个字符' })
@@ -83,8 +90,11 @@ export class DictResponseDto {
   /** 字典分类 */
   category: string;
 
-  /** 枚举代码 */
-  value: number;
+  /** 枚举代码（逻辑标识） */
+  code?: string;
+
+  /** 枚举数值代码 (可选) */
+  value?: number;
 
   /** 枚举显示名称 */
   text: string;

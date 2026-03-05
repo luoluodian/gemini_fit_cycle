@@ -21,10 +21,11 @@ export class DictService {
 
   /** 新增字典项 */
   async create(dto: CreateDictDto) {
-    this.logger.log({ level: 'info', message: '创建字典项开始', category: dto.dict_key, value: dto.dict_value });
-    // category = dict_key, code = dict_value
+    this.logger.log({ level: 'info', message: '创建字典项开始', category: dto.dict_key, code: dto.dict_code, value: dto.dict_value });
+    // category = dict_key, code = dict_code, value = dict_value
     const item = this.dictRepo.create({
       category: dto.dict_key,
+      code: dto.dict_code,
       value: dto.dict_value,
       text: dto.value_text,
       sortOrder: dto.sort ?? 0,
