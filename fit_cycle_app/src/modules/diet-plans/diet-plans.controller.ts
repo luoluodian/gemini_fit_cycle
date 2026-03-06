@@ -46,11 +46,16 @@ export class DietPlansController {
   async listPlans(
     @Req() req: any,
     @Query('status') status?: PlanStatus,
-    @Query('page') page: number = 1,
-    @Query('limit') limit: number = 20,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('pageSize') pageSize?: string,
   ) {
     const userId = req.user.userId;
-    return this.dietPlansService.findAllByUser(userId, status, page, limit);
+    // 兼容 pageSize 和 limit 参数，并确保转换为数字
+    const finalPage = page ? parseInt(page, 10) : 1;
+    const finalLimit = (pageSize || limit) ? parseInt(pageSize || limit, 10) : 20;
+    
+    return this.dietPlansService.findAllByUser(userId, status, finalPage, finalLimit);
   }
 
   /** 创建新的饮食计划 */

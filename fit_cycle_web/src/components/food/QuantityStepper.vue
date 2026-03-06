@@ -18,6 +18,7 @@
           <input
             :value="modelValue"
             type="digit"
+            :cursor-spacing="50"
             class="text-3xl font-black text-emerald-600 text-center w-24 h-10 caret-emerald-500"
             @input="handleInput"
             @blur="handleBlur"

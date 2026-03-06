@@ -107,7 +107,8 @@
           <text class="text-[18rpx] font-medium text-emerald-700">每</text>
           <input
             v-model="formData.baseCount"
-            type="number"
+            type="digit"
+            :cursor-spacing="50"
             class="w-12 h-5 border-[1rpx] border-solid border-emerald-300 rounded px-1 text-center text-[20rpx] text-emerald-700 font-bold bg-white"
             placeholder="100"
           />
@@ -122,7 +123,8 @@
             >
             <input
               v-model="formData.calories"
-              type="number"
+              type="digit"
+              :cursor-spacing="50"
               class="px-1 py-1 border border-gray-200 rounded-md focus:ring-2 focus:ring-orange-400 text-xs bg-gray-50"
               placeholder="0"
             />
@@ -133,7 +135,8 @@
             >
             <input
               v-model="formData.protein"
-              type="number"
+              type="digit"
+              :cursor-spacing="50"
               class="px-1 py-1 border border-gray-200 rounded-md focus:ring-2 focus:ring-rose-400 text-xs bg-gray-50"
               placeholder="0"
             />
@@ -144,7 +147,8 @@
             >
             <input
               v-model="formData.fat"
-              type="number"
+              type="digit"
+              :cursor-spacing="50"
               class="px-1 py-1 border border-gray-200 rounded-md focus:ring-2 focus:ring-yellow-400 text-xs bg-gray-50"
               placeholder="0"
             />
@@ -155,7 +159,8 @@
             >
             <input
               v-model="formData.carbs"
-              type="number"
+              type="digit"
+              :cursor-spacing="50"
               class="px-1 py-1 border border-gray-200 rounded-md focus:ring-2 focus:ring-amber-400 text-xs bg-gray-50"
               placeholder="0"
             />
@@ -167,6 +172,7 @@
       <view class="w-full">
         <textarea
           v-model="formData.description"
+          :cursor-spacing="100"
           class="w-full py-1.5 px-3 border-[1rpx] border-solid border-gray-300 rounded-lg text-sm h-12 focus:ring-2 focus:ring-emerald-500"
           style="box-sizing: border-box"
           placeholder="简单描述这个食材...（可选）"

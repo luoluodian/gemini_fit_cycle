@@ -11,6 +11,7 @@
       <input
         v-model="shareCode"
         type="text"
+        :cursor-spacing="50"
         class="px-4 py-3 border-[1rpx] border-solid border-gray-200 rounded-xl focus:border-emerald-500 transition-colors text-base"
         placeholder="输入分享码，如：PLAN-XXXX"
       />

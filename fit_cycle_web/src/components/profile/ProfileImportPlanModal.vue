@@ -12,6 +12,7 @@
       <input 
         v-model="shareCode" 
         type="text" 
+        :cursor-spacing="50"
         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 transition-all" 
         placeholder="输入分享码，如：PLAN-XXXX"
         :focus="visible"

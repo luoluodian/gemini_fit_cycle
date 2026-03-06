@@ -76,6 +76,12 @@ export class DietPlansService {
     });
     if (!plan) throw new NotFoundException('计划不存在或无权限');
 
+    // 🚀 核心纠偏：计算总天数
+    const expectedTotalDays = plan.cycleDays * plan.cycleCount;
+    if (dto.days.length !== expectedTotalDays) {
+      throw new ForbiddenException(`初始化数据不匹配：计划周期要求 ${expectedTotalDays} 天，但传入了 ${dto.days.length} 天`);
+    }
+
     // 如果未强制覆盖，检查是否有已配置的天
     if (!dto.force) {
       const configuredDays = plan.planDays.filter(d => d.isConfigured);
@@ -94,7 +100,6 @@ export class DietPlansService {
 
     try {
       // 🚀 核心优化：智能判定是否需要物理删除
-      // 如果天数一致，执行“原地更新”，保留已配置的餐次和食材
       const existingDays = plan.planDays || [];
       if (existingDays.length === dto.days.length) {
         console.log(`[DietPlans] Performing in-place update for plan ${planId}`);
@@ -107,12 +112,10 @@ export class DietPlansService {
               targetProtein: d.targetProtein || 0,
               targetFat: d.targetFat || 0,
               targetCarbs: d.targetCarbs || 0,
-              // 注意：不重置 isConfigured，保留用户的配置状态
             });
           }
         }
       } else {
-        // 只有天数不一致时，才执行毁灭性重置
         console.log(`[DietPlans] Performing full reset for plan ${planId} due to day count mismatch`);
         
         // 🚀 审计修复：重置前必须清理引用计数
@@ -130,10 +133,8 @@ export class DietPlansService {
         });
         await this.decrementReferenceCounts(queryRunner.manager, oldFoodItemIds);
 
-        // 1. 清理该计划下的所有旧天
         await queryRunner.manager.delete(PlanDay, { planId });
 
-        // 2. 批量生成新天
         const dayEntities = dto.days.map(d => {
           const day = new PlanDay();
           day.planId = planId;
@@ -148,6 +149,9 @@ export class DietPlansService {
         });
         await queryRunner.manager.save(PlanDay, dayEntities);
       }
+
+      // 自动更新计划状态为 CONFIGURED
+      await queryRunner.manager.update(DietPlan, planId, { status: PlanStatus.CONFIGURED });
 
       await queryRunner.commitTransaction();
       return { success: true };
@@ -518,6 +522,27 @@ export class DietPlansService {
   }
 
   /**
+   * 校验状态迁移是否合法
+   */
+  private validateStatusTransition(current: PlanStatus, target: PlanStatus) {
+    if (current === target) return; // 幂等操作，允许
+
+    const allowedTransitions: Record<PlanStatus, PlanStatus[]> = {
+      [PlanStatus.DRAFT]: [PlanStatus.CONFIGURED, PlanStatus.ARCHIVED],
+      [PlanStatus.CONFIGURED]: [PlanStatus.ACTIVE, PlanStatus.ARCHIVED, PlanStatus.DRAFT],
+      [PlanStatus.ACTIVE]: [PlanStatus.PAUSED, PlanStatus.COMPLETED, PlanStatus.ARCHIVED],
+      [PlanStatus.PAUSED]: [PlanStatus.ACTIVE, PlanStatus.ARCHIVED],
+      [PlanStatus.COMPLETED]: [PlanStatus.ARCHIVED, PlanStatus.DRAFT],
+      [PlanStatus.ARCHIVED]: [PlanStatus.DRAFT], // 归档后可转回草稿重新编辑
+    };
+
+    const allowed = allowedTransitions[current] || [];
+    if (!allowed.includes(target)) {
+      throw new ForbiddenException(`非法的状态转换：不允许从 ${current} 直接跳转至 ${target}`);
+    }
+  }
+
+  /**
    * 更新计划信息。
    */
   async updatePlan(id: number, dto: UpdateDietPlanDto, userId?: number) {
@@ -526,13 +551,23 @@ export class DietPlansService {
     if (userId && Number(plan.userId) !== Number(userId))
       throw new NotFoundException('无权限更新该计划');
     
-    // 🚀 核心纠偏：如果更新涉及激活状态，强制走激活互斥逻辑
-    if (dto.status === PlanStatus.ACTIVE && plan.status !== PlanStatus.ACTIVE && userId) {
-      await this.activatePlan(userId, id);
-      // 激活后，Object.assign 仍会执行，但 activatePlan 已处理了状态
+    // 🚀 核心纠偏：状态机校验 (漏洞 10)
+    if (dto.status && dto.status !== plan.status) {
+      this.validateStatusTransition(plan.status, dto.status);
+      
+      // 如果更新涉及激活状态，强制走激活互斥逻辑
+      if (dto.status === PlanStatus.ACTIVE) {
+        await this.activatePlan(userId as number, id);
+        // activatePlan 已处理了状态，这里不需要再 Object.assign status
+        const { status, ...restDto } = dto;
+        Object.assign(plan, restDto);
+      } else {
+        Object.assign(plan, dto);
+      }
+    } else {
+      Object.assign(plan, dto);
     }
 
-    Object.assign(plan, dto);
     return this.planRepo.save(plan);
   }
 
@@ -542,6 +577,16 @@ export class DietPlansService {
   async activatePlan(userId: number, planId: number) {
     const plan = await this.planRepo.findOne({ where: { id: planId, userId } });
     if (!plan) throw new NotFoundException('计划不存在或无权限');
+
+    // 🚀 核心纠偏：幂等性检查 (漏洞 11)
+    if (plan.status === PlanStatus.ACTIVE) {
+      return { success: true, message: '计划已处于激活状态' };
+    }
+
+    // 🚀 核心纠偏：草稿拦截 (漏洞 12)
+    if (plan.status === PlanStatus.DRAFT) {
+      throw new ForbiddenException('无法激活草稿状态的计划，请先完成天数配置');
+    }
 
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
@@ -582,6 +627,14 @@ export class DietPlansService {
   async pausePlan(userId: number, planId: number) {
     const plan = await this.planRepo.findOne({ where: { id: planId, userId } });
     if (!plan) throw new NotFoundException('计划不存在或无权限');
+
+    // 🚀 核心纠偏：幂等性与前置状态检查 (漏洞 11, 12)
+    if (plan.status === PlanStatus.PAUSED) {
+      return { success: true, message: '计划已处于暂停状态' };
+    }
+    if (plan.status !== PlanStatus.ACTIVE) {
+      throw new ForbiddenException(`无法暂停处于 ${plan.status} 状态的计划，仅能暂停进行中的计划`);
+    }
 
     await this.planRepo.update({ id: planId }, { status: PlanStatus.PAUSED });
     return { success: true };
@@ -979,6 +1032,12 @@ export class DietPlansService {
       return { id: savedPlan.id };
     } catch (err) {
       await queryRunner.rollbackTransaction();
+      
+      // 🚀 核心纠偏：处理并发导致的唯一索引冲突 (漏洞 5)
+      if (err.message?.includes('Duplicate entry') || err.code === 'ER_DUP_ENTRY') {
+        throw new ForbiddenException('您已经导入过该计划，请勿重复操作');
+      }
+      
       throw new InternalServerErrorException('导入计划失败: ' + err.message);
     } finally {
       await queryRunner.release();
@@ -1005,32 +1064,56 @@ export class DietPlansService {
   }
 
   /**
-   * 删除计划 (软删除)
+   * 删除计划 (软删除主表，物理清理子表)
    */
   async removePlan(id: number, userId?: number) {
-    const plan = await this.planRepo.findOne({ 
+    const plan = await this.planRepo.findOne({
       where: { id },
-      relations: { planDays: { planMeals: { mealItems: true } } }
+      relations: { planDays: { planMeals: { mealItems: true } } },
     });
     if (!plan) throw new NotFoundException('计划不存在');
     if (userId && Number(plan.userId) !== Number(userId))
       throw new NotFoundException('无权限删除该计划');
-    
+
+    // 🚀 核心纠偏：禁止直接删除运行中的计划 (漏洞 13)
+    if (plan.status === PlanStatus.ACTIVE) {
+      throw new ForbiddenException('无法删除正在运行中的计划，请先将其暂停或归档');
+    }
+
     await this.dataSource.transaction(async (manager) => {
+      // 1. 收集所有相关的食材 ID 并减少引用计数
       const foodItemIds: number[] = [];
-      plan.planDays?.forEach(day => {
-        day.planMeals?.forEach(meal => {
-          meal.mealItems?.forEach(item => {
+      const planDayIds: number[] = [];
+      const planMealIds: number[] = [];
+
+      plan.planDays?.forEach((day) => {
+        planDayIds.push(day.id);
+        day.planMeals?.forEach((meal) => {
+          planMealIds.push(meal.id);
+          meal.mealItems?.forEach((item) => {
             if (item.foodItemId) foodItemIds.push(Number(item.foodItemId));
           });
         });
       });
+
+      // 批量更新引用计数
       await this.decrementReferenceCounts(manager, foodItemIds);
-      // 🚀 核心纠偏：删除时清空来源码，允许用户未来再次导入
+
+      // 2. 物理删除所有子表数据 (必须按顺序删除以满足外键约束，或一次性清理 PlanDay)
+      // 注意：由于 PlanDay -> DietPlan 有 CASCADE，但我们需要先清理 Item 和 Meal
+      if (planMealIds.length > 0) {
+        await manager.delete(PlanMealItem, { planMealId: In(planMealIds) });
+        await manager.delete(PlanMeal, { id: In(planMealIds) });
+      }
+      if (planDayIds.length > 0) {
+        await manager.delete(PlanDay, { id: In(planDayIds) });
+      }
+
+      // 3. 软删除主计划
+      // 核心纠偏：删除时清空来源码，允许用户未来再次导入
       plan.sourceShareCode = null as any;
       await manager.save(plan);
-      // 使用 softRemove
-      await manager.softRemove(plan);
+      await manager.softDelete(DietPlan, id);
     });
 
     return { success: true };

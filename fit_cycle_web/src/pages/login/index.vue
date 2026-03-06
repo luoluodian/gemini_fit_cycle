@@ -2,11 +2,9 @@
   <view class="min-h-screen no-tabbar">
     <!-- 固定高度占位，确保沉浸式背景下的内容不被状态栏遮挡 -->
     <BaseNavBar :transparent="true" back-mode="none" />
-    
+
     <!-- Main Content -->
-    <view
-      class="flex flex-col items-center justify-center px-4 pt-10"
-    >
+    <view class="flex flex-col items-center justify-center px-4 pt-10">
       <!-- Logo/App Info -->
       <view class="animate-item pt-30">
         <LogoHeader />
@@ -18,10 +16,11 @@
       </view>
 
       <!-- 微信登录按钮 -->
-      <LoginButton :loading="isLoading" @click="handleWechatLogin" />
+      <!-- <LoginButton :loading="isLoading" @click="handleWechatLogin" /> -->
 
       <!-- 开发者 Mock 登录 (仅开发环境显示) -->
-      <view v-if="isDev" class="mt-6 flex flex-col items-center">
+      <!-- <view v-if="isDev" class="mt-6 flex flex-col items-center"> -->
+      <view class="mt-6 flex flex-col items-center">
         <view
           class="text-xs text-gray-400 mb-2 px-4 py-1 border border-dashed border-gray-200 rounded-full"
           @click="handleMockLogin"
@@ -66,7 +65,9 @@ import PrivacyModal from "@/components/login/PrivacyModal.vue";
 
 // 响应式状态
 const isLoading = ref<boolean>(false);
-const isDev = process.env.NODE_ENV === "development" || (global as any).__FC_TEST_SKIP_AUTH__;
+const isDev =
+  process.env.NODE_ENV === "development" ||
+  (globalThis as any).__FC_TEST_SKIP_AUTH__;
 const privacyModal = ref(false);
 const userStore = useUserStore();
 const routerParams = useRouterParams<{ redirect?: string }>();

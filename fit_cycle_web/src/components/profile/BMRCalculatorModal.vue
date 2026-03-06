@@ -25,6 +25,7 @@
               <input 
                 v-model="age" 
                 type="number" 
+                :cursor-spacing="50"
                 class="w-full px-4 py-2 border border-gray-300 rounded-lg" 
                 placeholder="25"
               />
@@ -36,7 +37,8 @@
               <text class="block text-sm font-medium text-gray-700 mb-2">身高 (cm)</text>
               <input 
                 v-model="height" 
-                type="number" 
+                type="digit" 
+                :cursor-spacing="50"
                 class="w-full px-4 py-2 border border-gray-300 rounded-lg" 
                 placeholder="170"
               />
@@ -45,7 +47,8 @@
               <text class="block text-sm font-medium text-gray-700 mb-2">体重 ({{ displayUnit('kg') }})</text>
               <input 
                 v-model="weight" 
-                type="number" 
+                type="digit" 
+                :cursor-spacing="50"
                 class="w-full px-4 py-2 border border-gray-300 rounded-lg" 
                 placeholder="65"
               />

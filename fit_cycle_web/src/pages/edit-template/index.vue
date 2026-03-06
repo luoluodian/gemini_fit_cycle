@@ -42,6 +42,7 @@
                   type="text"
                   v-model="localTemplate.name"
                   maxlength="6"
+                  :cursor-spacing="50"
                   class="w-full py-1 text-base font-black text-gray-800 transition-all border-b-[1rpx] border-solid border-transparent focus:border-emerald-500"
                   placeholder="例如：练腿日"
                   placeholder-class="text-gray-300 font-bold"
@@ -126,6 +127,7 @@
             type="text"
             v-model="newMealName"
             maxlength="5"
+            :cursor-spacing="50"
             class="w-full h-11 px-4 bg-gray-50 border border-solid border-gray-100 rounded-xl text-base font-black text-gray-800 focus:border-emerald-500/50 transition-colors"
             placeholder="例如：练后补"
             focus

@@ -15,6 +15,7 @@
       <input 
         v-model="code" 
         type="text" 
+        :cursor-spacing="50"
         class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all uppercase" 
         placeholder="输入 12 位激活码 (FIT-XXXX-XXXX)"
         :focus="visible"

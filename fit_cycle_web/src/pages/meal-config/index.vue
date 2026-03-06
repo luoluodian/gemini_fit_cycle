@@ -28,6 +28,7 @@
                 type="text"
                 v-model="editableMealName"
                 maxlength="5"
+                :cursor-spacing="50"
                 class="w-full py-1 text-base font-black text-gray-800 transition-all border-b-[1rpx] border-solid border-transparent focus:border-emerald-500"
                 placeholder="设定名称"
                 @blur="handleNameBlur"

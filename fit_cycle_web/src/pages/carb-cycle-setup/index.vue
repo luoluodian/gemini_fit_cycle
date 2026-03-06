@@ -25,6 +25,7 @@
             <input
               :value="planStore.draft.carbCycleConfig.weight"
               type="digit"
+              :cursor-spacing="50"
               class="w-16 h-10 text-xl font-black text-emerald-600 text-center"
               @input="
                 (e) =>
@@ -64,6 +65,7 @@
             <input
               :value="planStore.draft.carbCycleConfig.baseRatios.protein"
               type="digit"
+              :cursor-spacing="50"
               class="w-full h-8 bg-white border border-solid border-blue-200 rounded-lg text-center text-sm font-bold"
               @input="
                 (e) =>
@@ -83,6 +85,7 @@
             <input
               :value="planStore.draft.carbCycleConfig.baseRatios.carbs"
               type="digit"
+              :cursor-spacing="50"
               class="w-full h-8 bg-white border border-solid border-yellow-200 rounded-lg text-center text-sm font-bold"
               @input="
                 (e) =>
@@ -102,6 +105,7 @@
             <input
               :value="planStore.draft.carbCycleConfig.baseRatios.fat"
               type="digit"
+              :cursor-spacing="50"
               class="w-full h-8 bg-white border border-solid border-red-200 rounded-lg text-center text-sm font-bold"
               @input="
                 (e) =>

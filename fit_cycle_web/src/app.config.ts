@@ -1,3 +1,5 @@
+const isH5 = process.env.TARO_ENV === "h5";
+
 export default {
   pages: [
     "pages/index/index",
@@ -18,10 +20,10 @@ export default {
     navigationBarBackgroundColor: "#fff",
     navigationBarTitleText: "Gemini Fit",
     navigationBarTextStyle: "black",
-    navigationStyle: "custom",
+    navigationStyle: isH5 ? "default" : "custom",
   },
   tabBar: {
-    custom: true,
+    custom: !isH5,
     color: "#9ca3af",
     selectedColor: "#10b981",
     backgroundColor: "#ffffff",

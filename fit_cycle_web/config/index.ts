@@ -85,7 +85,11 @@ export default defineConfig<"vite">(async (merge, { command: _command, mode: _mo
     h5: {
       publicPath: "/",
       staticDirectory: "static",
-
+      vite: {
+        define: {
+          global: "window",
+        },
+      },
       miniCssExtractPluginOption: {
         ignoreOrder: true,
         filename: "css/[name].[hash].css",

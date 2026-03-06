@@ -3,6 +3,7 @@
     <input
       :value="modelValue"
       type="text"
+      :cursor-spacing="50"
       :placeholder="placeholder"
       class="search-input px-4 py-2 pl-10 border-[1rpx] border-solid border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 transition-all text-sm bg-white/90"
       @input="handleInput"

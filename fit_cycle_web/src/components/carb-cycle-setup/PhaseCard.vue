@@ -28,6 +28,7 @@
         <input
           :value="days"
           type="number"
+          :cursor-spacing="50"
           class="w-10 h-8 text-lg font-black text-gray-800 text-center"
           @input="e => $emit('update:days', parseInt(e.detail.value) || 0)"
         />
@@ -41,6 +42,7 @@
         <input
           :value="proteinRatio"
           type="digit"
+          :cursor-spacing="50"
           class="w-full h-9 bg-white border border-solid border-gray-200 rounded-xl text-center text-sm font-bold shadow-sm"
           @input="e => $emit('update:proteinRatio', parseFloat(e.detail.value) || 0)"
         />
@@ -50,6 +52,7 @@
         <input
           :value="carbRatio"
           type="digit"
+          :cursor-spacing="50"
           :class="['w-full h-9 bg-white border border-solid rounded-xl text-center text-sm font-bold shadow-sm', styles.inputBorder]"
           @input="e => $emit('update:carbRatio', parseFloat(e.detail.value) || 0)"
         />
@@ -59,6 +62,7 @@
         <input
           :value="fatRatio"
           type="digit"
+          :cursor-spacing="50"
           class="w-full h-9 bg-white border border-solid border-gray-200 rounded-xl text-center text-sm font-bold shadow-sm"
           @input="e => $emit('update:fatRatio', parseFloat(e.detail.value) || 0)"
         />

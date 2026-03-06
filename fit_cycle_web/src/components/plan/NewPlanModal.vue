@@ -26,6 +26,7 @@
             <input
               v-model="formData.name"
               type="text"
+              :cursor-spacing="50"
               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
               placeholder="例如：我的减脂计划"
             />
@@ -75,7 +76,8 @@
             >
             <input
               v-model.number="formData.dailyCalories"
-              type="number"
+              type="digit"
+              :cursor-spacing="50"
               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
               placeholder="1800"
             />
@@ -88,7 +90,8 @@
               >
               <input
                 v-model.number="formData.protein"
-                type="number"
+                type="digit"
+                :cursor-spacing="50"
                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                 placeholder="120"
               />
@@ -99,7 +102,8 @@
               >
               <input
                 v-model.number="formData.fat"
-                type="number"
+                type="digit"
+                :cursor-spacing="50"
                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                 placeholder="50"
               />
@@ -110,7 +114,8 @@
               >
               <input
                 v-model.number="formData.carb"
-                type="number"
+                type="digit"
+                :cursor-spacing="50"
                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                 placeholder="180"
               />

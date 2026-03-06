@@ -14,6 +14,7 @@
           <input
             type="number"
             :value="formData.cycleDays"
+            :cursor-spacing="50"
             @input="handleCycleDaysChange"
             class="px-4 py-2 border border-solid border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm"
             placeholder="7"
@@ -29,6 +30,7 @@
           <input
             type="number"
             :value="formData.cycleCount"
+            :cursor-spacing="50"
             @input="handleCycleCountChange"
             class="px-4 py-2 border border-solid border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm"
             placeholder="3"

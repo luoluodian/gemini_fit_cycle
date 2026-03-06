@@ -13,6 +13,7 @@
         <input
           type="text"
           :value="formData.name"
+          :cursor-spacing="50"
           @input="(e) => emit('update:formData', { name: e.detail.value })"
           class="px-4 border-[1rpx] border-solid border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-white h-10"
           placeholder="计划名称  例如：三周减脂训练营"
